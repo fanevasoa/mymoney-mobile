@@ -1,0 +1,244 @@
+/**
+ * Login Screen
+ *
+ * Handles user authentication with email and password.
+ * Includes form validation and error handling.
+ */
+
+import React, { useState } from "react";
+import {
+  View,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  TouchableOpacity,
+} from "react-native";
+import { Text, TextInput, Button, HelperText } from "react-native-paper";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+
+import { useAuth } from "../../contexts/AuthContext";
+import { colors, spacing, borderRadius } from "../../theme";
+
+export default function LoginScreen({ navigation }) {
+  // Form state
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const { login } = useAuth();
+
+  /**
+   * Validate form inputs
+   */
+  const validateForm = () => {
+    if (!email.trim()) {
+      setError("Email is required");
+      return false;
+    }
+    if (!email.includes("@")) {
+      setError("Please enter a valid email");
+      return false;
+    }
+    if (!password) {
+      setError("Password is required");
+      return false;
+    }
+    return true;
+  };
+
+  /**
+   * Handle login submission
+   */
+  const handleLogin = async () => {
+    setError("");
+
+    if (!validateForm()) return;
+
+    try {
+      setIsLoading(true);
+      await login(email.trim().toLowerCase(), password);
+      // Navigation will happen automatically via AuthContext
+    } catch (err) {
+      setError(err.message || "Login failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <MaterialCommunityIcons
+            name="wallet"
+            size={64}
+            color={colors.primary}
+          />
+          <Text style={styles.title}>MyMoney</Text>
+          <Text style={styles.subtitle}>Manage your finances with ease</Text>
+        </View>
+
+        {/* Form */}
+        <View style={styles.form}>
+          <Text style={styles.formTitle}>Welcome Back</Text>
+
+          {/* Error message */}
+          {error ? (
+            <View style={styles.errorContainer}>
+              <MaterialCommunityIcons
+                name="alert-circle"
+                size={20}
+                color={colors.error}
+              />
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          ) : null}
+
+          {/* Email input */}
+          <TextInput
+            mode="outlined"
+            label="Email"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
+            left={<TextInput.Icon icon="email" />}
+            style={styles.input}
+            outlineColor={colors.border}
+            activeOutlineColor={colors.primary}
+          />
+
+          {/* Password input */}
+          <TextInput
+            mode="outlined"
+            label="Password"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={!showPassword}
+            left={<TextInput.Icon icon="lock" />}
+            right={
+              <TextInput.Icon
+                icon={showPassword ? "eye-off" : "eye"}
+                onPress={() => setShowPassword(!showPassword)}
+              />
+            }
+            style={styles.input}
+            outlineColor={colors.border}
+            activeOutlineColor={colors.primary}
+          />
+
+          {/* Login button */}
+          <Button
+            mode="contained"
+            onPress={handleLogin}
+            loading={isLoading}
+            disabled={isLoading}
+            style={styles.button}
+            contentStyle={styles.buttonContent}
+          >
+            {isLoading ? "Signing in..." : "Sign In"}
+          </Button>
+
+          {/* Register link */}
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>Don't have an account?</Text>
+            <TouchableOpacity onPress={() => navigation.navigate("Register")}>
+              <Text style={styles.linkText}> Sign Up</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: "center",
+    padding: spacing.lg,
+  },
+  header: {
+    alignItems: "center",
+    marginBottom: spacing.xl,
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: "bold",
+    color: colors.primary,
+    marginTop: spacing.md,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    marginTop: spacing.xs,
+  },
+  form: {
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.lg,
+    padding: spacing.lg,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  formTitle: {
+    fontSize: 24,
+    fontWeight: "600",
+    color: colors.textPrimary,
+    marginBottom: spacing.lg,
+    textAlign: "center",
+  },
+  errorContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FEE2E2",
+    padding: spacing.sm,
+    borderRadius: borderRadius.md,
+    marginBottom: spacing.md,
+  },
+  errorText: {
+    color: colors.error,
+    marginLeft: spacing.xs,
+    flex: 1,
+  },
+  input: {
+    marginBottom: spacing.md,
+    backgroundColor: colors.surface,
+  },
+  button: {
+    marginTop: spacing.md,
+    borderRadius: borderRadius.md,
+  },
+  buttonContent: {
+    paddingVertical: spacing.xs,
+  },
+  footer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: spacing.lg,
+  },
+  footerText: {
+    color: colors.textSecondary,
+  },
+  linkText: {
+    color: colors.primary,
+    fontWeight: "600",
+  },
+});
