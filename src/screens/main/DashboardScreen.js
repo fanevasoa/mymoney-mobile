@@ -1,12 +1,33 @@
 /**
  * Dashboard Screen
  *
- * Main home screen showing:
- * - Total balance
- * - Balance by account type
- * - Account list
- * - Recent transactions
- * - Quick action buttons
+ * The main home screen of the MyMoney application, serving as the central hub
+ * for financial overview and quick actions.
+ *
+ * Features:
+ * - **Total Balance Card**: Shows aggregate balance across all accounts
+ * - **Today's Summary**: Income and expenses for the current day
+ * - **Quick Actions**: Buttons for adding income, expense, or transfer
+ * - **Account Type Summary**: Balance grouped by Bank, Mobile Money, Cash
+ * - **Account List**: Quick view of individual account balances
+ * - **Recent Transactions**: Last 5 transactions with details
+ * - **Pull-to-Refresh**: Swipe down to refresh all data
+ *
+ * Data Flow:
+ * 1. On mount and focus, fetches account types, accounts, and dashboard summary
+ * 2. Dashboard data includes total balance, per-type balances, and per-account balances
+ * 3. Recent transactions are fetched separately for display
+ *
+ * @module screens/main/DashboardScreen
+ * @requires react
+ * @requires react-native
+ * @requires react-native-paper
+ * @requires @expo/vector-icons
+ * @requires @react-navigation/native
+ * @requires ../../contexts/AuthContext
+ * @requires ../../contexts/AppContext
+ * @requires ../../api
+ * @requires ../../theme
  */
 
 import React, { useEffect, useState, useCallback } from "react";
@@ -26,7 +47,19 @@ import { useApp } from "../../contexts/AppContext";
 import { dashboardService } from "../../api";
 import { colors, spacing, borderRadius } from "../../theme";
 
-// Helper to format currency
+// ============================================
+// HELPER FUNCTIONS
+// ============================================
+
+/**
+ * Formats a number as US currency
+ *
+ * @param {number} amount - The amount to format
+ * @returns {string} Formatted currency string (e.g., "$1,234.56")
+ *
+ * @example
+ * formatCurrency(1234.5) // Returns "$1,234.50"
+ */
 const formatCurrency = (amount) => {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -35,7 +68,12 @@ const formatCurrency = (amount) => {
   }).format(amount || 0);
 };
 
-// Helper to format date
+/**
+ * Formats a date string for display
+ *
+ * @param {string} dateString - ISO date string to format
+ * @returns {string} Formatted date (e.g., "Jan 15, 10:30 AM")
+ */
 const formatDate = (dateString) => {
   const date = new Date(dateString);
   return date.toLocaleDateString("en-US", {
@@ -46,17 +84,58 @@ const formatDate = (dateString) => {
   });
 };
 
+// ============================================
+// MAIN COMPONENT
+// ============================================
+
+/**
+ * DashboardScreen Component
+ *
+ * Renders the main dashboard with financial overview and navigation options.
+ * Automatically refreshes data when the screen comes into focus.
+ *
+ * @component
+ * @param {Object} props - Component props
+ * @param {Object} props.navigation - React Navigation navigation object
+ * @returns {JSX.Element} The dashboard screen UI
+ */
 export default function DashboardScreen({ navigation }) {
+  // Get authenticated user from context
   const { user } = useAuth();
+
+  // Get app-wide data and fetch functions from context
   const { fetchAccountTypes, fetchAccounts, fetchDashboard, dashboardData } =
     useApp();
 
+  // ============================================
+  // LOCAL STATE
+  // ============================================
+
+  /** @type {Array} Recent transactions list */
   const [recentTransactions, setRecentTransactions] = useState([]);
+
+  /** @type {boolean} Pull-to-refresh indicator */
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  /** @type {boolean} Initial loading state */
   const [isLoading, setIsLoading] = useState(true);
 
+  // ============================================
+  // DATA FETCHING
+  // ============================================
+
   /**
-   * Load dashboard data
+   * Loads all dashboard data from the API
+   *
+   * Fetches in parallel:
+   * - Account types (Bank, Mobile Money, Cash)
+   * - User's accounts with balances
+   * - Dashboard summary (totals, today's transactions)
+   * - Recent transactions (last 5)
+   *
+   * @async
+   * @function loadData
+   * @returns {Promise<void>}
    */
   const loadData = useCallback(async () => {
     try {

@@ -1,8 +1,23 @@
 /**
  * Login Screen
  *
- * Handles user authentication with email and password.
- * Includes form validation and error handling.
+ * Entry point for user authentication. Provides a form for users to enter
+ * their email and password credentials to access the application.
+ *
+ * Features:
+ * - Email and password input fields with validation
+ * - Password visibility toggle
+ * - Loading state during authentication
+ * - Error display for failed login attempts
+ * - Navigation to registration screen
+ *
+ * @module screens/auth/LoginScreen
+ * @requires react
+ * @requires react-native
+ * @requires react-native-paper
+ * @requires @expo/vector-icons
+ * @requires ../../contexts/AuthContext
+ * @requires ../../theme
  */
 
 import React, { useState } from "react";
@@ -20,18 +35,59 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useAuth } from "../../contexts/AuthContext";
 import { colors, spacing, borderRadius } from "../../theme";
 
+/**
+ * LoginScreen Component
+ *
+ * Renders the login form and handles user authentication.
+ * Upon successful login, user is automatically redirected to the main app
+ * via the AuthContext state change.
+ *
+ * @component
+ * @param {Object} props - Component props
+ * @param {Object} props.navigation - React Navigation navigation object
+ * @returns {JSX.Element} The login screen UI
+ *
+ * @example
+ * // Used in AuthNavigator
+ * <Stack.Screen name="Login" component={LoginScreen} />
+ */
 export default function LoginScreen({ navigation }) {
-  // Form state
+  // ============================================
+  // STATE MANAGEMENT
+  // ============================================
+
+  /** @type {[string, Function]} Email input state */
   const [email, setEmail] = useState("");
+
+  /** @type {[string, Function]} Password input state */
   const [password, setPassword] = useState("");
+
+  /** @type {[boolean, Function]} Password visibility toggle state */
   const [showPassword, setShowPassword] = useState(false);
+
+  /** @type {[boolean, Function]} Loading indicator state */
   const [isLoading, setIsLoading] = useState(false);
+
+  /** @type {[string, Function]} Error message state */
   const [error, setError] = useState("");
 
+  // Get login function from AuthContext
   const { login } = useAuth();
 
+  // ============================================
+  // FORM HANDLERS
+  // ============================================
+
   /**
-   * Validate form inputs
+   * Validates the login form inputs
+   *
+   * Checks that:
+   * - Email is not empty
+   * - Email contains @ symbol
+   * - Password is not empty
+   *
+   * @function validateForm
+   * @returns {boolean} True if form is valid, false otherwise
    */
   const validateForm = () => {
     if (!email.trim()) {
@@ -50,7 +106,15 @@ export default function LoginScreen({ navigation }) {
   };
 
   /**
-   * Handle login submission
+   * Handles the login form submission
+   *
+   * Validates inputs, calls the authentication API, and handles
+   * success/error states. On successful login, the AuthContext
+   * updates and triggers navigation to the main app.
+   *
+   * @async
+   * @function handleLogin
+   * @returns {Promise<void>}
    */
   const handleLogin = async () => {
     setError("");
