@@ -46,43 +46,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useApp } from "../../contexts/AppContext";
 import { dashboardService } from "../../api";
 import { colors, spacing, borderRadius } from "../../theme";
-
-// ============================================
-// HELPER FUNCTIONS
-// ============================================
-
-/**
- * Formats a number as US currency
- *
- * @param {number} amount - The amount to format
- * @returns {string} Formatted currency string (e.g., "$1,234.56")
- *
- * @example
- * formatCurrency(1234.5) // Returns "$1,234.50"
- */
-const formatCurrency = (amount) => {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-  }).format(amount || 0);
-};
-
-/**
- * Formats a date string for display
- *
- * @param {string} dateString - ISO date string to format
- * @returns {string} Formatted date (e.g., "Jan 15, 10:30 AM")
- */
-const formatDate = (dateString) => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
+import { formatCurrency, formatDate } from "../../utils/helpers";
 
 // ============================================
 // MAIN COMPONENT

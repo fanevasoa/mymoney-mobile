@@ -28,27 +28,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { accountService, transactionService } from "../../api";
 import { useApp } from "../../contexts/AppContext";
 import { colors, spacing, borderRadius } from "../../theme";
-
-// Helper to format currency
-const formatCurrency = (amount) => {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-  }).format(amount || 0);
-};
-
-// Helper to format date
-const formatDate = (dateString) => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
+import { formatCurrency, formatDate } from "../../utils/helpers";
 
 export default function AccountDetailScreen({ route, navigation }) {
   const { accountId } = route.params;

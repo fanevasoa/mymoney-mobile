@@ -11,8 +11,8 @@
  * @param {number} decimals - Number of decimal places (default: 2)
  * @returns {string} Formatted currency string
  */
-export const formatCurrency = (amount, currency = "USD", decimals = 2) => {
-  return new Intl.NumberFormat("en-US", {
+export const formatCurrency = (amount, currency = "MGA", decimals = 2) => {
+  return new Intl.NumberFormat("mg-MG", {
     style: "currency",
     currency,
     minimumFractionDigits: decimals,

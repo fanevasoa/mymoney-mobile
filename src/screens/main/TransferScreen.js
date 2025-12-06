@@ -21,15 +21,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { transferService } from "../../api";
 import { useApp } from "../../contexts/AppContext";
 import { colors, spacing, borderRadius } from "../../theme";
-
-// Helper to format currency
-const formatCurrency = (amount) => {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-  }).format(amount || 0);
-};
+import { formatCurrency } from "../../utils/helpers";
 
 export default function TransferScreen({ navigation }) {
   const { accounts, fetchAccounts, refreshData } = useApp();

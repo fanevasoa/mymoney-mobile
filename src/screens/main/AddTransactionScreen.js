@@ -27,6 +27,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { transactionService } from "../../api";
 import { useApp } from "../../contexts/AppContext";
 import { colors, spacing, borderRadius } from "../../theme";
+import { formatCurrency } from "../../utils/helpers";
 
 // Predefined categories
 const EXPENSE_CATEGORIES = [
@@ -48,15 +49,6 @@ const INCOME_CATEGORIES = [
   "Refund",
   "Other",
 ];
-
-// Helper to format currency for display
-const formatCurrency = (amount) => {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-  }).format(amount || 0);
-};
 
 export default function AddTransactionScreen({ route, navigation }) {
   const { accounts, fetchAccounts, refreshData } = useApp();
@@ -252,7 +244,7 @@ export default function AddTransactionScreen({ route, navigation }) {
                   },
                 ]}
               >
-                $
+                Ar
               </Text>
               <TextInput
                 mode="flat"

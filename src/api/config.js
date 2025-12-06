@@ -10,7 +10,7 @@
 // - Android Emulator: use '10.0.2.2' (Android's localhost alias)
 // - Physical device: use your computer's local IP address
 
-export const API_URL = "http://localhost:3000/api";
+export const API_URL = "http://10.0.2.2:3000/api";
 
 // Timeout for API requests (in milliseconds)
 export const API_TIMEOUT = 30000;

@@ -21,18 +21,9 @@ import { LineChart, PieChart, BarChart } from "react-native-chart-kit";
 
 import { dashboardService } from "../../api";
 import { colors, spacing, borderRadius } from "../../theme";
+import { formatCurrency } from "../../utils/helpers";
 
 const screenWidth = Dimensions.get("window").width;
-
-// Helper to format currency
-const formatCurrency = (amount) => {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount || 0);
-};
 
 // Chart configuration
 const chartConfig = {

@@ -12,27 +12,13 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { transactionService } from "../../api";
 import { useApp } from "../../contexts/AppContext";
 import { colors, spacing, borderRadius } from "../../theme";
+import { formatCurrency, formatDate } from "../../utils/helpers";
 
-// Helper to format currency
-const formatCurrency = (amount) => {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-  }).format(amount || 0);
-};
-
-// Helper to format date
-const formatDate = (dateString) => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-};
-
-// Helper to format time
+/**
+ * Format time from date string
+ * @param {string} dateString - ISO date string
+ * @returns {string} Formatted time (e.g., "10:30 AM")
+ */
 const formatTime = (dateString) => {
   const date = new Date(dateString);
   return date.toLocaleTimeString("en-US", {

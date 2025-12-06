@@ -19,15 +19,7 @@ import { useFocusEffect } from "@react-navigation/native";
 
 import { useApp } from "../../contexts/AppContext";
 import { colors, spacing, borderRadius } from "../../theme";
-
-// Helper to format currency
-const formatCurrency = (amount) => {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-  }).format(amount || 0);
-};
+import { formatCurrency } from "../../utils/helpers";
 
 export default function AccountsScreen({ navigation }) {
   const {

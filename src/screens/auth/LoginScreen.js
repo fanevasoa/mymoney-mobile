@@ -28,6 +28,7 @@ import {
   Platform,
   ScrollView,
   TouchableOpacity,
+  Image,
 } from "react-native";
 import { Text, TextInput, Button, HelperText } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -143,12 +144,19 @@ export default function LoginScreen({ navigation }) {
       >
         {/* Header */}
         <View style={styles.header}>
-          <MaterialCommunityIcons
-            name="wallet"
-            size={64}
-            color={colors.primary}
+          <Image
+            source={require("../../../assets/icon.png")}
+            style={{
+              width: 64,
+              height: 64,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.5,
+              shadowRadius: 8,
+              elevation: 8,
+            }}
           />
-          <Text style={styles.title}>MyMoney</Text>
+          <Text style={styles.title}>Money</Text>
           <Text style={styles.subtitle}>Manage your finances with ease</Text>
         </View>
 
