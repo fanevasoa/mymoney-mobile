@@ -35,7 +35,7 @@ export default function AccountCard({
   onPress,
   compact = false,
   selected = false,
-}: AccountCardProps): JSX.Element {
+}: AccountCardProps): React.JSX.Element {
   const iconName = getIconName(account.accountType?.icon);
   const accountColor = account.accountType?.color || colors.primary;
 

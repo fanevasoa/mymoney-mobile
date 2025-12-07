@@ -41,7 +41,9 @@ interface TransactionIcon {
   color: string;
 }
 
-export default function DashboardScreen({ navigation }: Props): JSX.Element {
+export default function DashboardScreen({
+  navigation,
+}: Props): React.JSX.Element {
   const { user } = useAuth();
   const { fetchAccountTypes, fetchAccounts, fetchDashboard, dashboardData } =
     useApp();

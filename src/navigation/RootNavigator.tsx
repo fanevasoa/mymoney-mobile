@@ -12,7 +12,7 @@ import AuthNavigator from "./AuthNavigator";
 import MainNavigator from "./MainNavigator";
 import { colors } from "../theme";
 
-export default function RootNavigator(): JSX.Element {
+export default function RootNavigator(): React.JSX.Element {
   const { isLoading, isAuthenticated } = useAuth();
 
   if (isLoading) {

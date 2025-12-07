@@ -57,7 +57,7 @@ const INCOME_CATEGORIES = [
 export default function AddTransactionScreen({
   route,
   navigation,
-}: Props): JSX.Element {
+}: Props): React.JSX.Element {
   const { accounts, fetchAccounts, refreshData } = useApp();
 
   const initialType = route.params?.type || "expense";

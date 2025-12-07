@@ -15,7 +15,7 @@ export default function LoadingSpinner({
   color = colors.primary,
   message = "",
   fullScreen = true,
-}: LoadingSpinnerProps): JSX.Element {
+}: LoadingSpinnerProps): React.JSX.Element {
   const content = (
     <>
       <ActivityIndicator size={size} color={color} />

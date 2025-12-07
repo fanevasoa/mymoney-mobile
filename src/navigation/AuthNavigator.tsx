@@ -13,7 +13,7 @@ import type { AuthStackParamList } from "../types";
 
 const Stack = createNativeStackNavigator<AuthStackParamList>();
 
-export default function AuthNavigator(): JSX.Element {
+export default function AuthNavigator(): React.JSX.Element {
   return (
     <Stack.Navigator
       screenOptions={{

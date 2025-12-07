@@ -28,7 +28,9 @@ type Props = NativeStackScreenProps<AddStackParamList, "Transfer">;
 
 type IconName = keyof typeof MaterialCommunityIcons.glyphMap;
 
-export default function TransferScreen({ navigation }: Props): JSX.Element {
+export default function TransferScreen({
+  navigation,
+}: Props): React.JSX.Element {
   const { accounts, fetchAccounts, refreshData } = useApp();
 
   const [fromAccountId, setFromAccountId] = useState<string | null>(null);
@@ -152,7 +154,7 @@ export default function TransferScreen({ navigation }: Props): JSX.Element {
     selectedId: string | null,
     onSelect: (id: string) => void,
     excludeId: string | null
-  ): JSX.Element => (
+  ): React.JSX.Element => (
     <View style={styles.accountSection}>
       <Text style={styles.sectionTitle}>{title}</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>

@@ -17,7 +17,7 @@ export default function EmptyState({
   message = "",
   actionLabel = "",
   onAction,
-}: EmptyStateProps): JSX.Element {
+}: EmptyStateProps): React.JSX.Element {
   return (
     <View style={styles.container}>
       <MaterialCommunityIcons

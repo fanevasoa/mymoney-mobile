@@ -42,7 +42,7 @@ interface AppProviderProps {
 // Provider Component
 // ============================================================================
 
-export function AppProvider({ children }: AppProviderProps): JSX.Element {
+export function AppProvider({ children }: AppProviderProps): React.JSX.Element {
   // State
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [accountTypes, setAccountTypes] = useState<AccountType[]>([]);

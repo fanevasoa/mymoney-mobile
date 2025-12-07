@@ -24,7 +24,7 @@ import type { AuthStackParamList } from "../../types";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "Login">;
 
-export default function LoginScreen({ navigation }: Props): JSX.Element {
+export default function LoginScreen({ navigation }: Props): React.JSX.Element {
   // State
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");

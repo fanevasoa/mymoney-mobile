@@ -47,7 +47,7 @@ type IconName = keyof typeof MaterialCommunityIcons.glyphMap;
 export default function AccountDetailScreen({
   route,
   navigation,
-}: Props): JSX.Element {
+}: Props): React.JSX.Element {
   const { accountId } = route.params;
   const { removeAccount, updateAccount: updateAccountInState } = useApp();
 

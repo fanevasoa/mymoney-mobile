@@ -66,7 +66,7 @@ interface PieChartData {
   legendFontSize: number;
 }
 
-export default function ReportsScreen(): JSX.Element {
+export default function ReportsScreen(): React.JSX.Element {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [reportType, setReportType] = useState<string>("monthly");

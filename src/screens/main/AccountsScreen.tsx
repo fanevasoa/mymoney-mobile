@@ -26,7 +26,9 @@ type Props = NativeStackScreenProps<AccountsStackParamList, "AccountsMain">;
 
 type IconName = keyof typeof MaterialCommunityIcons.glyphMap;
 
-export default function AccountsScreen({ navigation }: Props): JSX.Element {
+export default function AccountsScreen({
+  navigation,
+}: Props): React.JSX.Element {
   const {
     accounts,
     accountTypes,
@@ -88,7 +90,7 @@ export default function AccountsScreen({ navigation }: Props): JSX.Element {
     0
   );
 
-  const renderAccount = ({ item }: { item: Account }): JSX.Element => (
+  const renderAccount = ({ item }: { item: Account }): React.JSX.Element => (
     <TouchableOpacity
       onPress={() =>
         navigation.navigate("AccountDetail", { accountId: item.id })
@@ -132,7 +134,7 @@ export default function AccountsScreen({ navigation }: Props): JSX.Element {
     </TouchableOpacity>
   );
 
-  const renderEmpty = (): JSX.Element => (
+  const renderEmpty = (): React.JSX.Element => (
     <View style={styles.emptyContainer}>
       <MaterialCommunityIcons
         name="wallet-outline"
@@ -148,7 +150,7 @@ export default function AccountsScreen({ navigation }: Props): JSX.Element {
     </View>
   );
 
-  const renderHeader = (): JSX.Element => (
+  const renderHeader = (): React.JSX.Element => (
     <View style={styles.header}>
       <Searchbar
         placeholder="Search accounts..."

@@ -37,7 +37,7 @@ export default function TransactionCard({
   transaction,
   onPress,
   showAccount = true,
-}: TransactionCardProps): JSX.Element {
+}: TransactionCardProps): React.JSX.Element {
   const icon = getTransactionIcon(transaction.type);
   const isIncome = transaction.type === "earning";
 

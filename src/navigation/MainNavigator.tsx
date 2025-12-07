@@ -53,7 +53,7 @@ const screenOptions = {
   },
 };
 
-function DashboardStackNavigator(): JSX.Element {
+function DashboardStackNavigator(): React.JSX.Element {
   return (
     <DashboardStack.Navigator screenOptions={screenOptions}>
       <DashboardStack.Screen
@@ -75,7 +75,7 @@ function DashboardStackNavigator(): JSX.Element {
   );
 }
 
-function AccountsStackNavigator(): JSX.Element {
+function AccountsStackNavigator(): React.JSX.Element {
   return (
     <AccountsStack.Navigator screenOptions={screenOptions}>
       <AccountsStack.Screen
@@ -97,7 +97,7 @@ function AccountsStackNavigator(): JSX.Element {
   );
 }
 
-function AddStackNavigator(): JSX.Element {
+function AddStackNavigator(): React.JSX.Element {
   return (
     <AddStack.Navigator screenOptions={screenOptions}>
       <AddStack.Screen
@@ -114,7 +114,7 @@ function AddStackNavigator(): JSX.Element {
   );
 }
 
-function ReportsStackNavigator(): JSX.Element {
+function ReportsStackNavigator(): React.JSX.Element {
   return (
     <ReportsStack.Navigator screenOptions={screenOptions}>
       <ReportsStack.Screen
@@ -126,7 +126,7 @@ function ReportsStackNavigator(): JSX.Element {
   );
 }
 
-function ProfileStackNavigator(): JSX.Element {
+function ProfileStackNavigator(): React.JSX.Element {
   return (
     <ProfileStack.Navigator screenOptions={screenOptions}>
       <ProfileStack.Screen
@@ -138,7 +138,7 @@ function ProfileStackNavigator(): JSX.Element {
   );
 }
 
-export default function MainNavigator(): JSX.Element {
+export default function MainNavigator(): React.JSX.Element {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({

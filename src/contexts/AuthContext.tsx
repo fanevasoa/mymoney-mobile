@@ -34,7 +34,9 @@ interface AuthProviderProps {
 // Provider Component
 // ============================================================================
 
-export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
+export function AuthProvider({
+  children,
+}: AuthProviderProps): React.JSX.Element {
   // State
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);

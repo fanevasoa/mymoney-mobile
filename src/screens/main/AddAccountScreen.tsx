@@ -26,7 +26,9 @@ type Props = NativeStackScreenProps<AccountsStackParamList, "AddAccount">;
 
 type IconName = keyof typeof MaterialCommunityIcons.glyphMap;
 
-export default function AddAccountScreen({ navigation }: Props): JSX.Element {
+export default function AddAccountScreen({
+  navigation,
+}: Props): React.JSX.Element {
   const { accountTypes, fetchAccountTypes, addAccount } = useApp();
 
   const [name, setName] = useState<string>("");

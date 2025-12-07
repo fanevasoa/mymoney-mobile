@@ -23,7 +23,9 @@ import type { AuthStackParamList } from "../../types";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "Register">;
 
-export default function RegisterScreen({ navigation }: Props): JSX.Element {
+export default function RegisterScreen({
+  navigation,
+}: Props): React.JSX.Element {
   // Form state
   const [name, setName] = useState<string>("");
   const [email, setEmail] = useState<string>("");

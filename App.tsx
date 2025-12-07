@@ -15,7 +15,7 @@ import { AppProvider } from "./src/contexts/AppContext";
 import { RootNavigator } from "./src/navigation";
 import { theme } from "./src/theme";
 
-export default function App(): JSX.Element {
+export default function App(): React.JSX.Element {
   return (
     <PaperProvider theme={theme}>
       <AuthProvider>

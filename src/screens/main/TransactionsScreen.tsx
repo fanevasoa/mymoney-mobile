@@ -34,7 +34,9 @@ const formatTime = (dateString: string): string => {
   });
 };
 
-export default function TransactionsScreen({ route }: Props): JSX.Element {
+export default function TransactionsScreen({
+  route,
+}: Props): React.JSX.Element {
   const { accounts } = useApp();
   const initialAccountId = route.params?.accountId;
 

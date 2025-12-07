@@ -24,7 +24,7 @@ import { useApp } from "../../contexts/AppContext";
 import { authService } from "../../api";
 import { colors, spacing, borderRadius } from "../../theme";
 
-export default function ProfileScreen(): JSX.Element {
+export default function ProfileScreen(): React.JSX.Element {
   const { user, logout } = useAuth();
   const { clearData, dashboardData } = useApp();
 
