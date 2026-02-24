@@ -101,6 +101,18 @@ export function AuthProvider({
   );
 
   /**
+   * Authenticates user with a Google OAuth ID token
+   */
+  const loginWithGoogle = useCallback(async (idToken: string): Promise<void> => {
+    const response = await authService.loginWithGoogle(idToken);
+
+    if (response.success) {
+      setUser(response.data.user);
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  /**
    * Creates a new user account
    */
   const register = useCallback(
@@ -152,6 +164,7 @@ export function AuthProvider({
       isLoading,
       isAuthenticated,
       login,
+      loginWithGoogle,
       register,
       logout,
       updateUser,
@@ -162,6 +175,7 @@ export function AuthProvider({
       isLoading,
       isAuthenticated,
       login,
+      loginWithGoogle,
       register,
       logout,
       updateUser,

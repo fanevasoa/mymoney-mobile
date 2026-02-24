@@ -5,3 +5,4 @@
  */
 
 export { default as useApi } from "./useApi";
+export { default as useGoogleAuth } from "./useGoogleAuth";

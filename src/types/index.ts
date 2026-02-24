@@ -15,6 +15,7 @@ export interface User {
   name: string;
   email: string;
   role: "user" | "admin";
+  googleId?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -376,6 +377,7 @@ export interface AuthContextValue {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<AuthResponse>;
+  loginWithGoogle: (idToken: string) => Promise<void>;
   register: (
     name: string,
     email: string,

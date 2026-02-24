@@ -18,6 +18,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 import { useAuth } from "../../contexts/AuthContext";
+import { useGoogleAuth } from "../../hooks";
 import { colors, spacing, borderRadius } from "../../theme";
 import type { AuthStackParamList } from "../../types";
 
@@ -36,6 +37,7 @@ export default function RegisterScreen({
   const [error, setError] = useState<string>("");
 
   const { register } = useAuth();
+  const { promptGoogleSignIn, isLoading: isGoogleLoading, isReady: isGoogleReady } = useGoogleAuth();
 
   /**
    * Validate form inputs
@@ -202,6 +204,26 @@ export default function RegisterScreen({
             {isLoading ? "Creating Account..." : "Create Account"}
           </Button>
 
+          {/* Divider */}
+          <View style={styles.dividerContainer}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>or</Text>
+            <View style={styles.dividerLine} />
+          </View>
+
+          {/* Google sign-up button */}
+          <Button
+            mode="outlined"
+            onPress={promptGoogleSignIn}
+            loading={isGoogleLoading}
+            disabled={!isGoogleReady || isGoogleLoading}
+            icon="google"
+            style={styles.googleButton}
+            contentStyle={styles.buttonContent}
+          >
+            {isGoogleLoading ? "Signing up..." : "Sign up with Google"}
+          </Button>
+
           {/* Login link */}
           <View style={styles.footer}>
             <Text style={styles.footerText}>Already have an account?</Text>
@@ -273,6 +295,26 @@ const styles = StyleSheet.create({
   },
   buttonContent: {
     paddingVertical: spacing.xs,
+  },
+  dividerContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: spacing.lg,
+    marginBottom: spacing.md,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.border,
+  },
+  dividerText: {
+    color: colors.textSecondary,
+    marginHorizontal: spacing.sm,
+    fontSize: 14,
+  },
+  googleButton: {
+    borderRadius: borderRadius.md,
+    borderColor: colors.border,
   },
   footer: {
     flexDirection: "row",

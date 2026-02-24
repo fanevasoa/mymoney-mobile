@@ -78,6 +78,26 @@ export const getCurrentUser = async (): Promise<
 };
 
 /**
+ * Authenticates a user with a Google OAuth ID token
+ *
+ * Sends the Google ID token to the backend for verification.
+ * On success, stores the returned JWT token automatically.
+ */
+export const loginWithGoogle = async (
+  idToken: string
+): Promise<AuthResponse> => {
+  const response = await apiClient.post<AuthResponse>("/auth/google", {
+    idToken,
+  });
+
+  if (response.success && response.data.token) {
+    await setToken(response.data.token);
+  }
+
+  return response;
+};
+
+/**
  * Changes the user's password
  *
  * Requires the current password for verification before updating.
@@ -94,6 +114,7 @@ export const changePassword = async (
 const authService = {
   register,
   login,
+  loginWithGoogle,
   logout,
   getCurrentUser,
   changePassword,
