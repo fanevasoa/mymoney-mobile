@@ -246,7 +246,7 @@ export default function AccountDetailScreen({
             navigation.navigate("Add", {
               screen: "AddTransaction",
               params: { accountId: account.id, type: "earning" },
-            } as never)
+            })
           }
           style={[styles.actionButton, { backgroundColor: colors.earning }]}
         >
@@ -259,7 +259,7 @@ export default function AccountDetailScreen({
             navigation.navigate("Add", {
               screen: "AddTransaction",
               params: { accountId: account.id, type: "expense" },
-            } as never)
+            })
           }
           style={[styles.actionButton, { backgroundColor: colors.expense }]}
         >

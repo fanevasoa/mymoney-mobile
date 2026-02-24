@@ -8,7 +8,6 @@
  */
 
 import axios, {
-  AxiosInstance,
   AxiosError,
   InternalAxiosRequestConfig,
   AxiosResponse,
@@ -20,8 +19,21 @@ import type { ApiError } from "../types";
 // Token storage key
 const TOKEN_KEY = "auth_token";
 
+/**
+ * Typed API client that returns unwrapped response data.
+ * The response interceptor strips the Axios wrapper, so methods
+ * return the JSON body directly (e.g. ApiResponse<T>).
+ */
+interface TypedApiClient {
+  get<T>(url: string, config?: object): Promise<T>;
+  post<T>(url: string, data?: unknown, config?: object): Promise<T>;
+  put<T>(url: string, data?: unknown, config?: object): Promise<T>;
+  delete<T>(url: string, config?: object): Promise<T>;
+  interceptors: typeof baseClient.interceptors;
+}
+
 // Create Axios instance with default configuration
-const apiClient: AxiosInstance = axios.create({
+const baseClient = axios.create({
   baseURL: API_URL,
   timeout: API_TIMEOUT,
   headers: {
@@ -64,7 +76,7 @@ export const removeToken = async (): Promise<void> => {
 };
 
 // Request interceptor - add auth token to requests
-apiClient.interceptors.request.use(
+baseClient.interceptors.request.use(
   async (
     config: InternalAxiosRequestConfig
   ): Promise<InternalAxiosRequestConfig> => {
@@ -80,7 +92,7 @@ apiClient.interceptors.request.use(
 );
 
 // Response interceptor - handle errors
-apiClient.interceptors.response.use(
+baseClient.interceptors.response.use(
   (response: AxiosResponse) => {
     // Return the response data directly
     return response.data;
@@ -171,5 +183,7 @@ apiClient.interceptors.response.use(
     return Promise.reject(defaultError);
   }
 );
+
+const apiClient = baseClient as unknown as TypedApiClient;
 
 export default apiClient;

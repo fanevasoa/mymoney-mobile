@@ -33,9 +33,7 @@ interface SummaryResponse {
 export const getDashboardSummary = async (): Promise<
   ApiResponse<DashboardData>
 > => {
-  return apiClient.get<ApiResponse<DashboardData>, ApiResponse<DashboardData>>(
-    "/dashboard"
-  );
+  return apiClient.get<ApiResponse<DashboardData>>("/dashboard");
 };
 
 /**
@@ -44,10 +42,10 @@ export const getDashboardSummary = async (): Promise<
 export const getRecentTransactions = async (
   limit: number = 10
 ): Promise<ApiResponse<RecentTransactionsResponse>> => {
-  return apiClient.get<
-    ApiResponse<RecentTransactionsResponse>,
-    ApiResponse<RecentTransactionsResponse>
-  >("/dashboard/recent", { params: { limit } });
+  return apiClient.get<ApiResponse<RecentTransactionsResponse>>(
+    "/dashboard/recent",
+    { params: { limit } }
+  );
 };
 
 /**
@@ -56,10 +54,9 @@ export const getRecentTransactions = async (
 export const getFinancialSummary = async (
   params: ReportParams = {}
 ): Promise<ApiResponse<SummaryResponse>> => {
-  return apiClient.get<
-    ApiResponse<SummaryResponse>,
-    ApiResponse<SummaryResponse>
-  >("/reports/summary", { params });
+  return apiClient.get<ApiResponse<SummaryResponse>>("/reports/summary", {
+    params,
+  });
 };
 
 /**
@@ -68,10 +65,9 @@ export const getFinancialSummary = async (
 export const getMonthlyBreakdown = async (
   params: Pick<ReportParams, "year" | "accountId"> = {}
 ): Promise<ApiResponse<MonthlyBreakdown>> => {
-  return apiClient.get<
-    ApiResponse<MonthlyBreakdown>,
-    ApiResponse<MonthlyBreakdown>
-  >("/reports/monthly", { params });
+  return apiClient.get<ApiResponse<MonthlyBreakdown>>("/reports/monthly", {
+    params,
+  });
 };
 
 /**
@@ -80,10 +76,9 @@ export const getMonthlyBreakdown = async (
 export const getCategoryBreakdown = async (
   params: ReportParams = {}
 ): Promise<ApiResponse<CategoryBreakdown>> => {
-  return apiClient.get<
-    ApiResponse<CategoryBreakdown>,
-    ApiResponse<CategoryBreakdown>
-  >("/reports/category", { params });
+  return apiClient.get<ApiResponse<CategoryBreakdown>>("/reports/category", {
+    params,
+  });
 };
 
 const dashboardService = {

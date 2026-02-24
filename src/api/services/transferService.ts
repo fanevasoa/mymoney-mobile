@@ -26,10 +26,9 @@ interface TransfersResponse {
 export const getTransfers = async (
   params: TransfersParams = {}
 ): Promise<ApiResponse<TransfersResponse>> => {
-  return apiClient.get<
-    ApiResponse<TransfersResponse>,
-    ApiResponse<TransfersResponse>
-  >("/transfers", { params });
+  return apiClient.get<ApiResponse<TransfersResponse>>("/transfers", {
+    params,
+  });
 };
 
 /**
@@ -38,10 +37,9 @@ export const getTransfers = async (
 export const getTransferById = async (
   id: string
 ): Promise<ApiResponse<{ transfer: Transfer }>> => {
-  return apiClient.get<
-    ApiResponse<{ transfer: Transfer }>,
-    ApiResponse<{ transfer: Transfer }>
-  >(`/transfers/${id}`);
+  return apiClient.get<ApiResponse<{ transfer: Transfer }>>(
+    `/transfers/${id}`
+  );
 };
 
 /**
@@ -50,10 +48,10 @@ export const getTransferById = async (
 export const createTransfer = async (
   transferData: CreateTransferData
 ): Promise<ApiResponse<{ transfer: Transfer }>> => {
-  return apiClient.post<
-    ApiResponse<{ transfer: Transfer }>,
-    ApiResponse<{ transfer: Transfer }>
-  >("/transfers", transferData);
+  return apiClient.post<ApiResponse<{ transfer: Transfer }>>(
+    "/transfers",
+    transferData
+  );
 };
 
 const transferService = {

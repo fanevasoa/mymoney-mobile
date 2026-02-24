@@ -24,7 +24,7 @@ import type {
 export const register = async (
   userData: RegisterData
 ): Promise<AuthResponse> => {
-  const response = await apiClient.post<AuthResponse, AuthResponse>(
+  const response = await apiClient.post<AuthResponse>(
     "/auth/register",
     userData
   );
@@ -45,7 +45,7 @@ export const register = async (
 export const login = async (
   credentials: LoginCredentials
 ): Promise<AuthResponse> => {
-  const response = await apiClient.post<AuthResponse, AuthResponse>(
+  const response = await apiClient.post<AuthResponse>(
     "/auth/login",
     credentials
   );
@@ -74,10 +74,7 @@ export const logout = async (): Promise<void> => {
 export const getCurrentUser = async (): Promise<
   ApiResponse<{ user: User }>
 > => {
-  return apiClient.get<
-    ApiResponse<{ user: User }>,
-    ApiResponse<{ user: User }>
-  >("/auth/me");
+  return apiClient.get<ApiResponse<{ user: User }>>("/auth/me");
 };
 
 /**
@@ -88,10 +85,10 @@ export const getCurrentUser = async (): Promise<
 export const changePassword = async (
   passwords: PasswordChangeData
 ): Promise<ApiResponse<{ message: string }>> => {
-  return apiClient.put<
-    ApiResponse<{ message: string }>,
-    ApiResponse<{ message: string }>
-  >("/auth/password", passwords);
+  return apiClient.put<ApiResponse<{ message: string }>>(
+    "/auth/password",
+    passwords
+  );
 };
 
 const authService = {

@@ -35,10 +35,7 @@ interface AccountTypesResponse {
 export const getAccounts = async (
   params: AccountsParams = {}
 ): Promise<ApiResponse<AccountsResponse>> => {
-  return apiClient.get<
-    ApiResponse<AccountsResponse>,
-    ApiResponse<AccountsResponse>
-  >("/accounts", { params });
+  return apiClient.get<ApiResponse<AccountsResponse>>("/accounts", { params });
 };
 
 /**
@@ -47,10 +44,7 @@ export const getAccounts = async (
 export const getAccountById = async (
   id: string
 ): Promise<ApiResponse<{ account: Account }>> => {
-  return apiClient.get<
-    ApiResponse<{ account: Account }>,
-    ApiResponse<{ account: Account }>
-  >(`/accounts/${id}`);
+  return apiClient.get<ApiResponse<{ account: Account }>>(`/accounts/${id}`);
 };
 
 /**
@@ -59,10 +53,10 @@ export const getAccountById = async (
 export const createAccount = async (
   accountData: CreateAccountData
 ): Promise<ApiResponse<{ account: Account }>> => {
-  return apiClient.post<
-    ApiResponse<{ account: Account }>,
-    ApiResponse<{ account: Account }>
-  >("/accounts", accountData);
+  return apiClient.post<ApiResponse<{ account: Account }>>(
+    "/accounts",
+    accountData
+  );
 };
 
 /**
@@ -72,10 +66,10 @@ export const updateAccount = async (
   id: string,
   accountData: UpdateAccountData
 ): Promise<ApiResponse<{ account: Account }>> => {
-  return apiClient.put<
-    ApiResponse<{ account: Account }>,
-    ApiResponse<{ account: Account }>
-  >(`/accounts/${id}`, accountData);
+  return apiClient.put<ApiResponse<{ account: Account }>>(
+    `/accounts/${id}`,
+    accountData
+  );
 };
 
 /**
@@ -84,10 +78,9 @@ export const updateAccount = async (
 export const deleteAccount = async (
   id: string
 ): Promise<ApiResponse<{ message: string }>> => {
-  return apiClient.delete<
-    ApiResponse<{ message: string }>,
-    ApiResponse<{ message: string }>
-  >(`/accounts/${id}`);
+  return apiClient.delete<ApiResponse<{ message: string }>>(
+    `/accounts/${id}`
+  );
 };
 
 /**
@@ -96,10 +89,7 @@ export const deleteAccount = async (
 export const getAccountTypes = async (): Promise<
   ApiResponse<AccountTypesResponse>
 > => {
-  return apiClient.get<
-    ApiResponse<AccountTypesResponse>,
-    ApiResponse<AccountTypesResponse>
-  >("/account-types");
+  return apiClient.get<ApiResponse<AccountTypesResponse>>("/account-types");
 };
 
 const accountService = {

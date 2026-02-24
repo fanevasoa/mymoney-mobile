@@ -29,10 +29,9 @@ interface TransactionsResponse {
 export const getTransactions = async (
   params: TransactionsParams = {}
 ): Promise<ApiResponse<TransactionsResponse>> => {
-  return apiClient.get<
-    ApiResponse<TransactionsResponse>,
-    ApiResponse<TransactionsResponse>
-  >("/transactions", { params });
+  return apiClient.get<ApiResponse<TransactionsResponse>>("/transactions", {
+    params,
+  });
 };
 
 /**
@@ -41,10 +40,9 @@ export const getTransactions = async (
 export const getTransactionById = async (
   id: string
 ): Promise<ApiResponse<{ transaction: Transaction }>> => {
-  return apiClient.get<
-    ApiResponse<{ transaction: Transaction }>,
-    ApiResponse<{ transaction: Transaction }>
-  >(`/transactions/${id}`);
+  return apiClient.get<ApiResponse<{ transaction: Transaction }>>(
+    `/transactions/${id}`
+  );
 };
 
 /**
@@ -53,10 +51,10 @@ export const getTransactionById = async (
 export const createTransaction = async (
   transactionData: CreateTransactionData
 ): Promise<ApiResponse<{ transaction: Transaction }>> => {
-  return apiClient.post<
-    ApiResponse<{ transaction: Transaction }>,
-    ApiResponse<{ transaction: Transaction }>
-  >("/transactions", transactionData);
+  return apiClient.post<ApiResponse<{ transaction: Transaction }>>(
+    "/transactions",
+    transactionData
+  );
 };
 
 /**
@@ -66,10 +64,10 @@ export const updateTransaction = async (
   id: string,
   transactionData: UpdateTransactionData
 ): Promise<ApiResponse<{ transaction: Transaction }>> => {
-  return apiClient.put<
-    ApiResponse<{ transaction: Transaction }>,
-    ApiResponse<{ transaction: Transaction }>
-  >(`/transactions/${id}`, transactionData);
+  return apiClient.put<ApiResponse<{ transaction: Transaction }>>(
+    `/transactions/${id}`,
+    transactionData
+  );
 };
 
 /**
@@ -78,10 +76,9 @@ export const updateTransaction = async (
 export const deleteTransaction = async (
   id: string
 ): Promise<ApiResponse<{ message: string }>> => {
-  return apiClient.delete<
-    ApiResponse<{ message: string }>,
-    ApiResponse<{ message: string }>
-  >(`/transactions/${id}`);
+  return apiClient.delete<ApiResponse<{ message: string }>>(
+    `/transactions/${id}`
+  );
 };
 
 const transactionService = {

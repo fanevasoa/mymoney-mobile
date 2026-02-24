@@ -183,7 +183,7 @@ export default function DashboardScreen({
           <TouchableOpacity
             style={styles.quickAction}
             onPress={() =>
-              (navigation.navigate as Function)("Add", {
+              navigation.navigate("Add", {
                 screen: "AddTransaction",
                 params: { type: "earning" },
               })
@@ -207,7 +207,7 @@ export default function DashboardScreen({
           <TouchableOpacity
             style={styles.quickAction}
             onPress={() =>
-              (navigation.navigate as Function)("Add", {
+              navigation.navigate("Add", {
                 screen: "AddTransaction",
                 params: { type: "expense" },
               })
@@ -231,7 +231,7 @@ export default function DashboardScreen({
           <TouchableOpacity
             style={styles.quickAction}
             onPress={() =>
-              (navigation.navigate as Function)("Add", { screen: "Transfer" })
+              navigation.navigate("Add", { screen: "Transfer" })
             }
           >
             <View
@@ -288,7 +288,7 @@ export default function DashboardScreen({
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Accounts</Text>
             <TouchableOpacity
-              onPress={() => (navigation.navigate as Function)("Accounts")}
+              onPress={() => navigation.navigate("Accounts", { screen: "AccountsMain" })}
             >
               <Text style={styles.seeAllText}>See All</Text>
             </TouchableOpacity>
