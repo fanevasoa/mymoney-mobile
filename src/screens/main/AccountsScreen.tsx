@@ -4,7 +4,7 @@
  * Displays all user accounts with filtering by account type.
  */
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import {
   View,
   StyleSheet,
@@ -37,7 +37,6 @@ export default function AccountsScreen({
     isLoadingAccounts,
   } = useApp();
 
-  const [filteredAccounts, setFilteredAccounts] = useState<Account[]>([]);
   const [selectedTypeId, setSelectedTypeId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
@@ -49,8 +48,8 @@ export default function AccountsScreen({
     }, [fetchAccountTypes, fetchAccounts])
   );
 
-  useEffect(() => {
-    let filtered = [...accounts];
+  const filteredAccounts = useMemo(() => {
+    let filtered = accounts;
 
     if (selectedTypeId) {
       filtered = filtered.filter((acc) => acc.accountTypeId === selectedTypeId);
@@ -63,7 +62,7 @@ export default function AccountsScreen({
       );
     }
 
-    setFilteredAccounts(filtered);
+    return filtered;
   }, [accounts, selectedTypeId, searchQuery]);
 
   const onRefresh = async (): Promise<void> => {

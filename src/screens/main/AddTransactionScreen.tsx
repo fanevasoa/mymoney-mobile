@@ -118,6 +118,7 @@ export default function AddTransactionScreen({
   };
 
   const handleSubmit = async (): Promise<void> => {
+    if (isLoading) return; // Prevent double-tap race condition
     setError("");
 
     if (!validateForm()) return;

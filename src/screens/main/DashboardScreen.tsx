@@ -73,10 +73,7 @@ export default function DashboardScreen({
     }
   }, [fetchAccountTypes, fetchAccounts, fetchDashboard]);
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
-
+  // Only use useFocusEffect to avoid double-loading on mount
   useFocusEffect(
     useCallback(() => {
       loadData();

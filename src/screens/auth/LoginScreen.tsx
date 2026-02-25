@@ -44,7 +44,7 @@ export default function LoginScreen({ navigation }: Props): React.JSX.Element {
       setError("Email is required");
       return false;
     }
-    if (!email.includes("@")) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
       setError("Please enter a valid email");
       return false;
     }

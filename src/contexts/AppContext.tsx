@@ -12,6 +12,8 @@ import React, {
   useContext,
   useState,
   useCallback,
+  useEffect,
+  useRef,
   useMemo,
   type ReactNode,
 } from "react";
@@ -54,6 +56,21 @@ export function AppProvider({ children }: AppProviderProps): React.JSX.Element {
   const [refreshKey, setRefreshKey] = useState<number>(0);
 
   const { isAuthenticated } = useAuth();
+  const prevIsAuthenticated = useRef(isAuthenticated);
+
+  // Fetch data when authentication state changes to true, clear on logout
+  useEffect(() => {
+    if (isAuthenticated && !prevIsAuthenticated.current) {
+      // Just became authenticated — load data
+      Promise.all([fetchAccountTypes(), fetchAccounts(), fetchDashboard()]).catch(
+        (err) => console.error("Error loading initial data:", err)
+      );
+    } else if (!isAuthenticated && prevIsAuthenticated.current) {
+      // Just logged out — clear data
+      clearData();
+    }
+    prevIsAuthenticated.current = isAuthenticated;
+  }, [isAuthenticated]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /**
    * Fetch all account types
