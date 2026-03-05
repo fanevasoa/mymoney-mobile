@@ -40,16 +40,5 @@
         "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "your-android-client-id.apps.googleusercontent.com"
       }
     }
-  },
-  "submit": {
-    "production": {
-      "ios": {
-        "appleId": "",
-        "ascAppId": ""
-      },
-      "android": {
-        "serviceAccountKeyPath": ""
-      }
-    }
   }
 }

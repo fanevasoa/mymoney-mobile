@@ -12,7 +12,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#6366F1"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.mymoney.app"
@@ -27,6 +29,14 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": ["expo-secure-store", "expo-web-browser"]
+    "plugins": [
+      "expo-secure-store",
+      "expo-web-browser"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "fa67d8a9-55ce-41a4-9323-daaac0766598"
+      }
+    }
   }
 }
