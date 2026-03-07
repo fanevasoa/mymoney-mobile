@@ -18,6 +18,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 import { useApp } from "../../contexts/AppContext";
+import { useTheme } from "../../contexts/ThemeContext";
 import { colors, spacing, borderRadius } from "../../theme";
 import { formatCurrency } from "../../utils/helpers";
 import type { AccountsStackParamList, Account, AccountType } from "../../types";
@@ -36,6 +37,7 @@ export default function AccountsScreen({
     fetchAccountTypes,
     isLoadingAccounts,
   } = useApp();
+  const { colors: themeColors } = useTheme();
 
   const [selectedTypeId, setSelectedTypeId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -45,7 +47,7 @@ export default function AccountsScreen({
     useCallback(() => {
       fetchAccountTypes();
       fetchAccounts();
-    }, [fetchAccountTypes, fetchAccounts])
+    }, [fetchAccountTypes, fetchAccounts]),
   );
 
   const filteredAccounts = useMemo(() => {
@@ -58,7 +60,7 @@ export default function AccountsScreen({
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter((acc) =>
-        acc.name.toLowerCase().includes(query)
+        acc.name.toLowerCase().includes(query),
       );
     }
 
@@ -86,7 +88,7 @@ export default function AccountsScreen({
 
   const totalBalance = filteredAccounts.reduce(
     (sum, acc) => sum + parseFloat(String(acc.balance)),
-    0
+    0,
   );
 
   const renderAccount = ({ item }: { item: Account }): React.JSX.Element => (
@@ -114,14 +116,28 @@ export default function AccountsScreen({
               />
             </View>
             <View style={styles.accountInfo}>
-              <Text style={styles.accountName}>{item.name}</Text>
-              <Text style={styles.accountTypeName}>
+              <Text
+                style={[styles.accountName, { color: themeColors.textPrimary }]}
+              >
+                {item.name}
+              </Text>
+              <Text
+                style={[
+                  styles.accountTypeName,
+                  { color: themeColors.textSecondary },
+                ]}
+              >
                 {item.accountType?.name}
               </Text>
             </View>
           </View>
           <View style={styles.accountRight}>
-            <Text style={styles.accountBalance}>
+            <Text
+              style={[
+                styles.accountBalance,
+                { color: themeColors.textPrimary },
+              ]}
+            >
               {formatCurrency(item.balance)}
             </Text>
             {!item.isActive && (
@@ -140,8 +156,10 @@ export default function AccountsScreen({
         size={64}
         color={colors.textSecondary}
       />
-      <Text style={styles.emptyTitle}>No accounts found</Text>
-      <Text style={styles.emptyText}>
+      <Text style={[styles.emptyTitle, { color: themeColors.textPrimary }]}>
+        No accounts found
+      </Text>
+      <Text style={[styles.emptyText, { color: themeColors.textSecondary }]}>
         {selectedTypeId || searchQuery
           ? "Try adjusting your filters"
           : "Tap the + button to add your first account"}
@@ -199,7 +217,9 @@ export default function AccountsScreen({
   );
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[styles.container, { backgroundColor: themeColors.background }]}
+    >
       <FlatList
         data={filteredAccounts}
         keyExtractor={(item) => item.id}

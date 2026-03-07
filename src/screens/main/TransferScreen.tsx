@@ -20,6 +20,7 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 import { transferService } from "../../api";
 import { useApp } from "../../contexts/AppContext";
+import { useTheme } from "../../contexts/ThemeContext";
 import { colors, spacing, borderRadius } from "../../theme";
 import { formatCurrency } from "../../utils/helpers";
 import type { AddStackParamList, Account } from "../../types";
@@ -32,6 +33,7 @@ export default function TransferScreen({
   navigation,
 }: Props): React.JSX.Element {
   const { accounts, fetchAccounts, refreshData } = useApp();
+  const { colors: themeColors } = useTheme();
 
   const [fromAccountId, setFromAccountId] = useState<string | null>(null);
   const [toAccountId, setToAccountId] = useState<string | null>(null);
@@ -94,8 +96,8 @@ export default function TransferScreen({
     ) {
       setError(
         `Insufficient balance. Available: ${formatCurrency(
-          fromAccount.balance
-        )}`
+          fromAccount.balance,
+        )}`,
       );
       return false;
     }
@@ -153,10 +155,12 @@ export default function TransferScreen({
     title: string,
     selectedId: string | null,
     onSelect: (id: string) => void,
-    excludeId: string | null
+    excludeId: string | null,
   ): React.JSX.Element => (
     <View style={styles.accountSection}>
-      <Text style={styles.sectionTitle}>{title}</Text>
+      <Text style={[styles.sectionTitle, { color: themeColors.textSecondary }]}>
+        {title}
+      </Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         {accounts
           .filter((acc) => acc.id !== excludeId)
@@ -187,10 +191,21 @@ export default function TransferScreen({
                       color={account.accountType?.color || colors.primary}
                     />
                   </View>
-                  <Text style={styles.accountName} numberOfLines={1}>
+                  <Text
+                    style={[
+                      styles.accountName,
+                      { color: themeColors.textPrimary },
+                    ]}
+                    numberOfLines={1}
+                  >
                     {account.name}
                   </Text>
-                  <Text style={styles.accountBalance}>
+                  <Text
+                    style={[
+                      styles.accountBalance,
+                      { color: themeColors.textSecondary },
+                    ]}
+                  >
                     {formatCurrency(account.balance)}
                   </Text>
                 </Card.Content>
@@ -229,7 +244,7 @@ export default function TransferScreen({
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: themeColors.background }]}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView
@@ -251,7 +266,7 @@ export default function TransferScreen({
           "From Account",
           fromAccountId,
           setFromAccountId,
-          toAccountId
+          toAccountId,
         )}
 
         <View style={styles.swapContainer}>
@@ -271,12 +286,16 @@ export default function TransferScreen({
           "To Account",
           toAccountId,
           setToAccountId,
-          fromAccountId
+          fromAccountId,
         )}
 
         <Divider style={styles.divider} />
 
-        <Text style={styles.sectionTitle}>Transfer Amount</Text>
+        <Text
+          style={[styles.sectionTitle, { color: themeColors.textSecondary }]}
+        >
+          Transfer Amount
+        </Text>
         <TextInput
           mode="outlined"
           placeholder="0.00"
@@ -284,12 +303,17 @@ export default function TransferScreen({
           onChangeText={setAmount}
           keyboardType="decimal-pad"
           left={<TextInput.Affix text="$" />}
-          style={styles.input}
-          outlineColor={colors.border}
-          activeOutlineColor={colors.primary}
+          style={[styles.input, { backgroundColor: themeColors.surface }]}
+          outlineColor={themeColors.border}
+          activeOutlineColor={themeColors.primary}
+          textColor={themeColors.textPrimary}
         />
 
-        <Text style={styles.sectionTitle}>Transfer Fee (optional)</Text>
+        <Text
+          style={[styles.sectionTitle, { color: themeColors.textSecondary }]}
+        >
+          Transfer Fee (optional)
+        </Text>
         <TextInput
           mode="outlined"
           placeholder="0.00"
@@ -297,12 +321,17 @@ export default function TransferScreen({
           onChangeText={setFee}
           keyboardType="decimal-pad"
           left={<TextInput.Affix text="$" />}
-          style={styles.input}
-          outlineColor={colors.border}
-          activeOutlineColor={colors.primary}
+          style={[styles.input, { backgroundColor: themeColors.surface }]}
+          outlineColor={themeColors.border}
+          activeOutlineColor={themeColors.primary}
+          textColor={themeColors.textPrimary}
         />
 
-        <Text style={styles.sectionTitle}>Description (optional)</Text>
+        <Text
+          style={[styles.sectionTitle, { color: themeColors.textSecondary }]}
+        >
+          Description (optional)
+        </Text>
         <TextInput
           mode="outlined"
           placeholder="Add a note..."
@@ -310,9 +339,10 @@ export default function TransferScreen({
           onChangeText={setDescription}
           multiline
           numberOfLines={2}
-          style={styles.input}
-          outlineColor={colors.border}
-          activeOutlineColor={colors.primary}
+          style={[styles.input, { backgroundColor: themeColors.surface }]}
+          outlineColor={themeColors.border}
+          activeOutlineColor={themeColors.primary}
+          textColor={themeColors.textPrimary}
         />
 
         <Card style={styles.summaryCard}>

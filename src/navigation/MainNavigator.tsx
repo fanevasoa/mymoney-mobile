@@ -8,7 +8,8 @@ import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
-import { colors } from "../theme";
+import { colors as lightColors } from "../theme";
+import { useTheme } from "../contexts/ThemeContext";
 import CustomTabBar from "./CustomTabBar";
 
 // Screens
@@ -41,17 +42,21 @@ const ProfileStack = createNativeStackNavigator<ProfileStackParamList>();
 // Tab Navigator
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
-const screenOptions = {
-  headerStyle: {
-    backgroundColor: colors.primary,
-  },
-  headerTintColor: colors.textInverse,
-  headerTitleStyle: {
-    fontWeight: "600" as const,
-  },
-};
+function useScreenOptions() {
+  const { colors } = useTheme();
+  return {
+    headerStyle: {
+      backgroundColor: colors.primary,
+    },
+    headerTintColor: lightColors.textInverse,
+    headerTitleStyle: {
+      fontWeight: "600" as const,
+    },
+  };
+}
 
 function DashboardStackNavigator(): React.JSX.Element {
+  const screenOptions = useScreenOptions();
   return (
     <DashboardStack.Navigator screenOptions={screenOptions}>
       <DashboardStack.Screen
@@ -74,6 +79,7 @@ function DashboardStackNavigator(): React.JSX.Element {
 }
 
 function AccountsStackNavigator(): React.JSX.Element {
+  const screenOptions = useScreenOptions();
   return (
     <AccountsStack.Navigator screenOptions={screenOptions}>
       <AccountsStack.Screen
@@ -96,6 +102,7 @@ function AccountsStackNavigator(): React.JSX.Element {
 }
 
 function AddStackNavigator(): React.JSX.Element {
+  const screenOptions = useScreenOptions();
   return (
     <AddStack.Navigator screenOptions={screenOptions}>
       <AddStack.Screen
@@ -113,6 +120,7 @@ function AddStackNavigator(): React.JSX.Element {
 }
 
 function ReportsStackNavigator(): React.JSX.Element {
+  const screenOptions = useScreenOptions();
   return (
     <ReportsStack.Navigator screenOptions={screenOptions}>
       <ReportsStack.Screen
@@ -125,6 +133,7 @@ function ReportsStackNavigator(): React.JSX.Element {
 }
 
 function ProfileStackNavigator(): React.JSX.Element {
+  const screenOptions = useScreenOptions();
   return (
     <ProfileStack.Navigator screenOptions={screenOptions}>
       <ProfileStack.Screen

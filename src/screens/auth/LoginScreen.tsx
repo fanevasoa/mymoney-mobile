@@ -20,6 +20,7 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 import { useAuth } from "../../contexts/AuthContext";
 import { useGoogleAuth } from "../../hooks";
+import { useTheme } from "../../contexts/ThemeContext";
 import { colors, spacing, borderRadius } from "../../theme";
 import type { AuthStackParamList } from "../../types";
 
@@ -34,7 +35,12 @@ export default function LoginScreen({ navigation }: Props): React.JSX.Element {
   const [error, setError] = useState<string>("");
 
   const { login } = useAuth();
-  const { promptGoogleSignIn, isLoading: isGoogleLoading, isReady: isGoogleReady } = useGoogleAuth();
+  const {
+    promptGoogleSignIn,
+    isLoading: isGoogleLoading,
+    isReady: isGoogleReady,
+  } = useGoogleAuth();
+  const { colors: themeColors } = useTheme();
 
   /**
    * Validates the login form inputs
@@ -77,7 +83,7 @@ export default function LoginScreen({ navigation }: Props): React.JSX.Element {
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: themeColors.background }]}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView
@@ -91,12 +97,16 @@ export default function LoginScreen({ navigation }: Props): React.JSX.Element {
             style={styles.logo}
           />
           <Text style={styles.title}>Money</Text>
-          <Text style={styles.subtitle}>Manage your finances with ease</Text>
+          <Text style={[styles.subtitle, { color: themeColors.textSecondary }]}>
+            Manage your finances with ease
+          </Text>
         </View>
 
         {/* Form */}
-        <View style={styles.form}>
-          <Text style={styles.formTitle}>Welcome Back</Text>
+        <View style={[styles.form, { backgroundColor: themeColors.surface }]}>
+          <Text style={[styles.formTitle, { color: themeColors.textPrimary }]}>
+            Welcome Back
+          </Text>
 
           {/* Error message */}
           {error ? (
@@ -120,9 +130,10 @@ export default function LoginScreen({ navigation }: Props): React.JSX.Element {
             autoCapitalize="none"
             autoCorrect={false}
             left={<TextInput.Icon icon="email" />}
-            style={styles.input}
-            outlineColor={colors.border}
-            activeOutlineColor={colors.primary}
+            style={[styles.input, { backgroundColor: themeColors.surface }]}
+            outlineColor={themeColors.border}
+            activeOutlineColor={themeColors.primary}
+            textColor={themeColors.textPrimary}
           />
 
           {/* Password input */}
@@ -139,9 +150,10 @@ export default function LoginScreen({ navigation }: Props): React.JSX.Element {
                 onPress={() => setShowPassword(!showPassword)}
               />
             }
-            style={styles.input}
-            outlineColor={colors.border}
-            activeOutlineColor={colors.primary}
+            style={[styles.input, { backgroundColor: themeColors.surface }]}
+            outlineColor={themeColors.border}
+            activeOutlineColor={themeColors.primary}
+            textColor={themeColors.textPrimary}
           />
 
           {/* Login button */}
@@ -178,7 +190,11 @@ export default function LoginScreen({ navigation }: Props): React.JSX.Element {
 
           {/* Register link */}
           <View style={styles.footer}>
-            <Text style={styles.footerText}>Don't have an account?</Text>
+            <Text
+              style={[styles.footerText, { color: themeColors.textSecondary }]}
+            >
+              Don't have an account?
+            </Text>
             <TouchableOpacity onPress={() => navigation.navigate("Register")}>
               <Text style={styles.linkText}> Sign Up</Text>
             </TouchableOpacity>

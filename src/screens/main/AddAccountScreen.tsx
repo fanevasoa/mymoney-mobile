@@ -19,6 +19,7 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 import { accountService } from "../../api";
 import { useApp } from "../../contexts/AppContext";
+import { useTheme } from "../../contexts/ThemeContext";
 import { colors, spacing, borderRadius } from "../../theme";
 import type { AccountsStackParamList, AccountType } from "../../types";
 
@@ -30,6 +31,7 @@ export default function AddAccountScreen({
   navigation,
 }: Props): React.JSX.Element {
   const { accountTypes, fetchAccountTypes, addAccount } = useApp();
+  const { colors: themeColors } = useTheme();
 
   const [name, setName] = useState<string>("");
   const [selectedTypeId, setSelectedTypeId] = useState<string | null>(null);
@@ -119,7 +121,7 @@ export default function AddAccountScreen({
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: themeColors.background }]}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView
@@ -137,7 +139,9 @@ export default function AddAccountScreen({
           </View>
         ) : null}
 
-        <Text style={styles.sectionTitle}>Account Type</Text>
+        <Text style={[styles.sectionTitle, { color: themeColors.textPrimary }]}>
+          Account Type
+        </Text>
         <View style={styles.typeGrid}>
           {accountTypes.map((type) => (
             <Card
@@ -184,16 +188,19 @@ export default function AddAccountScreen({
           ))}
         </View>
 
-        <Text style={styles.sectionTitle}>Account Details</Text>
+        <Text style={[styles.sectionTitle, { color: themeColors.textPrimary }]}>
+          Account Details
+        </Text>
         <TextInput
           mode="outlined"
           label="Account Name"
           placeholder="e.g., Main Savings Account"
           value={name}
           onChangeText={setName}
-          style={styles.input}
-          outlineColor={colors.border}
-          activeOutlineColor={colors.primary}
+          style={[styles.input, { backgroundColor: themeColors.surface }]}
+          outlineColor={themeColors.border}
+          activeOutlineColor={themeColors.primary}
+          textColor={themeColors.textPrimary}
         />
 
         <TextInput
@@ -204,9 +211,10 @@ export default function AddAccountScreen({
           onChangeText={setBalance}
           keyboardType="decimal-pad"
           left={<TextInput.Affix text="$" />}
-          style={styles.input}
-          outlineColor={colors.border}
-          activeOutlineColor={colors.primary}
+          style={[styles.input, { backgroundColor: themeColors.surface }]}
+          outlineColor={themeColors.border}
+          activeOutlineColor={themeColors.primary}
+          textColor={themeColors.textPrimary}
         />
 
         <TextInput
@@ -217,9 +225,10 @@ export default function AddAccountScreen({
           onChangeText={setDescription}
           multiline
           numberOfLines={3}
-          style={styles.input}
-          outlineColor={colors.border}
-          activeOutlineColor={colors.primary}
+          style={[styles.input, { backgroundColor: themeColors.surface }]}
+          outlineColor={themeColors.border}
+          activeOutlineColor={themeColors.primary}
+          textColor={themeColors.textPrimary}
         />
 
         <Button

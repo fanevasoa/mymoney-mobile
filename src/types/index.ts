@@ -381,7 +381,7 @@ export interface AuthContextValue {
   register: (
     name: string,
     email: string,
-    password: string
+    password: string,
   ) => Promise<AuthResponse>;
   logout: () => Promise<void>;
   updateUser: (userData: Partial<User>) => void;
@@ -403,6 +403,15 @@ export interface AppContextValue {
   updateAccount: (account: Account) => void;
   removeAccount: (accountId: string) => void;
   clearData: () => void;
+}
+
+export type ThemeMode = "system" | "light" | "dark";
+
+export interface ThemeContextValue {
+  themeMode: ThemeMode;
+  isDark: boolean;
+  setThemeMode: (mode: ThemeMode) => void;
+  colors: import("../theme").Colors;
 }
 
 // ============================================================================

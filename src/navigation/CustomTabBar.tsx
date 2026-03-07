@@ -17,7 +17,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 
-import { colors, spacing, borderRadius } from "../theme";
+import { colors as lightColors, spacing, borderRadius } from "../theme";
+import { useTheme } from "../contexts/ThemeContext";
 
 type IconName = keyof typeof MaterialCommunityIcons.glyphMap;
 
@@ -52,6 +53,7 @@ export default function CustomTabBar({
   navigation,
 }: BottomTabBarProps): React.JSX.Element {
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
   const bottomPadding = Math.max(insets.bottom, spacing.sm);
 
   return (
@@ -60,6 +62,7 @@ export default function CustomTabBar({
         styles.container,
         {
           paddingBottom: bottomPadding,
+          backgroundColor: colors.surface,
         },
       ]}
     >
@@ -103,7 +106,7 @@ export default function CustomTabBar({
                   <MaterialCommunityIcons
                     name="plus"
                     size={28}
-                    color={colors.textInverse}
+                    color={lightColors.textInverse}
                   />
                 </TouchableOpacity>
               </View>
@@ -133,11 +136,13 @@ export default function CustomTabBar({
                 <MaterialCommunityIcons
                   name={iconName}
                   size={24}
-                  color={isFocused ? colors.primary : colors.textSecondary}
+                  color={isFocused ? lightColors.primary : colors.textSecondary}
                 />
               </View>
               {label ? (
-                <LabelText focused={isFocused}>{label}</LabelText>
+                <LabelText focused={isFocused} colors={colors}>
+                  {label}
+                </LabelText>
               ) : null}
             </TouchableOpacity>
           );
@@ -150,15 +155,17 @@ export default function CustomTabBar({
 function LabelText({
   children,
   focused,
+  colors,
 }: {
   children: string;
   focused: boolean;
+  colors: { primary: string; textSecondary: string };
 }): React.JSX.Element {
   return (
     <Text
       style={[
         styles.label,
-        focused ? styles.labelActive : styles.labelInactive,
+        { color: focused ? lightColors.primary : colors.textSecondary },
       ]}
       numberOfLines={1}
     >
@@ -169,9 +176,6 @@ function LabelText({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.surface,
-    borderTopLeftRadius: borderRadius.xl,
-    borderTopRightRadius: borderRadius.xl,
     ...Platform.select({
       android: {
         elevation: 12,
@@ -204,7 +208,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   iconContainerActive: {
-    backgroundColor: colors.primaryLight + "20",
+    backgroundColor: lightColors.primaryLight + "20",
   },
   centerButtonWrapper: {
     flex: 1,
@@ -215,7 +219,7 @@ const styles = StyleSheet.create({
     width: CENTER_BUTTON_SIZE,
     height: CENTER_BUTTON_SIZE,
     borderRadius: CENTER_BUTTON_SIZE / 2,
-    backgroundColor: colors.primary,
+    backgroundColor: lightColors.primary,
     alignItems: "center",
     justifyContent: "center",
     marginTop: -20,
@@ -224,7 +228,7 @@ const styles = StyleSheet.create({
         elevation: 6,
       },
       ios: {
-        shadowColor: colors.primary,
+        shadowColor: lightColors.primary,
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.35,
         shadowRadius: 8,
@@ -235,12 +239,5 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: "500",
     textAlign: "center",
-  },
-  labelActive: {
-    color: colors.primary,
-    fontWeight: "600",
-  },
-  labelInactive: {
-    color: colors.textSecondary,
   },
 });

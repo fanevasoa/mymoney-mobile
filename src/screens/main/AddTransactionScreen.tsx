@@ -4,7 +4,7 @@
  * Form to create a new transaction (earning or expense).
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   View,
   StyleSheet,
@@ -23,9 +23,11 @@ import {
 } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { useFocusEffect } from "@react-navigation/native";
 
 import { transactionService } from "../../api";
 import { useApp } from "../../contexts/AppContext";
+import { useTheme } from "../../contexts/ThemeContext";
 import { colors, spacing, borderRadius } from "../../theme";
 import { formatCurrency } from "../../utils/helpers";
 import type { AddStackParamList, TransactionType, Account } from "../../types";
@@ -59,21 +61,32 @@ export default function AddTransactionScreen({
   navigation,
 }: Props): React.JSX.Element {
   const { accounts, fetchAccounts, refreshData } = useApp();
+  const { colors: themeColors } = useTheme();
 
   const initialType = route.params?.type || "expense";
   const preselectedAccountId = route.params?.accountId;
 
   const [type, setType] = useState<TransactionType>(
-    initialType as TransactionType
+    initialType as TransactionType,
   );
   const [amount, setAmount] = useState<string>("");
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
-    preselectedAccountId || null
+    preselectedAccountId || null,
   );
   const [description, setDescription] = useState<string>("");
   const [category, setCategory] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
+  const amountInputRef = useRef<any>(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      const timer = setTimeout(() => {
+        amountInputRef.current?.focus();
+      }, 400);
+      return () => clearTimeout(timer);
+    }, []),
+  );
 
   useEffect(() => {
     fetchAccounts();
@@ -108,8 +121,8 @@ export default function AddTransactionScreen({
       if (parseFloat(amount) > parseFloat(String(selectedAccount.balance))) {
         setError(
           `Insufficient balance. Available: ${formatCurrency(
-            selectedAccount.balance
-          )}`
+            selectedAccount.balance,
+          )}`,
         );
         return false;
       }
@@ -134,16 +147,15 @@ export default function AddTransactionScreen({
         category: category || null,
       };
 
-      const response = await transactionService.createTransaction(
-        transactionData
-      );
+      const response =
+        await transactionService.createTransaction(transactionData);
 
       if (response.success) {
         await refreshData();
         Alert.alert(
           "Success",
           `${type === "earning" ? "Income" : "Expense"} added successfully`,
-          [{ text: "OK", onPress: () => navigation.goBack() }]
+          [{ text: "OK", onPress: () => navigation.goBack() }],
         );
       }
     } catch (err) {
@@ -170,7 +182,7 @@ export default function AddTransactionScreen({
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: themeColors.background }]}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView
@@ -208,44 +220,9 @@ export default function AddTransactionScreen({
           style={styles.segmentedButtons}
         />
 
-        <Card
-          style={[
-            styles.amountCard,
-            {
-              borderColor: type === "earning" ? colors.earning : colors.expense,
-            },
-          ]}
-        >
-          <Card.Content style={styles.amountContent}>
-            <Text style={styles.amountLabel}>
-              {type === "earning" ? "Income Amount" : "Expense Amount"}
-            </Text>
-            <View style={styles.amountInputContainer}>
-              <Text
-                style={[
-                  styles.currencySymbol,
-                  {
-                    color: type === "earning" ? colors.earning : colors.expense,
-                  },
-                ]}
-              >
-                Ar
-              </Text>
-              <TextInput
-                mode="flat"
-                placeholder="0.00"
-                value={amount}
-                onChangeText={setAmount}
-                keyboardType="decimal-pad"
-                style={styles.amountInput}
-                underlineColor="transparent"
-                activeUnderlineColor="transparent"
-              />
-            </View>
-          </Card.Content>
-        </Card>
-
-        <Text style={styles.sectionTitle}>Select Account</Text>
+        <Text style={[styles.sectionTitle, { color: themeColors.textPrimary }]}>
+          Select Account
+        </Text>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -279,10 +256,21 @@ export default function AddTransactionScreen({
                       color={account.accountType?.color || colors.primary}
                     />
                   </View>
-                  <Text style={styles.accountName} numberOfLines={1}>
+                  <Text
+                    style={[
+                      styles.accountName,
+                      { color: themeColors.textPrimary },
+                    ]}
+                    numberOfLines={1}
+                  >
                     {account.name}
                   </Text>
-                  <Text style={styles.accountBalance}>
+                  <Text
+                    style={[
+                      styles.accountBalance,
+                      { color: themeColors.textSecondary },
+                    ]}
+                  >
                     {formatCurrency(account.balance)}
                   </Text>
                 </Card.Content>
@@ -291,7 +279,53 @@ export default function AddTransactionScreen({
           ))}
         </ScrollView>
 
-        <Text style={styles.sectionTitle}>Category (optional)</Text>
+        <View
+          style={[
+            styles.amountCard,
+            {
+              backgroundColor: themeColors.surface,
+              borderColor: type === "earning" ? colors.earning : colors.expense,
+            },
+          ]}
+        >
+          <Text
+            style={[
+              styles.amountLabel,
+              { color: type === "earning" ? colors.earning : colors.expense },
+            ]}
+          >
+            {type === "earning" ? "INCOME AMOUNT" : "EXPENSE AMOUNT"}
+          </Text>
+          <View style={styles.amountInputContainer}>
+            <Text
+              style={[
+                styles.currencySymbol,
+                {
+                  color: type === "earning" ? colors.earning : colors.expense,
+                },
+              ]}
+            >
+              Ar
+            </Text>
+            <TextInput
+              ref={amountInputRef}
+              mode="flat"
+              placeholder="0.00"
+              placeholderTextColor={themeColors.textDisabled}
+              value={amount}
+              onChangeText={setAmount}
+              keyboardType="decimal-pad"
+              style={[styles.amountInput, { color: themeColors.textPrimary }]}
+              underlineColor="transparent"
+              activeUnderlineColor="transparent"
+              textColor={themeColors.textPrimary}
+            />
+          </View>
+        </View>
+
+        <Text style={[styles.sectionTitle, { color: themeColors.textPrimary }]}>
+          Category (optional)
+        </Text>
         <View style={styles.categoriesGrid}>
           {categories.map((cat) => (
             <TouchableOpacity
@@ -319,7 +353,9 @@ export default function AddTransactionScreen({
           ))}
         </View>
 
-        <Text style={styles.sectionTitle}>Description (optional)</Text>
+        <Text style={[styles.sectionTitle, { color: themeColors.textPrimary }]}>
+          Description (optional)
+        </Text>
         <TextInput
           mode="outlined"
           placeholder="Add a note..."
@@ -327,9 +363,14 @@ export default function AddTransactionScreen({
           onChangeText={setDescription}
           multiline
           numberOfLines={3}
-          style={styles.descriptionInput}
-          outlineColor={colors.border}
-          activeOutlineColor={colors.primary}
+          style={[
+            styles.descriptionInput,
+            { backgroundColor: themeColors.surface },
+          ]}
+          outlineColor={themeColors.border}
+          activeOutlineColor={themeColors.primary}
+          placeholderTextColor={themeColors.textDisabled}
+          textColor={themeColors.textPrimary}
         />
 
         <Button
@@ -395,28 +436,28 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
     borderRadius: borderRadius.lg,
     borderWidth: 2,
-  },
-  amountContent: {
     alignItems: "center",
     paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.md,
   },
   amountLabel: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    marginBottom: spacing.sm,
+    fontSize: 12,
+    fontWeight: "700",
+    letterSpacing: 1.5,
+    marginBottom: spacing.md,
   },
   amountInputContainer: {
     flexDirection: "row",
     alignItems: "center",
   },
   currencySymbol: {
-    fontSize: 36,
-    fontWeight: "bold",
-    marginRight: spacing.xs,
+    fontSize: 32,
+    fontWeight: "800",
+    marginRight: spacing.sm,
   },
   amountInput: {
     backgroundColor: "transparent",
-    fontSize: 48,
+    fontSize: 44,
     fontWeight: "bold",
     textAlign: "center",
     minWidth: 150,

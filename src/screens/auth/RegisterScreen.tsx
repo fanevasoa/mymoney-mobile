@@ -19,6 +19,7 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 import { useAuth } from "../../contexts/AuthContext";
 import { useGoogleAuth } from "../../hooks";
+import { useTheme } from "../../contexts/ThemeContext";
 import { colors, spacing, borderRadius } from "../../theme";
 import type { AuthStackParamList } from "../../types";
 
@@ -37,7 +38,12 @@ export default function RegisterScreen({
   const [error, setError] = useState<string>("");
 
   const { register } = useAuth();
-  const { promptGoogleSignIn, isLoading: isGoogleLoading, isReady: isGoogleReady } = useGoogleAuth();
+  const {
+    promptGoogleSignIn,
+    isLoading: isGoogleLoading,
+    isReady: isGoogleReady,
+  } = useGoogleAuth();
+  const { colors: themeColors } = useTheme();
 
   /**
    * Validate form inputs
@@ -98,7 +104,7 @@ export default function RegisterScreen({
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: themeColors.background }]}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView
@@ -112,14 +118,16 @@ export default function RegisterScreen({
             size={48}
             color={colors.primary}
           />
-          <Text style={styles.title}>Create Account</Text>
-          <Text style={styles.subtitle}>
+          <Text style={[styles.title, { color: themeColors.textPrimary }]}>
+            Create Account
+          </Text>
+          <Text style={[styles.subtitle, { color: themeColors.textSecondary }]}>
             Start managing your finances today
           </Text>
         </View>
 
         {/* Form */}
-        <View style={styles.form}>
+        <View style={[styles.form, { backgroundColor: themeColors.surface }]}>
           {/* Error message */}
           {error ? (
             <View style={styles.errorContainer}>
@@ -140,9 +148,10 @@ export default function RegisterScreen({
             onChangeText={setName}
             autoCapitalize="words"
             left={<TextInput.Icon icon="account" />}
-            style={styles.input}
-            outlineColor={colors.border}
-            activeOutlineColor={colors.primary}
+            style={[styles.input, { backgroundColor: themeColors.surface }]}
+            outlineColor={themeColors.border}
+            activeOutlineColor={themeColors.primary}
+            textColor={themeColors.textPrimary}
           />
 
           {/* Email input */}
@@ -155,9 +164,10 @@ export default function RegisterScreen({
             autoCapitalize="none"
             autoCorrect={false}
             left={<TextInput.Icon icon="email" />}
-            style={styles.input}
-            outlineColor={colors.border}
-            activeOutlineColor={colors.primary}
+            style={[styles.input, { backgroundColor: themeColors.surface }]}
+            outlineColor={themeColors.border}
+            activeOutlineColor={themeColors.primary}
+            textColor={themeColors.textPrimary}
           />
 
           {/* Password input */}
@@ -174,9 +184,10 @@ export default function RegisterScreen({
                 onPress={() => setShowPassword(!showPassword)}
               />
             }
-            style={styles.input}
-            outlineColor={colors.border}
-            activeOutlineColor={colors.primary}
+            style={[styles.input, { backgroundColor: themeColors.surface }]}
+            outlineColor={themeColors.border}
+            activeOutlineColor={themeColors.primary}
+            textColor={themeColors.textPrimary}
           />
 
           {/* Confirm Password input */}
@@ -187,9 +198,10 @@ export default function RegisterScreen({
             onChangeText={setConfirmPassword}
             secureTextEntry={!showPassword}
             left={<TextInput.Icon icon="lock-check" />}
-            style={styles.input}
-            outlineColor={colors.border}
-            activeOutlineColor={colors.primary}
+            style={[styles.input, { backgroundColor: themeColors.surface }]}
+            outlineColor={themeColors.border}
+            activeOutlineColor={themeColors.primary}
+            textColor={themeColors.textPrimary}
           />
 
           {/* Register button */}
@@ -226,7 +238,11 @@ export default function RegisterScreen({
 
           {/* Login link */}
           <View style={styles.footer}>
-            <Text style={styles.footerText}>Already have an account?</Text>
+            <Text
+              style={[styles.footerText, { color: themeColors.textSecondary }]}
+            >
+              Already have an account?
+            </Text>
             <TouchableOpacity onPress={() => navigation.navigate("Login")}>
               <Text style={styles.linkText}> Sign In</Text>
             </TouchableOpacity>

@@ -21,6 +21,7 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 import { useAuth } from "../../contexts/AuthContext";
 import { useApp } from "../../contexts/AppContext";
+import { useTheme } from "../../contexts/ThemeContext";
 import { dashboardService } from "../../api";
 import { colors, spacing, borderRadius } from "../../theme";
 import { formatCurrency, formatDate } from "../../utils/helpers";
@@ -47,9 +48,10 @@ export default function DashboardScreen({
   const { user } = useAuth();
   const { fetchAccountTypes, fetchAccounts, fetchDashboard, dashboardData } =
     useApp();
+  const { colors: themeColors } = useTheme();
 
   const [recentTransactions, setRecentTransactions] = useState<Transaction[]>(
-    []
+    [],
   );
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -77,7 +79,7 @@ export default function DashboardScreen({
   useFocusEffect(
     useCallback(() => {
       loadData();
-    }, [loadData])
+    }, [loadData]),
   );
 
   const onRefresh = async (): Promise<void> => {
@@ -100,7 +102,7 @@ export default function DashboardScreen({
   };
 
   const getAccountIcon = (
-    icon: string | undefined
+    icon: string | undefined,
   ): keyof typeof MaterialCommunityIcons.glyphMap => {
     switch (icon) {
       case "bank":
@@ -115,7 +117,9 @@ export default function DashboardScreen({
   };
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[styles.container, { backgroundColor: themeColors.background }]}
+    >
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         refreshControl={
@@ -124,10 +128,12 @@ export default function DashboardScreen({
       >
         {/* Welcome Header */}
         <View style={styles.welcomeHeader}>
-          <Text style={styles.welcomeText}>
+          <Text
+            style={[styles.welcomeText, { color: themeColors.textPrimary }]}
+          >
             Welcome back, {user?.name?.split(" ")[0] || "User"}!
           </Text>
-          <Text style={styles.dateText}>
+          <Text style={[styles.dateText, { color: themeColors.textSecondary }]}>
             {new Date().toLocaleDateString("en-US", {
               weekday: "long",
               month: "long",
@@ -198,7 +204,14 @@ export default function DashboardScreen({
                 color={colors.earning}
               />
             </View>
-            <Text style={styles.quickActionText}>Income</Text>
+            <Text
+              style={[
+                styles.quickActionText,
+                { color: themeColors.textSecondary },
+              ]}
+            >
+              Income
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -222,14 +235,19 @@ export default function DashboardScreen({
                 color={colors.expense}
               />
             </View>
-            <Text style={styles.quickActionText}>Expense</Text>
+            <Text
+              style={[
+                styles.quickActionText,
+                { color: themeColors.textSecondary },
+              ]}
+            >
+              Expense
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.quickAction}
-            onPress={() =>
-              navigation.navigate("Add", { screen: "Transfer" })
-            }
+            onPress={() => navigation.navigate("Add", { screen: "Transfer" })}
           >
             <View
               style={[
@@ -243,13 +261,24 @@ export default function DashboardScreen({
                 color={colors.transfer}
               />
             </View>
-            <Text style={styles.quickActionText}>Transfer</Text>
+            <Text
+              style={[
+                styles.quickActionText,
+                { color: themeColors.textSecondary },
+              ]}
+            >
+              Transfer
+            </Text>
           </TouchableOpacity>
         </View>
 
         {/* Account Types Summary */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>By Account Type</Text>
+          <Text
+            style={[styles.sectionTitle, { color: themeColors.textPrimary }]}
+          >
+            By Account Type
+          </Text>
           <View style={styles.accountTypesGrid}>
             {dashboardData?.accountTypesSummary?.map((type) => (
               <Card key={type.id} style={styles.accountTypeCard}>
@@ -266,11 +295,28 @@ export default function DashboardScreen({
                       color={type.color}
                     />
                   </View>
-                  <Text style={styles.accountTypeName}>{type.name}</Text>
-                  <Text style={styles.accountTypeBalance}>
+                  <Text
+                    style={[
+                      styles.accountTypeName,
+                      { color: themeColors.textSecondary },
+                    ]}
+                  >
+                    {type.name}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.accountTypeBalance,
+                      { color: themeColors.textPrimary },
+                    ]}
+                  >
                     {formatCurrency(type.balance)}
                   </Text>
-                  <Text style={styles.accountTypeCount}>
+                  <Text
+                    style={[
+                      styles.accountTypeCount,
+                      { color: themeColors.textSecondary },
+                    ]}
+                  >
                     {type.accountCount} account
                     {type.accountCount !== 1 ? "s" : ""}
                   </Text>
@@ -283,9 +329,15 @@ export default function DashboardScreen({
         {/* Accounts List */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Accounts</Text>
+            <Text
+              style={[styles.sectionTitle, { color: themeColors.textPrimary }]}
+            >
+              Accounts
+            </Text>
             <TouchableOpacity
-              onPress={() => navigation.navigate("Accounts", { screen: "AccountsMain" })}
+              onPress={() =>
+                navigation.navigate("Accounts", { screen: "AccountsMain" })
+              }
             >
               <Text style={styles.seeAllText}>See All</Text>
             </TouchableOpacity>
@@ -313,13 +365,30 @@ export default function DashboardScreen({
                       />
                     </View>
                     <View>
-                      <Text style={styles.accountName}>{account.name}</Text>
-                      <Text style={styles.accountType}>
+                      <Text
+                        style={[
+                          styles.accountName,
+                          { color: themeColors.textPrimary },
+                        ]}
+                      >
+                        {account.name}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.accountType,
+                          { color: themeColors.textSecondary },
+                        ]}
+                      >
                         {account.accountType?.name}
                       </Text>
                     </View>
                   </View>
-                  <Text style={styles.accountBalance}>
+                  <Text
+                    style={[
+                      styles.accountBalance,
+                      { color: themeColors.textPrimary },
+                    ]}
+                  >
                     {formatCurrency(account.balance)}
                   </Text>
                 </Card.Content>
@@ -331,7 +400,11 @@ export default function DashboardScreen({
         {/* Recent Transactions */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Recent Transactions</Text>
+            <Text
+              style={[styles.sectionTitle, { color: themeColors.textPrimary }]}
+            >
+              Recent Transactions
+            </Text>
             <TouchableOpacity
               onPress={() => navigation.navigate("Transactions", {})}
             >
@@ -341,7 +414,14 @@ export default function DashboardScreen({
           {recentTransactions.length === 0 ? (
             <Card style={styles.emptyCard}>
               <Card.Content>
-                <Text style={styles.emptyText}>No transactions yet</Text>
+                <Text
+                  style={[
+                    styles.emptyText,
+                    { color: themeColors.textSecondary },
+                  ]}
+                >
+                  No transactions yet
+                </Text>
               </Card.Content>
             </Card>
           ) : (
@@ -358,12 +438,20 @@ export default function DashboardScreen({
                       />
                       <View style={styles.transactionInfo}>
                         <Text
-                          style={styles.transactionDescription}
+                          style={[
+                            styles.transactionDescription,
+                            { color: themeColors.textPrimary },
+                          ]}
                           numberOfLines={1}
                         >
                           {transaction.description || transaction.type}
                         </Text>
-                        <Text style={styles.transactionMeta}>
+                        <Text
+                          style={[
+                            styles.transactionMeta,
+                            { color: themeColors.textSecondary },
+                          ]}
+                        >
                           {transaction.account?.name} •{" "}
                           {formatDate(transaction.createdAt)}
                         </Text>

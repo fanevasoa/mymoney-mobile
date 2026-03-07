@@ -17,6 +17,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LineChart, PieChart } from "react-native-chart-kit";
 
 import { dashboardService } from "../../api";
+import { useTheme } from "../../contexts/ThemeContext";
 import { colors, spacing, borderRadius } from "../../theme";
 import { formatCurrency } from "../../utils/helpers";
 import type {
@@ -27,23 +28,6 @@ import type {
 } from "../../types";
 
 const screenWidth = Dimensions.get("window").width;
-
-const chartConfig = {
-  backgroundColor: colors.surface,
-  backgroundGradientFrom: colors.surface,
-  backgroundGradientTo: colors.surface,
-  decimalPlaces: 0,
-  color: (opacity = 1) => `rgba(99, 102, 241, ${opacity})`,
-  labelColor: () => colors.textSecondary,
-  style: {
-    borderRadius: 16,
-  },
-  propsForDots: {
-    r: "4",
-    strokeWidth: "2",
-    stroke: colors.primary,
-  },
-};
 
 const PIE_COLORS = [
   "#6366F1",
@@ -67,16 +51,35 @@ interface PieChartData {
 }
 
 export default function ReportsScreen(): React.JSX.Element {
+  const { colors: themeColors } = useTheme();
+
+  const chartConfig = {
+    backgroundColor: themeColors.surface,
+    backgroundGradientFrom: themeColors.surface,
+    backgroundGradientTo: themeColors.surface,
+    decimalPlaces: 0,
+    color: (opacity = 1) => `rgba(99, 102, 241, ${opacity})`,
+    labelColor: () => themeColors.textSecondary,
+    style: {
+      borderRadius: 16,
+    },
+    propsForDots: {
+      r: "4",
+      strokeWidth: "2",
+      stroke: themeColors.primary,
+    },
+  };
+
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [reportType, setReportType] = useState<string>("monthly");
   const [selectedYear, setSelectedYear] = useState<number>(
-    new Date().getFullYear()
+    new Date().getFullYear(),
   );
 
   const [monthlyData, setMonthlyData] = useState<MonthlyBreakdown | null>(null);
   const [categoryData, setCategoryData] = useState<CategoryBreakdown | null>(
-    null
+    null,
   );
   const [summaryData, setSummaryData] = useState<FinancialSummary | null>(null);
 
@@ -144,7 +147,7 @@ export default function ReportsScreen(): React.JSX.Element {
       name: cat.category,
       amount: cat.total,
       color: PIE_COLORS[index % PIE_COLORS.length],
-      legendFontColor: colors.textSecondary,
+      legendFontColor: themeColors.textSecondary,
       legendFontSize: 12,
     }));
   };
@@ -154,7 +157,7 @@ export default function ReportsScreen(): React.JSX.Element {
 
   return (
     <ScrollView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: themeColors.background }]}
       contentContainerStyle={styles.content}
       refreshControl={
         <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
@@ -178,7 +181,12 @@ export default function ReportsScreen(): React.JSX.Element {
             onPress={() => setSelectedYear(year)}
             style={[
               styles.yearChip,
-              selectedYear === year && styles.yearChipSelected,
+              {
+                backgroundColor:
+                  selectedYear === year
+                    ? themeColors.primary
+                    : themeColors.surface,
+              },
             ]}
             textStyle={
               selectedYear === year ? styles.yearChipTextSelected : undefined
@@ -191,7 +199,11 @@ export default function ReportsScreen(): React.JSX.Element {
 
       <Card style={styles.summaryCard}>
         <Card.Content>
-          <Text style={styles.sectionTitle}>Financial Summary</Text>
+          <Text
+            style={[styles.sectionTitle, { color: themeColors.textPrimary }]}
+          >
+            Financial Summary
+          </Text>
           <View style={styles.summaryGrid}>
             <View style={styles.summaryItem}>
               <MaterialCommunityIcons
@@ -199,7 +211,14 @@ export default function ReportsScreen(): React.JSX.Element {
                 size={28}
                 color={colors.earning}
               />
-              <Text style={styles.summaryLabel}>Total Income</Text>
+              <Text
+                style={[
+                  styles.summaryLabel,
+                  { color: themeColors.textSecondary },
+                ]}
+              >
+                Total Income
+              </Text>
               <Text style={[styles.summaryValue, { color: colors.earning }]}>
                 {formatCurrency(summaryData?.earnings?.total)}
               </Text>
@@ -210,7 +229,14 @@ export default function ReportsScreen(): React.JSX.Element {
                 size={28}
                 color={colors.expense}
               />
-              <Text style={styles.summaryLabel}>Total Expenses</Text>
+              <Text
+                style={[
+                  styles.summaryLabel,
+                  { color: themeColors.textSecondary },
+                ]}
+              >
+                Total Expenses
+              </Text>
               <Text style={[styles.summaryValue, { color: colors.expense }]}>
                 {formatCurrency(summaryData?.totalExpenses)}
               </Text>
@@ -225,7 +251,14 @@ export default function ReportsScreen(): React.JSX.Element {
                     : colors.expense
                 }
               />
-              <Text style={styles.summaryLabel}>Net Income</Text>
+              <Text
+                style={[
+                  styles.summaryLabel,
+                  { color: themeColors.textSecondary },
+                ]}
+              >
+                Net Income
+              </Text>
               <Text
                 style={[
                   styles.summaryValue,
@@ -249,8 +282,22 @@ export default function ReportsScreen(): React.JSX.Element {
         <>
           <Card style={styles.chartCard}>
             <Card.Content>
-              <Text style={styles.sectionTitle}>Income vs Expenses</Text>
-              <Text style={styles.chartSubtitle}>{selectedYear}</Text>
+              <Text
+                style={[
+                  styles.sectionTitle,
+                  { color: themeColors.textPrimary },
+                ]}
+              >
+                Income vs Expenses
+              </Text>
+              <Text
+                style={[
+                  styles.chartSubtitle,
+                  { color: themeColors.textSecondary },
+                ]}
+              >
+                {selectedYear}
+              </Text>
               {lineChartData &&
               lineChartData.datasets[0].data.some((d) => d > 0) ? (
                 <LineChart
@@ -280,12 +327,24 @@ export default function ReportsScreen(): React.JSX.Element {
           {monthlyData?.yearTotals && (
             <Card style={styles.totalsCard}>
               <Card.Content>
-                <Text style={styles.sectionTitle}>
+                <Text
+                  style={[
+                    styles.sectionTitle,
+                    { color: themeColors.textPrimary },
+                  ]}
+                >
                   Year {selectedYear} Totals
                 </Text>
                 <View style={styles.totalsRow}>
                   <View style={styles.totalItem}>
-                    <Text style={styles.totalLabel}>Income</Text>
+                    <Text
+                      style={[
+                        styles.totalLabel,
+                        { color: themeColors.textSecondary },
+                      ]}
+                    >
+                      Income
+                    </Text>
                     <Text
                       style={[styles.totalValue, { color: colors.earning }]}
                     >
@@ -293,7 +352,14 @@ export default function ReportsScreen(): React.JSX.Element {
                     </Text>
                   </View>
                   <View style={styles.totalItem}>
-                    <Text style={styles.totalLabel}>Expenses</Text>
+                    <Text
+                      style={[
+                        styles.totalLabel,
+                        { color: themeColors.textSecondary },
+                      ]}
+                    >
+                      Expenses
+                    </Text>
                     <Text
                       style={[styles.totalValue, { color: colors.expense }]}
                     >
@@ -301,7 +367,14 @@ export default function ReportsScreen(): React.JSX.Element {
                     </Text>
                   </View>
                   <View style={styles.totalItem}>
-                    <Text style={styles.totalLabel}>Net</Text>
+                    <Text
+                      style={[
+                        styles.totalLabel,
+                        { color: themeColors.textSecondary },
+                      ]}
+                    >
+                      Net
+                    </Text>
                     <Text
                       style={[
                         styles.totalValue,
@@ -325,7 +398,14 @@ export default function ReportsScreen(): React.JSX.Element {
         <>
           <Card style={styles.chartCard}>
             <Card.Content>
-              <Text style={styles.sectionTitle}>Expenses by Category</Text>
+              <Text
+                style={[
+                  styles.sectionTitle,
+                  { color: themeColors.textPrimary },
+                ]}
+              >
+                Expenses by Category
+              </Text>
               {pieChartData.length > 0 ? (
                 <PieChart
                   data={pieChartData}
@@ -352,10 +432,23 @@ export default function ReportsScreen(): React.JSX.Element {
 
           <Card style={styles.categoryListCard}>
             <Card.Content>
-              <Text style={styles.sectionTitle}>Category Breakdown</Text>
+              <Text
+                style={[
+                  styles.sectionTitle,
+                  { color: themeColors.textPrimary },
+                ]}
+              >
+                Category Breakdown
+              </Text>
               {categoryData?.categories?.length ? (
                 categoryData.categories.map((cat, index) => (
-                  <View key={cat.category} style={styles.categoryRow}>
+                  <View
+                    key={cat.category}
+                    style={[
+                      styles.categoryRow,
+                      { borderBottomColor: themeColors.borderLight },
+                    ]}
+                  >
                     <View style={styles.categoryLeft}>
                       <View
                         style={[
@@ -367,17 +460,39 @@ export default function ReportsScreen(): React.JSX.Element {
                         ]}
                       />
                       <View>
-                        <Text style={styles.categoryName}>{cat.category}</Text>
-                        <Text style={styles.categoryCount}>
+                        <Text
+                          style={[
+                            styles.categoryName,
+                            { color: themeColors.textPrimary },
+                          ]}
+                        >
+                          {cat.category}
+                        </Text>
+                        <Text
+                          style={[
+                            styles.categoryCount,
+                            { color: themeColors.textSecondary },
+                          ]}
+                        >
                           {cat.count} transaction{cat.count !== 1 ? "s" : ""}
                         </Text>
                       </View>
                     </View>
                     <View style={styles.categoryRight}>
-                      <Text style={styles.categoryAmount}>
+                      <Text
+                        style={[
+                          styles.categoryAmount,
+                          { color: themeColors.textPrimary },
+                        ]}
+                      >
                         {formatCurrency(cat.total)}
                       </Text>
-                      <Text style={styles.categoryPercentage}>
+                      <Text
+                        style={[
+                          styles.categoryPercentage,
+                          { color: themeColors.textSecondary },
+                        ]}
+                      >
                         {cat.percentage}%
                       </Text>
                     </View>

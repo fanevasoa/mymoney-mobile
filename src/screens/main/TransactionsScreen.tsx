@@ -10,6 +10,7 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 import { transactionService } from "../../api";
 import { useApp } from "../../contexts/AppContext";
+import { useTheme } from "../../contexts/ThemeContext";
 import { colors, spacing, borderRadius } from "../../theme";
 import { formatCurrency, formatDate } from "../../utils/helpers";
 import type {
@@ -38,6 +39,7 @@ export default function TransactionsScreen({
   route,
 }: Props): React.JSX.Element {
   const { accounts } = useApp();
+  const { colors: themeColors } = useTheme();
   const initialAccountId = route.params?.accountId;
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -46,7 +48,7 @@ export default function TransactionsScreen({
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
-    initialAccountId || null
+    initialAccountId || null,
   );
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -79,7 +81,7 @@ export default function TransactionsScreen({
         setIsLoading(false);
       }
     },
-    [page, selectedType, selectedAccountId]
+    [page, selectedType, selectedAccountId],
   );
 
   useEffect(() => {
@@ -111,11 +113,11 @@ export default function TransactionsScreen({
       if (!groups[date]) groups[date] = [];
       groups[date].push(t);
       return groups;
-    }, {})
+    }, {}),
   ).map(([date, data]) => ({ date, data }));
 
   const getIcon = (
-    type: TransactionType
+    type: TransactionType,
   ): { name: IconName; color: string } => {
     switch (type) {
       case "earning":
@@ -246,7 +248,9 @@ export default function TransactionsScreen({
   );
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[styles.container, { backgroundColor: themeColors.background }]}
+    >
       <FlatList
         data={sections}
         keyExtractor={(i) => i.date}
@@ -270,7 +274,7 @@ export default function TransactionsScreen({
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
+  container: { flex: 1 },
   list: { padding: spacing.md, paddingBottom: spacing.xxl },
   header: { marginBottom: spacing.md },
   search: {

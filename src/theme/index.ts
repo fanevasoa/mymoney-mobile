@@ -6,6 +6,10 @@
  */
 
 import { MD3LightTheme, MD3DarkTheme, type MD3Theme } from "react-native-paper";
+import {
+  DefaultTheme as NavigationDefaultTheme,
+  DarkTheme as NavigationDarkTheme,
+} from "@react-navigation/native";
 
 // ============================================================================
 // Color Palette
@@ -152,17 +156,19 @@ export const theme: AppTheme = {
 };
 
 // ============================================================================
-// Dark Theme (for future use)
+// Dark Theme
 // ============================================================================
 
-const darkColors = {
+export const darkColors: Colors = {
   ...colors,
   background: "#111827",
   surface: "#1F2937",
   surfaceVariant: "#374151",
   textPrimary: "#F9FAFB",
   textSecondary: "#9CA3AF",
+  textDisabled: "#6B7280",
   border: "#374151",
+  borderLight: "#1F2937",
 };
 
 export const darkTheme: AppTheme = {
@@ -177,12 +183,45 @@ export const darkTheme: AppTheme = {
     surface: darkColors.surface,
     surfaceVariant: darkColors.surfaceVariant,
     error: colors.error,
+    onPrimary: colors.textInverse,
+    onSecondary: colors.textInverse,
+    onBackground: darkColors.textPrimary,
+    onSurface: darkColors.textPrimary,
+    outline: darkColors.border,
   },
   custom: {
     colors: darkColors,
     spacing,
     borderRadius,
     fontSize,
+  },
+};
+
+// ============================================================================
+// Navigation Themes
+// ============================================================================
+
+export const navigationLightTheme = {
+  ...NavigationDefaultTheme,
+  colors: {
+    ...NavigationDefaultTheme.colors,
+    primary: colors.primary,
+    background: colors.background,
+    card: colors.surface,
+    text: colors.textPrimary,
+    border: colors.border,
+  },
+};
+
+export const navigationDarkTheme = {
+  ...NavigationDarkTheme,
+  colors: {
+    ...NavigationDarkTheme.colors,
+    primary: colors.primaryLight,
+    background: darkColors.background,
+    card: darkColors.surface,
+    text: darkColors.textPrimary,
+    border: darkColors.border,
   },
 };
 

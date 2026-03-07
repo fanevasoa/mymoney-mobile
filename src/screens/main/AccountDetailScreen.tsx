@@ -27,6 +27,7 @@ import type { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
 
 import { accountService, transactionService } from "../../api";
 import { useApp } from "../../contexts/AppContext";
+import { useTheme } from "../../contexts/ThemeContext";
 import { colors, spacing, borderRadius } from "../../theme";
 import { formatCurrency, formatDate } from "../../utils/helpers";
 import type {
@@ -50,6 +51,7 @@ export default function AccountDetailScreen({
 }: Props): React.JSX.Element {
   const { accountId } = route.params;
   const { removeAccount, updateAccount: updateAccountInState } = useApp();
+  const { colors: themeColors } = useTheme();
 
   const [account, setAccount] = useState<Account | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -111,7 +113,7 @@ export default function AccountDetailScreen({
             }
           },
         },
-      ]
+      ],
     );
   };
 
@@ -134,7 +136,7 @@ export default function AccountDetailScreen({
   };
 
   const getTransactionIcon = (
-    type: TransactionType
+    type: TransactionType,
   ): { name: IconName; color: string } => {
     switch (type) {
       case "earning":
@@ -205,7 +207,7 @@ export default function AccountDetailScreen({
 
   return (
     <ScrollView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: themeColors.background }]}
       contentContainerStyle={styles.content}
       refreshControl={
         <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
@@ -271,19 +273,33 @@ export default function AccountDetailScreen({
       {account.description && (
         <Card style={styles.infoCard}>
           <Card.Content>
-            <Text style={styles.infoLabel}>Description</Text>
-            <Text style={styles.infoValue}>{account.description}</Text>
+            <Text
+              style={[styles.infoLabel, { color: themeColors.textSecondary }]}
+            >
+              Description
+            </Text>
+            <Text
+              style={[styles.infoValue, { color: themeColors.textPrimary }]}
+            >
+              {account.description}
+            </Text>
           </Card.Content>
         </Card>
       )}
 
       {/* Transactions */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Recent Transactions</Text>
+        <Text style={[styles.sectionTitle, { color: themeColors.textPrimary }]}>
+          Recent Transactions
+        </Text>
         {transactions.length === 0 ? (
           <Card style={styles.emptyCard}>
             <Card.Content>
-              <Text style={styles.emptyText}>No transactions yet</Text>
+              <Text
+                style={[styles.emptyText, { color: themeColors.textSecondary }]}
+              >
+                No transactions yet
+              </Text>
             </Card.Content>
           </Card>
         ) : (
@@ -300,12 +316,20 @@ export default function AccountDetailScreen({
                     />
                     <View style={styles.transactionInfo}>
                       <Text
-                        style={styles.transactionDescription}
+                        style={[
+                          styles.transactionDescription,
+                          { color: themeColors.textPrimary },
+                        ]}
                         numberOfLines={1}
                       >
                         {transaction.description || transaction.type}
                       </Text>
-                      <Text style={styles.transactionMeta}>
+                      <Text
+                        style={[
+                          styles.transactionMeta,
+                          { color: themeColors.textSecondary },
+                        ]}
+                      >
                         {formatDate(transaction.createdAt)}
                       </Text>
                     </View>

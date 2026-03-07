@@ -16,17 +16,21 @@ import {
   Portal,
   Dialog,
   TextInput,
+  SegmentedButtons,
 } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 import { useAuth } from "../../contexts/AuthContext";
 import { useApp } from "../../contexts/AppContext";
+import { useTheme } from "../../contexts/ThemeContext";
 import { authService } from "../../api";
 import { colors, spacing, borderRadius } from "../../theme";
+import type { ThemeMode } from "../../types";
 
 export default function ProfileScreen(): React.JSX.Element {
   const { user, logout } = useAuth();
   const { clearData, dashboardData } = useApp();
+  const { themeMode, setThemeMode, colors: themeColors } = useTheme();
 
   const [passwordDialogVisible, setPasswordDialogVisible] =
     useState<boolean>(false);
@@ -91,7 +95,10 @@ export default function ProfileScreen(): React.JSX.Element {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={[styles.container, { backgroundColor: themeColors.background }]}
+      contentContainerStyle={styles.content}
+    >
       <Card style={styles.profileCard}>
         <Card.Content style={styles.profileContent}>
           <Avatar.Text
@@ -99,9 +106,20 @@ export default function ProfileScreen(): React.JSX.Element {
             label={getInitials(user?.name)}
             style={styles.avatar}
           />
-          <Text style={styles.userName}>{user?.name || "User"}</Text>
-          <Text style={styles.userEmail}>{user?.email}</Text>
-          <View style={styles.roleBadge}>
+          <Text style={[styles.userName, { color: themeColors.textPrimary }]}>
+            {user?.name || "User"}
+          </Text>
+          <Text
+            style={[styles.userEmail, { color: themeColors.textSecondary }]}
+          >
+            {user?.email}
+          </Text>
+          <View
+            style={[
+              styles.roleBadge,
+              { backgroundColor: themeColors.surfaceVariant },
+            ]}
+          >
             <MaterialCommunityIcons
               name={user?.role === "admin" ? "shield-crown" : "account"}
               size={14}
@@ -124,20 +142,37 @@ export default function ProfileScreen(): React.JSX.Element {
 
       <Card style={styles.statsCard}>
         <Card.Content>
-          <Text style={styles.sectionTitle}>Account Summary</Text>
+          <Text
+            style={[styles.sectionTitle, { color: themeColors.textPrimary }]}
+          >
+            Account Summary
+          </Text>
           <View style={styles.statsGrid}>
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>
+              <Text style={[styles.statValue, { color: themeColors.primary }]}>
                 {dashboardData?.accountCount || 0}
               </Text>
-              <Text style={styles.statLabel}>Accounts</Text>
+              <Text
+                style={[styles.statLabel, { color: themeColors.textSecondary }]}
+              >
+                Accounts
+              </Text>
             </View>
-            <View style={styles.statDivider} />
+            <View
+              style={[
+                styles.statDivider,
+                { backgroundColor: themeColors.border },
+              ]}
+            />
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>
+              <Text style={[styles.statValue, { color: themeColors.primary }]}>
                 ${(dashboardData?.totalBalance || 0).toLocaleString()}
               </Text>
-              <Text style={styles.statLabel}>Total Balance</Text>
+              <Text
+                style={[styles.statLabel, { color: themeColors.textSecondary }]}
+              >
+                Total Balance
+              </Text>
             </View>
           </View>
         </Card.Content>
@@ -145,8 +180,28 @@ export default function ProfileScreen(): React.JSX.Element {
 
       <Card style={styles.settingsCard}>
         <Card.Content>
-          <Text style={styles.sectionTitle}>Settings</Text>
+          <Text
+            style={[styles.sectionTitle, { color: themeColors.textPrimary }]}
+          >
+            Settings
+          </Text>
+          <Text
+            style={[styles.themeLabel, { color: themeColors.textSecondary }]}
+          >
+            Appearance
+          </Text>
+          <SegmentedButtons
+            value={themeMode}
+            onValueChange={(value) => setThemeMode(value as ThemeMode)}
+            buttons={[
+              { value: "system", label: "System", icon: "cellphone" },
+              { value: "light", label: "Light", icon: "white-balance-sunny" },
+              { value: "dark", label: "Dark", icon: "moon-waning-crescent" },
+            ]}
+            style={styles.themeButtons}
+          />
         </Card.Content>
+        <Divider style={{ marginTop: spacing.md }} />
 
         <List.Item
           title="Change Password"
@@ -165,7 +220,7 @@ export default function ProfileScreen(): React.JSX.Element {
           onPress={() =>
             Alert.alert(
               "Coming Soon",
-              "Notification settings will be available in a future update."
+              "Notification settings will be available in a future update.",
             )
           }
         />
@@ -179,7 +234,7 @@ export default function ProfileScreen(): React.JSX.Element {
           onPress={() =>
             Alert.alert(
               "Coming Soon",
-              "Data export will be available in a future update."
+              "Data export will be available in a future update.",
             )
           }
         />
@@ -370,5 +425,12 @@ const styles = StyleSheet.create({
   },
   dialogInput: {
     marginBottom: spacing.sm,
+  },
+  themeLabel: {
+    fontSize: 13,
+    marginBottom: spacing.sm,
+  },
+  themeButtons: {
+    marginBottom: spacing.xs,
   },
 });
