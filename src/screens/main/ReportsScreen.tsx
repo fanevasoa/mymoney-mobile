@@ -16,6 +16,8 @@ import { Text, Card, SegmentedButtons, Chip } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LineChart, PieChart } from "react-native-chart-kit";
 
+import { useTranslation } from "react-i18next";
+
 import { dashboardService } from "../../api";
 import { useTheme } from "../../contexts/ThemeContext";
 import { colors, spacing, borderRadius } from "../../theme";
@@ -52,6 +54,7 @@ interface PieChartData {
 
 export default function ReportsScreen(): React.JSX.Element {
   const { colors: themeColors } = useTheme();
+  const { t } = useTranslation();
 
   const chartConfig = {
     backgroundColor: themeColors.surface,
@@ -167,8 +170,8 @@ export default function ReportsScreen(): React.JSX.Element {
         value={reportType}
         onValueChange={setReportType}
         buttons={[
-          { value: "monthly", label: "Monthly" },
-          { value: "category", label: "Categories" },
+          { value: "monthly", label: t("reports.monthly") },
+          { value: "category", label: t("reports.categories") },
         ]}
         style={styles.segmentedButtons}
       />
@@ -202,7 +205,7 @@ export default function ReportsScreen(): React.JSX.Element {
           <Text
             style={[styles.sectionTitle, { color: themeColors.textPrimary }]}
           >
-            Financial Summary
+            {t("reports.financialSummary")}
           </Text>
           <View style={styles.summaryGrid}>
             <View style={styles.summaryItem}>
@@ -217,7 +220,7 @@ export default function ReportsScreen(): React.JSX.Element {
                   { color: themeColors.textSecondary },
                 ]}
               >
-                Total Income
+                {t("reports.totalIncome")}
               </Text>
               <Text style={[styles.summaryValue, { color: colors.earning }]}>
                 {formatCurrency(summaryData?.earnings?.total)}
@@ -235,7 +238,7 @@ export default function ReportsScreen(): React.JSX.Element {
                   { color: themeColors.textSecondary },
                 ]}
               >
-                Total Expenses
+                {t("reports.totalExpenses")}
               </Text>
               <Text style={[styles.summaryValue, { color: colors.expense }]}>
                 {formatCurrency(summaryData?.totalExpenses)}
@@ -257,7 +260,7 @@ export default function ReportsScreen(): React.JSX.Element {
                   { color: themeColors.textSecondary },
                 ]}
               >
-                Net Income
+                {t("reports.netIncome")}
               </Text>
               <Text
                 style={[
@@ -288,7 +291,7 @@ export default function ReportsScreen(): React.JSX.Element {
                   { color: themeColors.textPrimary },
                 ]}
               >
-                Income vs Expenses
+                {t("reports.incomeVsExpenses")}
               </Text>
               <Text
                 style={[
@@ -318,7 +321,9 @@ export default function ReportsScreen(): React.JSX.Element {
                     size={48}
                     color={colors.textDisabled}
                   />
-                  <Text style={styles.noDataText}>No data for this period</Text>
+                  <Text style={styles.noDataText}>
+                    {t("reports.noDataPeriod")}
+                  </Text>
                 </View>
               )}
             </Card.Content>
@@ -333,7 +338,7 @@ export default function ReportsScreen(): React.JSX.Element {
                     { color: themeColors.textPrimary },
                   ]}
                 >
-                  Year {selectedYear} Totals
+                  {t("reports.yearTotals", { year: selectedYear })}
                 </Text>
                 <View style={styles.totalsRow}>
                   <View style={styles.totalItem}>
@@ -343,7 +348,7 @@ export default function ReportsScreen(): React.JSX.Element {
                         { color: themeColors.textSecondary },
                       ]}
                     >
-                      Income
+                      {t("common.income")}
                     </Text>
                     <Text
                       style={[styles.totalValue, { color: colors.earning }]}
@@ -358,7 +363,7 @@ export default function ReportsScreen(): React.JSX.Element {
                         { color: themeColors.textSecondary },
                       ]}
                     >
-                      Expenses
+                      {t("common.expense")}
                     </Text>
                     <Text
                       style={[styles.totalValue, { color: colors.expense }]}
@@ -373,7 +378,7 @@ export default function ReportsScreen(): React.JSX.Element {
                         { color: themeColors.textSecondary },
                       ]}
                     >
-                      Net
+                      {t("common.net")}
                     </Text>
                     <Text
                       style={[
@@ -404,7 +409,7 @@ export default function ReportsScreen(): React.JSX.Element {
                   { color: themeColors.textPrimary },
                 ]}
               >
-                Expenses by Category
+                {t("reports.expensesByCategory")}
               </Text>
               {pieChartData.length > 0 ? (
                 <PieChart
@@ -424,7 +429,9 @@ export default function ReportsScreen(): React.JSX.Element {
                     size={48}
                     color={colors.textDisabled}
                   />
-                  <Text style={styles.noDataText}>No expense data</Text>
+                  <Text style={styles.noDataText}>
+                    {t("reports.noExpenseData")}
+                  </Text>
                 </View>
               )}
             </Card.Content>
@@ -438,7 +445,7 @@ export default function ReportsScreen(): React.JSX.Element {
                   { color: themeColors.textPrimary },
                 ]}
               >
-                Category Breakdown
+                {t("reports.categoryBreakdown")}
               </Text>
               {categoryData?.categories?.length ? (
                 categoryData.categories.map((cat, index) => (
@@ -474,7 +481,7 @@ export default function ReportsScreen(): React.JSX.Element {
                             { color: themeColors.textSecondary },
                           ]}
                         >
-                          {cat.count} transaction{cat.count !== 1 ? "s" : ""}
+                          {t("transactions.transaction", { count: cat.count })}
                         </Text>
                       </View>
                     </View>
@@ -500,7 +507,7 @@ export default function ReportsScreen(): React.JSX.Element {
                 ))
               ) : (
                 <Text style={styles.noDataText}>
-                  No category data available
+                  {t("reports.noCategoryData")}
                 </Text>
               )}
             </Card.Content>

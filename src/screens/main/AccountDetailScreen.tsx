@@ -25,6 +25,8 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { CompositeScreenProps } from "@react-navigation/native";
 import type { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
 
+import { useTranslation } from "react-i18next";
+
 import { accountService, transactionService } from "../../api";
 import { useApp } from "../../contexts/AppContext";
 import { useTheme } from "../../contexts/ThemeContext";
@@ -52,6 +54,7 @@ export default function AccountDetailScreen({
   const { accountId } = route.params;
   const { removeAccount, updateAccount: updateAccountInState } = useApp();
   const { colors: themeColors } = useTheme();
+  const { t } = useTranslation();
 
   const [account, setAccount] = useState<Account | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -74,7 +77,7 @@ export default function AccountDetailScreen({
       }
     } catch (error) {
       console.error("Error loading account:", error);
-      Alert.alert("Error", "Failed to load account details");
+      Alert.alert(t("common.error"), t("account.failedLoad"));
     } finally {
       setIsLoading(false);
     }
@@ -91,30 +94,26 @@ export default function AccountDetailScreen({
   };
 
   const handleDelete = (): void => {
-    Alert.alert(
-      "Delete Account",
-      "Are you sure you want to delete this account? This action cannot be undone.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await accountService.deleteAccount(accountId);
-              removeAccount(accountId);
-              navigation.goBack();
-            } catch (error) {
-              const message =
-                error instanceof Error
-                  ? error.message
-                  : "Failed to delete account";
-              Alert.alert("Error", message);
-            }
-          },
+    Alert.alert(t("account.deleteAccount"), t("account.deleteConfirm"), [
+      { text: t("common.cancel"), style: "cancel" },
+      {
+        text: t("common.delete"),
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await accountService.deleteAccount(accountId);
+            removeAccount(accountId);
+            navigation.goBack();
+          } catch (error) {
+            const message =
+              error instanceof Error
+                ? error.message
+                : t("account.failedDelete");
+            Alert.alert(t("common.error"), message);
+          }
         },
-      ],
-    );
+      },
+    ]);
   };
 
   const handleToggleActive = async (): Promise<void> => {
@@ -129,8 +128,8 @@ export default function AccountDetailScreen({
       }
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Failed to update account";
-      Alert.alert("Error", message);
+        error instanceof Error ? error.message : t("account.failedUpdate");
+      Alert.alert(t("common.error"), message);
     }
     setMenuVisible(false);
   };
@@ -179,7 +178,11 @@ export default function AccountDetailScreen({
         >
           <Menu.Item
             onPress={handleToggleActive}
-            title={account?.isActive ? "Mark as Inactive" : "Mark as Active"}
+            title={
+              account?.isActive
+                ? t("account.markInactive")
+                : t("account.markActive")
+            }
             leadingIcon={account?.isActive ? "eye-off" : "eye"}
           />
           <Divider />
@@ -188,7 +191,7 @@ export default function AccountDetailScreen({
               setMenuVisible(false);
               handleDelete();
             }}
-            title="Delete Account"
+            title={t("account.deleteAccount")}
             leadingIcon="delete"
             titleStyle={{ color: colors.error }}
           />
@@ -200,7 +203,7 @@ export default function AccountDetailScreen({
   if (isLoading || !account) {
     return (
       <View style={styles.loadingContainer}>
-        <Text>Loading...</Text>
+        <Text>{t("common.loading")}</Text>
       </View>
     );
   }
@@ -233,7 +236,9 @@ export default function AccountDetailScreen({
           <Text style={styles.balance}>{formatCurrency(account.balance)}</Text>
           {!account.isActive && (
             <View style={styles.inactiveBadge}>
-              <Text style={styles.inactiveBadgeText}>Inactive</Text>
+              <Text style={styles.inactiveBadgeText}>
+                {t("common.inactive")}
+              </Text>
             </View>
           )}
         </Card.Content>
@@ -252,7 +257,7 @@ export default function AccountDetailScreen({
           }
           style={[styles.actionButton, { backgroundColor: colors.earning }]}
         >
-          Income
+          {t("common.income")}
         </Button>
         <Button
           mode="contained"
@@ -265,7 +270,7 @@ export default function AccountDetailScreen({
           }
           style={[styles.actionButton, { backgroundColor: colors.expense }]}
         >
-          Expense
+          {t("common.expense")}
         </Button>
       </View>
 
@@ -276,7 +281,7 @@ export default function AccountDetailScreen({
             <Text
               style={[styles.infoLabel, { color: themeColors.textSecondary }]}
             >
-              Description
+              {t("common.description")}
             </Text>
             <Text
               style={[styles.infoValue, { color: themeColors.textPrimary }]}
@@ -290,7 +295,7 @@ export default function AccountDetailScreen({
       {/* Transactions */}
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, { color: themeColors.textPrimary }]}>
-          Recent Transactions
+          {t("dashboard.recentTransactions")}
         </Text>
         {transactions.length === 0 ? (
           <Card style={styles.emptyCard}>
@@ -298,7 +303,7 @@ export default function AccountDetailScreen({
               <Text
                 style={[styles.emptyText, { color: themeColors.textSecondary }]}
               >
-                No transactions yet
+                {t("dashboard.noTransactions")}
               </Text>
             </Card.Content>
           </Card>

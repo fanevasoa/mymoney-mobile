@@ -18,6 +18,8 @@ import { Text, TextInput, Button } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 
+import { useTranslation } from "react-i18next";
+
 import { useAuth } from "../../contexts/AuthContext";
 import { useGoogleAuth } from "../../hooks";
 import { useTheme } from "../../contexts/ThemeContext";
@@ -41,6 +43,7 @@ export default function LoginScreen({ navigation }: Props): React.JSX.Element {
     isReady: isGoogleReady,
   } = useGoogleAuth();
   const { colors: themeColors } = useTheme();
+  const { t } = useTranslation();
 
   /**
    * Validates the login form inputs
@@ -98,14 +101,14 @@ export default function LoginScreen({ navigation }: Props): React.JSX.Element {
           />
           <Text style={styles.title}>Money</Text>
           <Text style={[styles.subtitle, { color: themeColors.textSecondary }]}>
-            Manage your finances with ease
+            {t("auth.loginSubtitle")}
           </Text>
         </View>
 
         {/* Form */}
         <View style={[styles.form, { backgroundColor: themeColors.surface }]}>
           <Text style={[styles.formTitle, { color: themeColors.textPrimary }]}>
-            Welcome Back
+            {t("auth.login")}
           </Text>
 
           {/* Error message */}
@@ -123,7 +126,7 @@ export default function LoginScreen({ navigation }: Props): React.JSX.Element {
           {/* Email input */}
           <TextInput
             mode="outlined"
-            label="Email"
+            label={t("auth.email")}
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
@@ -139,7 +142,7 @@ export default function LoginScreen({ navigation }: Props): React.JSX.Element {
           {/* Password input */}
           <TextInput
             mode="outlined"
-            label="Password"
+            label={t("auth.password")}
             value={password}
             onChangeText={setPassword}
             secureTextEntry={!showPassword}
@@ -165,13 +168,13 @@ export default function LoginScreen({ navigation }: Props): React.JSX.Element {
             style={styles.button}
             contentStyle={styles.buttonContent}
           >
-            {isLoading ? "Signing in..." : "Sign In"}
+            {isLoading ? t("auth.loggingIn") : t("auth.loginButton")}
           </Button>
 
           {/* Divider */}
           <View style={styles.dividerContainer}>
             <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>or</Text>
+            <Text style={styles.dividerText}>{t("common.or")}</Text>
             <View style={styles.dividerLine} />
           </View>
 
@@ -185,7 +188,7 @@ export default function LoginScreen({ navigation }: Props): React.JSX.Element {
             style={styles.googleButton}
             contentStyle={styles.buttonContent}
           >
-            {isGoogleLoading ? "Signing in..." : "Sign in with Google"}
+            {isGoogleLoading ? t("auth.loggingIn") : "Sign in with Google"}
           </Button>
 
           {/* Register link */}
@@ -193,10 +196,10 @@ export default function LoginScreen({ navigation }: Props): React.JSX.Element {
             <Text
               style={[styles.footerText, { color: themeColors.textSecondary }]}
             >
-              Don't have an account?
+              {t("auth.noAccount")}
             </Text>
             <TouchableOpacity onPress={() => navigation.navigate("Register")}>
-              <Text style={styles.linkText}> Sign Up</Text>
+              <Text style={styles.linkText}> {t("auth.signUp")}</Text>
             </TouchableOpacity>
           </View>
         </View>

@@ -25,6 +25,8 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useFocusEffect } from "@react-navigation/native";
 
+import { useTranslation } from "react-i18next";
+
 import { transactionService } from "../../api";
 import { useApp } from "../../contexts/AppContext";
 import { useTheme } from "../../contexts/ThemeContext";
@@ -62,6 +64,7 @@ export default function AddTransactionScreen({
 }: Props): React.JSX.Element {
   const { accounts, fetchAccounts, refreshData } = useApp();
   const { colors: themeColors } = useTheme();
+  const { t } = useTranslation();
 
   const initialType = route.params?.type || "expense";
   const preselectedAccountId = route.params?.accountId;
@@ -110,19 +113,19 @@ export default function AddTransactionScreen({
 
   const validateForm = (): boolean => {
     if (!amount || parseFloat(amount) <= 0) {
-      setError("Please enter a valid amount");
+      setError(t("addTransaction.validAmount"));
       return false;
     }
     if (!selectedAccountId) {
-      setError("Please select an account");
+      setError(t("addTransaction.selectAccountError"));
       return false;
     }
     if (type === "expense" && selectedAccount) {
       if (parseFloat(amount) > parseFloat(String(selectedAccount.balance))) {
         setError(
-          `Insufficient balance. Available: ${formatCurrency(
-            selectedAccount.balance,
-          )}`,
+          t("addTransaction.insufficientBalance", {
+            amount: formatCurrency(selectedAccount.balance),
+          }),
         );
         return false;
       }
@@ -154,13 +157,15 @@ export default function AddTransactionScreen({
         await refreshData();
         Alert.alert(
           "Success",
-          `${type === "earning" ? "Income" : "Expense"} added successfully`,
+          t("addTransaction.addedSuccess", {
+            type: type === "earning" ? t("common.income") : t("common.expense"),
+          }),
           [{ text: "OK", onPress: () => navigation.goBack() }],
         );
       }
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : "Failed to create transaction";
+        err instanceof Error ? err.message : t("addTransaction.failedCreate");
       setError(message);
     } finally {
       setIsLoading(false);
@@ -221,7 +226,7 @@ export default function AddTransactionScreen({
         />
 
         <Text style={[styles.sectionTitle, { color: themeColors.textPrimary }]}>
-          Select Account
+          {t("addTransaction.selectAccount")}
         </Text>
         <ScrollView
           horizontal
@@ -294,7 +299,9 @@ export default function AddTransactionScreen({
               { color: type === "earning" ? colors.earning : colors.expense },
             ]}
           >
-            {type === "earning" ? "INCOME AMOUNT" : "EXPENSE AMOUNT"}
+            {type === "earning"
+              ? t("addTransaction.incomeAmount")
+              : t("addTransaction.expenseAmount")}
           </Text>
           <View style={styles.amountInputContainer}>
             <Text
@@ -324,7 +331,7 @@ export default function AddTransactionScreen({
         </View>
 
         <Text style={[styles.sectionTitle, { color: themeColors.textPrimary }]}>
-          Category (optional)
+          {t("addTransaction.categoryOptional")}
         </Text>
         <View style={styles.categoriesGrid}>
           {categories.map((cat) => (
@@ -354,11 +361,11 @@ export default function AddTransactionScreen({
         </View>
 
         <Text style={[styles.sectionTitle, { color: themeColors.textPrimary }]}>
-          Description (optional)
+          {t("addTransaction.descriptionOptional")}
         </Text>
         <TextInput
           mode="outlined"
-          placeholder="Add a note..."
+          placeholder={t("addTransaction.descriptionPlaceholder")}
           value={description}
           onChangeText={setDescription}
           multiline
@@ -388,8 +395,10 @@ export default function AddTransactionScreen({
           contentStyle={styles.submitButtonContent}
         >
           {isLoading
-            ? "Adding..."
-            : `Add ${type === "earning" ? "Income" : "Expense"}`}
+            ? t("addTransaction.adding")
+            : type === "earning"
+              ? t("addTransaction.addIncome")
+              : t("addTransaction.addExpense")}
         </Button>
 
         <TouchableOpacity
@@ -401,7 +410,9 @@ export default function AddTransactionScreen({
             size={20}
             color={colors.primary}
           />
-          <Text style={styles.transferLinkText}>Transfer between accounts</Text>
+          <Text style={styles.transferLinkText}>
+            {t("addTransaction.transferBetween")}
+          </Text>
         </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>

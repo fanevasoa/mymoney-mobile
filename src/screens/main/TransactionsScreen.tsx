@@ -8,6 +8,8 @@ import { Text, Card, Chip, Searchbar } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 
+import { useTranslation } from "react-i18next";
+
 import { transactionService } from "../../api";
 import { useApp } from "../../contexts/AppContext";
 import { useTheme } from "../../contexts/ThemeContext";
@@ -40,6 +42,7 @@ export default function TransactionsScreen({
 }: Props): React.JSX.Element {
   const { accounts } = useApp();
   const { colors: themeColors } = useTheme();
+  const { t } = useTranslation();
   const initialAccountId = route.params?.accountId;
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -168,21 +171,21 @@ export default function TransactionsScreen({
   };
 
   const typeFilters = [
-    { id: null, label: "All" },
-    { id: "earning", label: "Income" },
-    { id: "expense", label: "Expense" },
-    { id: "transfer_fee", label: "Fees" },
+    { id: null, label: t("common.all") },
+    { id: "earning", label: t("common.income") },
+    { id: "expense", label: t("common.expense") },
+    { id: "transfer_fee", label: t("common.fees") },
   ];
 
   const accountFilters = [
-    { id: null, name: "All Accounts" },
+    { id: null, name: t("common.allAccounts") },
     ...accounts.map((a) => ({ id: a.id, name: a.name })),
   ];
 
   const renderHeader = () => (
     <View style={styles.header}>
       <Searchbar
-        placeholder="Search..."
+        placeholder={t("common.search")}
         onChangeText={setSearchQuery}
         value={searchQuery}
         style={styles.search}
@@ -243,7 +246,7 @@ export default function TransactionsScreen({
         size={64}
         color={colors.textSecondary}
       />
-      <Text style={styles.emptyTitle}>No transactions</Text>
+      <Text style={styles.emptyTitle}>{t("transactions.noTransactions")}</Text>
     </View>
   );
 

@@ -20,17 +20,22 @@ import {
 } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
+import { useTranslation } from "react-i18next";
+
 import { useAuth } from "../../contexts/AuthContext";
 import { useApp } from "../../contexts/AppContext";
 import { useTheme } from "../../contexts/ThemeContext";
 import { authService } from "../../api";
+import { changeLanguage, getCurrentLanguage } from "../../i18n";
 import { colors, spacing, borderRadius } from "../../theme";
 import type { ThemeMode } from "../../types";
 
 export default function ProfileScreen(): React.JSX.Element {
+  const { t } = useTranslation();
   const { user, logout } = useAuth();
   const { clearData, dashboardData } = useApp();
   const { themeMode, setThemeMode, colors: themeColors } = useTheme();
+  const [language, setLanguageState] = React.useState(getCurrentLanguage());
 
   const [passwordDialogVisible, setPasswordDialogVisible] =
     useState<boolean>(false);
@@ -39,11 +44,16 @@ export default function ProfileScreen(): React.JSX.Element {
   const [confirmPassword, setConfirmPassword] = useState<string>("");
   const [isChangingPassword, setIsChangingPassword] = useState<boolean>(false);
 
+  const handleLanguageChange = async (lang: string) => {
+    setLanguageState(lang);
+    await changeLanguage(lang);
+  };
+
   const handleLogout = (): void => {
-    Alert.alert("Logout", "Are you sure you want to logout?", [
-      { text: "Cancel", style: "cancel" },
+    Alert.alert(t("auth.logout"), t("auth.logout") + "?", [
+      { text: t("common.cancel"), style: "cancel" },
       {
-        text: "Logout",
+        text: t("auth.logout"),
         style: "destructive",
         onPress: async () => {
           clearData();
@@ -78,8 +88,10 @@ export default function ProfileScreen(): React.JSX.Element {
       setConfirmPassword("");
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Failed to change password";
-      Alert.alert("Error", message);
+        error instanceof Error
+          ? error.message
+          : t("profile.failedChangePassword");
+      Alert.alert(t("common.error"), message);
     } finally {
       setIsChangingPassword(false);
     }
@@ -107,7 +119,7 @@ export default function ProfileScreen(): React.JSX.Element {
             style={styles.avatar}
           />
           <Text style={[styles.userName, { color: themeColors.textPrimary }]}>
-            {user?.name || "User"}
+            {user?.name || t("profile.user")}
           </Text>
           <Text
             style={[styles.userEmail, { color: themeColors.textSecondary }]}
@@ -134,7 +146,9 @@ export default function ProfileScreen(): React.JSX.Element {
                 },
               ]}
             >
-              {user?.role === "admin" ? "Administrator" : "User"}
+              {user?.role === "admin"
+                ? t("profile.administrator")
+                : t("profile.user")}
             </Text>
           </View>
         </Card.Content>
@@ -145,7 +159,7 @@ export default function ProfileScreen(): React.JSX.Element {
           <Text
             style={[styles.sectionTitle, { color: themeColors.textPrimary }]}
           >
-            Account Summary
+            {t("profile.accountSummary")}
           </Text>
           <View style={styles.statsGrid}>
             <View style={styles.statItem}>
@@ -155,7 +169,7 @@ export default function ProfileScreen(): React.JSX.Element {
               <Text
                 style={[styles.statLabel, { color: themeColors.textSecondary }]}
               >
-                Accounts
+                {t("common.accounts")}
               </Text>
             </View>
             <View
@@ -171,7 +185,7 @@ export default function ProfileScreen(): React.JSX.Element {
               <Text
                 style={[styles.statLabel, { color: themeColors.textSecondary }]}
               >
-                Total Balance
+                {t("profile.totalBalance")}
               </Text>
             </View>
           </View>
@@ -183,20 +197,47 @@ export default function ProfileScreen(): React.JSX.Element {
           <Text
             style={[styles.sectionTitle, { color: themeColors.textPrimary }]}
           >
-            Settings
+            {t("profile.settings")}
           </Text>
           <Text
             style={[styles.themeLabel, { color: themeColors.textSecondary }]}
           >
-            Appearance
+            {t("profile.appearance")}
           </Text>
           <SegmentedButtons
             value={themeMode}
             onValueChange={(value) => setThemeMode(value as ThemeMode)}
             buttons={[
-              { value: "system", label: "System", icon: "cellphone" },
-              { value: "light", label: "Light", icon: "white-balance-sunny" },
-              { value: "dark", label: "Dark", icon: "moon-waning-crescent" },
+              {
+                value: "system",
+                label: t("profile.system"),
+                icon: "cellphone",
+              },
+              {
+                value: "light",
+                label: t("profile.light"),
+                icon: "white-balance-sunny",
+              },
+              {
+                value: "dark",
+                label: t("profile.dark"),
+                icon: "moon-waning-crescent",
+              },
+            ]}
+            style={styles.themeButtons}
+          />
+          <Text
+            style={[styles.themeLabel, { color: themeColors.textSecondary }]}
+          >
+            {t("profile.language")}
+          </Text>
+          <SegmentedButtons
+            value={language}
+            onValueChange={handleLanguageChange}
+            buttons={[
+              { value: "en", label: "English" },
+              { value: "fr", label: "Français" },
+              { value: "mg", label: "Malagasy" },
             ]}
             style={styles.themeButtons}
           />
@@ -204,8 +245,8 @@ export default function ProfileScreen(): React.JSX.Element {
         <Divider style={{ marginTop: spacing.md }} />
 
         <List.Item
-          title="Change Password"
-          description="Update your account password"
+          title={t("profile.changePassword")}
+          description={t("profile.changePasswordDesc")}
           left={(props) => <List.Icon {...props} icon="lock" />}
           right={(props) => <List.Icon {...props} icon="chevron-right" />}
           onPress={() => setPasswordDialogVisible(true)}
@@ -213,61 +254,64 @@ export default function ProfileScreen(): React.JSX.Element {
         <Divider />
 
         <List.Item
-          title="Notifications"
-          description="Manage notification preferences"
+          title={t("profile.notifications")}
+          description={t("profile.notificationsDesc")}
           left={(props) => <List.Icon {...props} icon="bell" />}
           right={(props) => <List.Icon {...props} icon="chevron-right" />}
           onPress={() =>
             Alert.alert(
-              "Coming Soon",
-              "Notification settings will be available in a future update.",
+              t("common.comingSoon"),
+              t("profile.notificationsComingSoon"),
             )
           }
         />
         <Divider />
 
         <List.Item
-          title="Export Data"
-          description="Export your financial data"
+          title={t("profile.exportData")}
+          description={t("profile.exportDataDesc")}
           left={(props) => <List.Icon {...props} icon="download" />}
           right={(props) => <List.Icon {...props} icon="chevron-right" />}
           onPress={() =>
-            Alert.alert(
-              "Coming Soon",
-              "Data export will be available in a future update.",
-            )
+            Alert.alert(t("common.comingSoon"), t("profile.exportComingSoon"))
           }
         />
       </Card>
 
       <Card style={styles.aboutCard}>
         <Card.Content>
-          <Text style={styles.sectionTitle}>About</Text>
+          <Text style={styles.sectionTitle}>{t("profile.about")}</Text>
         </Card.Content>
 
         <List.Item
-          title="Version"
+          title={t("profile.version")}
           description="1.0.0"
           left={(props) => <List.Icon {...props} icon="information" />}
         />
         <Divider />
 
         <List.Item
-          title="Privacy Policy"
+          title={t("profile.privacyPolicy")}
           left={(props) => <List.Icon {...props} icon="shield-check" />}
           right={(props) => <List.Icon {...props} icon="chevron-right" />}
           onPress={() =>
-            Alert.alert("Privacy Policy", "Privacy policy coming soon.")
+            Alert.alert(
+              t("profile.privacyPolicy"),
+              t("profile.privacyPolicyComingSoon"),
+            )
           }
         />
         <Divider />
 
         <List.Item
-          title="Terms of Service"
+          title={t("profile.termsOfService")}
           left={(props) => <List.Icon {...props} icon="file-document" />}
           right={(props) => <List.Icon {...props} icon="chevron-right" />}
           onPress={() =>
-            Alert.alert("Terms of Service", "Terms of service coming soon.")
+            Alert.alert(
+              t("profile.termsOfService"),
+              t("profile.termsComingSoon"),
+            )
           }
         />
       </Card>
@@ -279,7 +323,7 @@ export default function ProfileScreen(): React.JSX.Element {
         textColor={colors.error}
         icon="logout"
       >
-        Logout
+        {t("auth.logout")}
       </Button>
 
       <Portal>
@@ -287,11 +331,11 @@ export default function ProfileScreen(): React.JSX.Element {
           visible={passwordDialogVisible}
           onDismiss={() => setPasswordDialogVisible(false)}
         >
-          <Dialog.Title>Change Password</Dialog.Title>
+          <Dialog.Title>{t("profile.changePassword")}</Dialog.Title>
           <Dialog.Content>
             <TextInput
               mode="outlined"
-              label="Current Password"
+              label={t("profile.currentPassword")}
               value={currentPassword}
               onChangeText={setCurrentPassword}
               secureTextEntry
@@ -299,7 +343,7 @@ export default function ProfileScreen(): React.JSX.Element {
             />
             <TextInput
               mode="outlined"
-              label="New Password"
+              label={t("profile.newPassword")}
               value={newPassword}
               onChangeText={setNewPassword}
               secureTextEntry
@@ -307,7 +351,7 @@ export default function ProfileScreen(): React.JSX.Element {
             />
             <TextInput
               mode="outlined"
-              label="Confirm New Password"
+              label={t("profile.confirmNewPassword")}
               value={confirmPassword}
               onChangeText={setConfirmPassword}
               secureTextEntry
@@ -316,14 +360,14 @@ export default function ProfileScreen(): React.JSX.Element {
           </Dialog.Content>
           <Dialog.Actions>
             <Button onPress={() => setPasswordDialogVisible(false)}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button
               onPress={handleChangePassword}
               loading={isChangingPassword}
               disabled={isChangingPassword}
             >
-              Change
+              {t("profile.change")}
             </Button>
           </Dialog.Actions>
         </Dialog>

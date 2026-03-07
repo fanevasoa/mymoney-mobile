@@ -18,6 +18,8 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 import { accountService } from "../../api";
+import { useTranslation } from "react-i18next";
+
 import { useApp } from "../../contexts/AppContext";
 import { useTheme } from "../../contexts/ThemeContext";
 import { colors, spacing, borderRadius } from "../../theme";
@@ -32,6 +34,7 @@ export default function AddAccountScreen({
 }: Props): React.JSX.Element {
   const { accountTypes, fetchAccountTypes, addAccount } = useApp();
   const { colors: themeColors } = useTheme();
+  const { t } = useTranslation();
 
   const [name, setName] = useState<string>("");
   const [selectedTypeId, setSelectedTypeId] = useState<string | null>(null);
@@ -140,7 +143,7 @@ export default function AddAccountScreen({
         ) : null}
 
         <Text style={[styles.sectionTitle, { color: themeColors.textPrimary }]}>
-          Account Type
+          {t("addAccount.accountType")}
         </Text>
         <View style={styles.typeGrid}>
           {accountTypes.map((type) => (
@@ -189,12 +192,12 @@ export default function AddAccountScreen({
         </View>
 
         <Text style={[styles.sectionTitle, { color: themeColors.textPrimary }]}>
-          Account Details
+          {t("addAccount.accountDetails")}
         </Text>
         <TextInput
           mode="outlined"
-          label="Account Name"
-          placeholder="e.g., Main Savings Account"
+          label={t("addAccount.accountName")}
+          placeholder={t("addAccount.accountNamePlaceholder")}
           value={name}
           onChangeText={setName}
           style={[styles.input, { backgroundColor: themeColors.surface }]}
@@ -205,7 +208,7 @@ export default function AddAccountScreen({
 
         <TextInput
           mode="outlined"
-          label="Initial Balance (optional)"
+          label={t("addAccount.initialBalance")}
           placeholder="0.00"
           value={balance}
           onChangeText={setBalance}
@@ -219,8 +222,8 @@ export default function AddAccountScreen({
 
         <TextInput
           mode="outlined"
-          label="Description (optional)"
-          placeholder="Add a note about this account"
+          label={t("addAccount.descriptionOptional")}
+          placeholder={t("addAccount.descriptionPlaceholder")}
           value={description}
           onChangeText={setDescription}
           multiline
@@ -239,7 +242,7 @@ export default function AddAccountScreen({
           style={styles.submitButton}
           contentStyle={styles.submitButtonContent}
         >
-          {isLoading ? "Creating..." : "Create Account"}
+          {isLoading ? t("addAccount.creating") : t("addAccount.createAccount")}
         </Button>
       </ScrollView>
     </KeyboardAvoidingView>

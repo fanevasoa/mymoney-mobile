@@ -8,6 +8,8 @@ import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
+import { useTranslation } from "react-i18next";
+
 import { colors as lightColors } from "../theme";
 import { useTheme } from "../contexts/ThemeContext";
 import CustomTabBar from "./CustomTabBar";
@@ -57,22 +59,23 @@ function useScreenOptions() {
 
 function DashboardStackNavigator(): React.JSX.Element {
   const screenOptions = useScreenOptions();
+  const { t } = useTranslation();
   return (
     <DashboardStack.Navigator screenOptions={screenOptions}>
       <DashboardStack.Screen
         name="DashboardMain"
         component={DashboardScreen}
-        options={{ title: "Dashboard" }}
+        options={{ title: t("nav.dashboard") }}
       />
       <DashboardStack.Screen
         name="Transactions"
         component={TransactionsScreen}
-        options={{ title: "Transactions" }}
+        options={{ title: t("transactions.title") }}
       />
       <DashboardStack.Screen
         name="AccountDetail"
         component={AccountDetailScreen}
-        options={{ title: "Account Details" }}
+        options={{ title: t("common.accounts") }}
       />
     </DashboardStack.Navigator>
   );
@@ -80,22 +83,23 @@ function DashboardStackNavigator(): React.JSX.Element {
 
 function AccountsStackNavigator(): React.JSX.Element {
   const screenOptions = useScreenOptions();
+  const { t } = useTranslation();
   return (
     <AccountsStack.Navigator screenOptions={screenOptions}>
       <AccountsStack.Screen
         name="AccountsMain"
         component={AccountsScreen}
-        options={{ title: "Accounts" }}
+        options={{ title: t("nav.accounts") }}
       />
       <AccountsStack.Screen
         name="AccountDetail"
         component={AccountDetailScreen}
-        options={{ title: "Account Details" }}
+        options={{ title: t("common.accounts") }}
       />
       <AccountsStack.Screen
         name="AddAccount"
         component={AddAccountScreen}
-        options={{ title: "Add Account" }}
+        options={{ title: t("addAccount.title") }}
       />
     </AccountsStack.Navigator>
   );
@@ -103,17 +107,18 @@ function AccountsStackNavigator(): React.JSX.Element {
 
 function AddStackNavigator(): React.JSX.Element {
   const screenOptions = useScreenOptions();
+  const { t } = useTranslation();
   return (
     <AddStack.Navigator screenOptions={screenOptions}>
       <AddStack.Screen
         name="AddTransaction"
         component={AddTransactionScreen}
-        options={{ title: "Add Transaction" }}
+        options={{ title: t("nav.add") }}
       />
       <AddStack.Screen
         name="Transfer"
         component={TransferScreen}
-        options={{ title: "Transfer" }}
+        options={{ title: t("transfer.title") }}
       />
     </AddStack.Navigator>
   );
@@ -121,12 +126,13 @@ function AddStackNavigator(): React.JSX.Element {
 
 function ReportsStackNavigator(): React.JSX.Element {
   const screenOptions = useScreenOptions();
+  const { t } = useTranslation();
   return (
     <ReportsStack.Navigator screenOptions={screenOptions}>
       <ReportsStack.Screen
         name="ReportsMain"
         component={ReportsScreen}
-        options={{ title: "Reports" }}
+        options={{ title: t("reports.title") }}
       />
     </ReportsStack.Navigator>
   );
@@ -134,12 +140,13 @@ function ReportsStackNavigator(): React.JSX.Element {
 
 function ProfileStackNavigator(): React.JSX.Element {
   const screenOptions = useScreenOptions();
+  const { t } = useTranslation();
   return (
     <ProfileStack.Navigator screenOptions={screenOptions}>
       <ProfileStack.Screen
         name="ProfileMain"
         component={ProfileScreen}
-        options={{ title: "Profile" }}
+        options={{ title: t("profile.title") }}
       />
     </ProfileStack.Navigator>
   );

@@ -18,6 +18,8 @@ import { Text, TextInput, Button, Card, Divider } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 
+import { useTranslation } from "react-i18next";
+
 import { transferService } from "../../api";
 import { useApp } from "../../contexts/AppContext";
 import { useTheme } from "../../contexts/ThemeContext";
@@ -34,6 +36,7 @@ export default function TransferScreen({
 }: Props): React.JSX.Element {
   const { accounts, fetchAccounts, refreshData } = useApp();
   const { colors: themeColors } = useTheme();
+  const { t } = useTranslation();
 
   const [fromAccountId, setFromAccountId] = useState<string | null>(null);
   const [toAccountId, setToAccountId] = useState<string | null>(null);
@@ -69,23 +72,23 @@ export default function TransferScreen({
 
   const validateForm = (): boolean => {
     if (!fromAccountId) {
-      setError("Please select a source account");
+      setError(t("transfer.fromAccount"));
       return false;
     }
     if (!toAccountId) {
-      setError("Please select a destination account");
+      setError(t("transfer.toAccount"));
       return false;
     }
     if (fromAccountId === toAccountId) {
-      setError("Source and destination accounts must be different");
+      setError(t("transfer.sameAccountError"));
       return false;
     }
     if (!amount || parseFloat(amount) <= 0) {
-      setError("Please enter a valid transfer amount");
+      setError(t("transfer.validAmountError"));
       return false;
     }
     if (fee && parseFloat(fee) < 0) {
-      setError("Fee cannot be negative");
+      setError(t("transfer.validAmountError"));
       return false;
     }
 
@@ -95,9 +98,9 @@ export default function TransferScreen({
       totalDeduction > parseFloat(String(fromAccount.balance))
     ) {
       setError(
-        `Insufficient balance. Available: ${formatCurrency(
-          fromAccount.balance,
-        )}`,
+        t("transfer.insufficientBalance", {
+          amount: formatCurrency(fromAccount.balance),
+        }),
       );
       return false;
     }
@@ -125,13 +128,13 @@ export default function TransferScreen({
 
       if (response.success) {
         await refreshData();
-        Alert.alert("Success", "Transfer completed successfully", [
+        Alert.alert(t("common.success"), t("transfer.successMessage"), [
           { text: "OK", onPress: () => navigation.goBack() },
         ]);
       }
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : "Failed to complete transfer";
+        err instanceof Error ? err.message : t("transfer.failedTransfer");
       setError(message);
     } finally {
       setIsLoading(false);
@@ -224,16 +227,14 @@ export default function TransferScreen({
           size={64}
           color={colors.textSecondary}
         />
-        <Text style={styles.emptyTitle}>Not enough accounts</Text>
-        <Text style={styles.emptyText}>
-          You need at least 2 accounts to make a transfer
-        </Text>
+        <Text style={styles.emptyTitle}>{t("transfer.notEnoughAccounts")}</Text>
+        <Text style={styles.emptyText}>{t("transfer.needTwoAccounts")}</Text>
         <Button
           mode="contained"
           onPress={() => navigation.goBack()}
           style={styles.emptyButton}
         >
-          Go Back
+          {t("common.goBack")}
         </Button>
       </View>
     );
@@ -263,7 +264,7 @@ export default function TransferScreen({
         ) : null}
 
         {renderAccountSelector(
-          "From Account",
+          t("transfer.fromAccount"),
           fromAccountId,
           setFromAccountId,
           toAccountId,
@@ -283,7 +284,7 @@ export default function TransferScreen({
         </View>
 
         {renderAccountSelector(
-          "To Account",
+          t("transfer.toAccount"),
           toAccountId,
           setToAccountId,
           fromAccountId,
@@ -294,7 +295,7 @@ export default function TransferScreen({
         <Text
           style={[styles.sectionTitle, { color: themeColors.textSecondary }]}
         >
-          Transfer Amount
+          {t("transfer.transferAmount")}
         </Text>
         <TextInput
           mode="outlined"
@@ -312,7 +313,7 @@ export default function TransferScreen({
         <Text
           style={[styles.sectionTitle, { color: themeColors.textSecondary }]}
         >
-          Transfer Fee (optional)
+          {t("transfer.transferFee")}
         </Text>
         <TextInput
           mode="outlined"
@@ -330,11 +331,11 @@ export default function TransferScreen({
         <Text
           style={[styles.sectionTitle, { color: themeColors.textSecondary }]}
         >
-          Description (optional)
+          {t("transfer.descriptionOptional")}
         </Text>
         <TextInput
           mode="outlined"
-          placeholder="Add a note..."
+          placeholder={t("transfer.descriptionPlaceholder")}
           value={description}
           onChangeText={setDescription}
           multiline
@@ -347,26 +348,28 @@ export default function TransferScreen({
 
         <Card style={styles.summaryCard}>
           <Card.Content>
-            <Text style={styles.summaryTitle}>Transfer Summary</Text>
+            <Text style={styles.summaryTitle}>
+              {t("transfer.transferSummary")}
+            </Text>
             <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>From:</Text>
+              <Text style={styles.summaryLabel}>{t("common.from")}</Text>
               <Text style={styles.summaryValue}>
                 {fromAccount?.name || "-"}
               </Text>
             </View>
             <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>To:</Text>
+              <Text style={styles.summaryLabel}>{t("common.to")}</Text>
               <Text style={styles.summaryValue}>{toAccount?.name || "-"}</Text>
             </View>
             <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Amount:</Text>
+              <Text style={styles.summaryLabel}>{t("common.amount")}:</Text>
               <Text style={styles.summaryValue}>
                 {formatCurrency(parseFloat(amount) || 0)}
               </Text>
             </View>
             {parseFloat(fee) > 0 && (
               <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>Fee:</Text>
+                <Text style={styles.summaryLabel}>{t("common.fee")}</Text>
                 <Text style={styles.summaryValue}>
                   {formatCurrency(parseFloat(fee))}
                 </Text>
@@ -374,7 +377,9 @@ export default function TransferScreen({
             )}
             <Divider style={styles.summaryDivider} />
             <View style={styles.summaryRow}>
-              <Text style={styles.summaryTotalLabel}>Total Deduction:</Text>
+              <Text style={styles.summaryTotalLabel}>
+                {t("transfer.totalDeduction")}
+              </Text>
               <Text style={styles.summaryTotalValue}>
                 {formatCurrency(totalDeduction)}
               </Text>
@@ -391,7 +396,7 @@ export default function TransferScreen({
           contentStyle={styles.submitButtonContent}
           icon="swap-horizontal"
         >
-          {isLoading ? "Processing..." : "Transfer Money"}
+          {isLoading ? t("transfer.processing") : t("transfer.transferMoney")}
         </Button>
       </ScrollView>
     </KeyboardAvoidingView>

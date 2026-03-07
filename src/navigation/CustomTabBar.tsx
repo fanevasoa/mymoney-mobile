@@ -17,6 +17,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 
+import { useTranslation } from "react-i18next";
+
 import { colors as lightColors, spacing, borderRadius } from "../theme";
 import { useTheme } from "../contexts/ThemeContext";
 
@@ -42,9 +44,21 @@ function getIcon(routeName: string, focused: boolean): IconName {
   }
 }
 
-function getLabel(routeName: string): string {
-  if (routeName === "Add") return "";
-  return routeName;
+function getLabel(routeName: string, t: (key: string) => string): string {
+  switch (routeName) {
+    case "Dashboard":
+      return t("nav.dashboard");
+    case "Accounts":
+      return t("nav.accounts");
+    case "Add":
+      return "";
+    case "Reports":
+      return t("nav.reports");
+    case "Profile":
+      return t("nav.profile");
+    default:
+      return routeName;
+  }
 }
 
 export default function CustomTabBar({
@@ -54,6 +68,7 @@ export default function CustomTabBar({
 }: BottomTabBarProps): React.JSX.Element {
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const bottomPadding = Math.max(insets.bottom, spacing.sm);
 
   return (
@@ -114,7 +129,7 @@ export default function CustomTabBar({
           }
 
           const iconName = getIcon(route.name, isFocused);
-          const label = getLabel(route.name);
+          const label = getLabel(route.name, t);
 
           return (
             <TouchableOpacity

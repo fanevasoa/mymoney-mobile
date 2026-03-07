@@ -17,6 +17,8 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 
+import { useTranslation } from "react-i18next";
+
 import { useApp } from "../../contexts/AppContext";
 import { useTheme } from "../../contexts/ThemeContext";
 import { colors, spacing, borderRadius } from "../../theme";
@@ -38,6 +40,7 @@ export default function AccountsScreen({
     isLoadingAccounts,
   } = useApp();
   const { colors: themeColors } = useTheme();
+  const { t } = useTranslation();
 
   const [selectedTypeId, setSelectedTypeId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -141,7 +144,7 @@ export default function AccountsScreen({
               {formatCurrency(item.balance)}
             </Text>
             {!item.isActive && (
-              <Text style={styles.inactiveLabel}>Inactive</Text>
+              <Text style={styles.inactiveLabel}>{t("common.inactive")}</Text>
             )}
           </View>
         </Card.Content>
@@ -157,12 +160,12 @@ export default function AccountsScreen({
         color={colors.textSecondary}
       />
       <Text style={[styles.emptyTitle, { color: themeColors.textPrimary }]}>
-        No accounts found
+        {t("account.noAccountsFound")}
       </Text>
       <Text style={[styles.emptyText, { color: themeColors.textSecondary }]}>
         {selectedTypeId || searchQuery
-          ? "Try adjusting your filters"
-          : "Tap the + button to add your first account"}
+          ? t("account.adjustFilters")
+          : t("account.addFirstAccount")}
       </Text>
     </View>
   );
@@ -170,7 +173,7 @@ export default function AccountsScreen({
   const renderHeader = (): React.JSX.Element => (
     <View style={styles.header}>
       <Searchbar
-        placeholder="Search accounts..."
+        placeholder={t("account.searchAccounts")}
         onChangeText={setSearchQuery}
         value={searchQuery}
         style={styles.searchBar}

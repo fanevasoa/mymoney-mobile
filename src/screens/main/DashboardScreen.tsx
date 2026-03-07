@@ -19,6 +19,8 @@ import type { CompositeScreenProps } from "@react-navigation/native";
 import type { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 
+import { useTranslation } from "react-i18next";
+
 import { useAuth } from "../../contexts/AuthContext";
 import { useApp } from "../../contexts/AppContext";
 import { useTheme } from "../../contexts/ThemeContext";
@@ -49,6 +51,7 @@ export default function DashboardScreen({
   const { fetchAccountTypes, fetchAccounts, fetchDashboard, dashboardData } =
     useApp();
   const { colors: themeColors } = useTheme();
+  const { t } = useTranslation();
 
   const [recentTransactions, setRecentTransactions] = useState<Transaction[]>(
     [],
@@ -131,7 +134,9 @@ export default function DashboardScreen({
           <Text
             style={[styles.welcomeText, { color: themeColors.textPrimary }]}
           >
-            Welcome back, {user?.name?.split(" ")[0] || "User"}!
+            {t("dashboard.welcomeBack", {
+              name: user?.name?.split(" ")[0] || t("profile.user"),
+            })}
           </Text>
           <Text style={[styles.dateText, { color: themeColors.textSecondary }]}>
             {new Date().toLocaleDateString("en-US", {
@@ -145,7 +150,9 @@ export default function DashboardScreen({
         {/* Total Balance Card */}
         <Card style={styles.balanceCard}>
           <Card.Content>
-            <Text style={styles.balanceLabel}>Total Balance</Text>
+            <Text style={styles.balanceLabel}>
+              {t("dashboard.totalBalance")}
+            </Text>
             <Text style={styles.balanceAmount}>
               {formatCurrency(dashboardData?.totalBalance)}
             </Text>
@@ -156,7 +163,7 @@ export default function DashboardScreen({
                   size={20}
                   color={colors.earning}
                 />
-                <Text style={styles.todayStatLabel}>Today</Text>
+                <Text style={styles.todayStatLabel}>{t("common.today")}</Text>
                 <Text
                   style={[styles.todayStatAmount, { color: colors.earning }]}
                 >
@@ -170,7 +177,7 @@ export default function DashboardScreen({
                   size={20}
                   color={colors.expense}
                 />
-                <Text style={styles.todayStatLabel}>Today</Text>
+                <Text style={styles.todayStatLabel}>{t("common.today")}</Text>
                 <Text
                   style={[styles.todayStatAmount, { color: colors.expense }]}
                 >
@@ -210,7 +217,7 @@ export default function DashboardScreen({
                 { color: themeColors.textSecondary },
               ]}
             >
-              Income
+              {t("common.income")}
             </Text>
           </TouchableOpacity>
 
@@ -241,7 +248,7 @@ export default function DashboardScreen({
                 { color: themeColors.textSecondary },
               ]}
             >
-              Expense
+              {t("common.expense")}
             </Text>
           </TouchableOpacity>
 
@@ -267,7 +274,7 @@ export default function DashboardScreen({
                 { color: themeColors.textSecondary },
               ]}
             >
-              Transfer
+              {t("common.transfer")}
             </Text>
           </TouchableOpacity>
         </View>
@@ -277,7 +284,7 @@ export default function DashboardScreen({
           <Text
             style={[styles.sectionTitle, { color: themeColors.textPrimary }]}
           >
-            By Account Type
+            {t("dashboard.byAccountType")}
           </Text>
           <View style={styles.accountTypesGrid}>
             {dashboardData?.accountTypesSummary?.map((type) => (
@@ -317,8 +324,7 @@ export default function DashboardScreen({
                       { color: themeColors.textSecondary },
                     ]}
                   >
-                    {type.accountCount} account
-                    {type.accountCount !== 1 ? "s" : ""}
+                    {t("dashboard.accountCount", { count: type.accountCount })}
                   </Text>
                 </Card.Content>
               </Card>
@@ -332,14 +338,14 @@ export default function DashboardScreen({
             <Text
               style={[styles.sectionTitle, { color: themeColors.textPrimary }]}
             >
-              Accounts
+              {t("common.accounts")}
             </Text>
             <TouchableOpacity
               onPress={() =>
                 navigation.navigate("Accounts", { screen: "AccountsMain" })
               }
             >
-              <Text style={styles.seeAllText}>See All</Text>
+              <Text style={styles.seeAllText}>{t("common.seeAll")}</Text>
             </TouchableOpacity>
           </View>
           {dashboardData?.accountsSummary?.slice(0, 3).map((account) => (
@@ -403,12 +409,12 @@ export default function DashboardScreen({
             <Text
               style={[styles.sectionTitle, { color: themeColors.textPrimary }]}
             >
-              Recent Transactions
+              {t("dashboard.recentTransactions")}
             </Text>
             <TouchableOpacity
               onPress={() => navigation.navigate("Transactions", {})}
             >
-              <Text style={styles.seeAllText}>See All</Text>
+              <Text style={styles.seeAllText}>{t("common.seeAll")}</Text>
             </TouchableOpacity>
           </View>
           {recentTransactions.length === 0 ? (
@@ -420,7 +426,7 @@ export default function DashboardScreen({
                     { color: themeColors.textSecondary },
                   ]}
                 >
-                  No transactions yet
+                  {t("dashboard.noTransactions")}
                 </Text>
               </Card.Content>
             </Card>

@@ -17,6 +17,8 @@ import { Text, TextInput, Button } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 
+import { useTranslation } from "react-i18next";
+
 import { useAuth } from "../../contexts/AuthContext";
 import { useGoogleAuth } from "../../hooks";
 import { useTheme } from "../../contexts/ThemeContext";
@@ -44,6 +46,7 @@ export default function RegisterScreen({
     isReady: isGoogleReady,
   } = useGoogleAuth();
   const { colors: themeColors } = useTheme();
+  const { t } = useTranslation();
 
   /**
    * Validate form inputs
@@ -119,10 +122,10 @@ export default function RegisterScreen({
             color={colors.primary}
           />
           <Text style={[styles.title, { color: themeColors.textPrimary }]}>
-            Create Account
+            {t("auth.registerButton")}
           </Text>
           <Text style={[styles.subtitle, { color: themeColors.textSecondary }]}>
-            Start managing your finances today
+            {t("auth.loginSubtitle")}
           </Text>
         </View>
 
@@ -143,7 +146,7 @@ export default function RegisterScreen({
           {/* Name input */}
           <TextInput
             mode="outlined"
-            label="Full Name"
+            label={t("auth.fullName")}
             value={name}
             onChangeText={setName}
             autoCapitalize="words"
@@ -157,7 +160,7 @@ export default function RegisterScreen({
           {/* Email input */}
           <TextInput
             mode="outlined"
-            label="Email"
+            label={t("auth.email")}
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
@@ -173,7 +176,7 @@ export default function RegisterScreen({
           {/* Password input */}
           <TextInput
             mode="outlined"
-            label="Password"
+            label={t("auth.password")}
             value={password}
             onChangeText={setPassword}
             secureTextEntry={!showPassword}
@@ -193,7 +196,7 @@ export default function RegisterScreen({
           {/* Confirm Password input */}
           <TextInput
             mode="outlined"
-            label="Confirm Password"
+            label={t("auth.confirmPassword")}
             value={confirmPassword}
             onChangeText={setConfirmPassword}
             secureTextEntry={!showPassword}
@@ -213,13 +216,13 @@ export default function RegisterScreen({
             style={styles.button}
             contentStyle={styles.buttonContent}
           >
-            {isLoading ? "Creating Account..." : "Create Account"}
+            {isLoading ? t("auth.creatingAccount") : t("auth.registerButton")}
           </Button>
 
           {/* Divider */}
           <View style={styles.dividerContainer}>
             <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>or</Text>
+            <Text style={styles.dividerText}>{t("common.or")}</Text>
             <View style={styles.dividerLine} />
           </View>
 
@@ -233,7 +236,9 @@ export default function RegisterScreen({
             style={styles.googleButton}
             contentStyle={styles.buttonContent}
           >
-            {isGoogleLoading ? "Signing up..." : "Sign up with Google"}
+            {isGoogleLoading
+              ? t("auth.creatingAccount")
+              : "Sign up with Google"}
           </Button>
 
           {/* Login link */}
@@ -241,10 +246,10 @@ export default function RegisterScreen({
             <Text
               style={[styles.footerText, { color: themeColors.textSecondary }]}
             >
-              Already have an account?
+              {t("auth.hasAccount")}
             </Text>
             <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-              <Text style={styles.linkText}> Sign In</Text>
+              <Text style={styles.linkText}> {t("auth.signIn")}</Text>
             </TouchableOpacity>
           </View>
         </View>
