@@ -9,6 +9,7 @@ import React from "react";
 import { StatusBar } from "expo-status-bar";
 import { NavigationContainer } from "@react-navigation/native";
 import { PaperProvider } from "react-native-paper";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { AuthProvider } from "./src/contexts/AuthContext";
 import { AppProvider } from "./src/contexts/AppContext";
@@ -17,15 +18,17 @@ import { theme } from "./src/theme";
 
 export default function App(): React.JSX.Element {
   return (
-    <PaperProvider theme={theme}>
-      <AuthProvider>
-        <AppProvider>
-          <NavigationContainer>
-            <StatusBar style="auto" />
-            <RootNavigator />
-          </NavigationContainer>
-        </AppProvider>
-      </AuthProvider>
-    </PaperProvider>
+    <SafeAreaProvider>
+      <PaperProvider theme={theme}>
+        <AuthProvider>
+          <AppProvider>
+            <NavigationContainer>
+              <StatusBar style="light" />
+              <RootNavigator />
+            </NavigationContainer>
+          </AppProvider>
+        </AuthProvider>
+      </PaperProvider>
+    </SafeAreaProvider>
   );
 }

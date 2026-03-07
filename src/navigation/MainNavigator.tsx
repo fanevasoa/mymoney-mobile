@@ -7,9 +7,9 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 
-import { colors, spacing } from "../theme";
+import { colors } from "../theme";
+import CustomTabBar from "./CustomTabBar";
 
 // Screens
 import DashboardScreen from "../screens/main/DashboardScreen";
@@ -40,8 +40,6 @@ const ProfileStack = createNativeStackNavigator<ProfileStackParamList>();
 
 // Tab Navigator
 const Tab = createBottomTabNavigator<MainTabParamList>();
-
-type IconName = keyof typeof MaterialCommunityIcons.glyphMap;
 
 const screenOptions = {
   headerStyle: {
@@ -141,45 +139,10 @@ function ProfileStackNavigator(): React.JSX.Element {
 export default function MainNavigator(): React.JSX.Element {
   return (
     <Tab.Navigator
-      screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused, color, size }) => {
-          let iconName: IconName = "circle";
-
-          switch (route.name) {
-            case "Dashboard":
-              iconName = focused ? "view-dashboard" : "view-dashboard-outline";
-              break;
-            case "Accounts":
-              iconName = focused ? "wallet" : "wallet-outline";
-              break;
-            case "Add":
-              iconName = "plus-circle";
-              break;
-            case "Reports":
-              iconName = focused ? "chart-bar" : "chart-bar";
-              break;
-            case "Profile":
-              iconName = focused ? "account-circle" : "account-circle-outline";
-              break;
-          }
-
-          return (
-            <MaterialCommunityIcons name={iconName} size={size} color={color} />
-          );
-        },
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.textSecondary,
+      tabBar={(props) => <CustomTabBar {...props} />}
+      screenOptions={{
         headerShown: false,
-        tabBarStyle: {
-          paddingBottom: spacing.xs,
-          paddingTop: spacing.xs,
-          height: 60,
-        },
-        tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: "500",
-        },
-      })}
+      }}
     >
       <Tab.Screen name="Dashboard" component={DashboardStackNavigator} />
       <Tab.Screen name="Accounts" component={AccountsStackNavigator} />
