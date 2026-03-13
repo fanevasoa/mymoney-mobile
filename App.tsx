@@ -16,6 +16,7 @@ import { initI18n } from "./src/i18n";
 import { ThemeProvider, useTheme } from "./src/contexts/ThemeContext";
 import { AuthProvider } from "./src/contexts/AuthContext";
 import { AppProvider } from "./src/contexts/AppContext";
+import { ToastProvider } from "./src/contexts/ToastContext";
 import { RootNavigator } from "./src/navigation";
 import {
   theme,
@@ -29,16 +30,18 @@ function AppContent(): React.JSX.Element {
 
   return (
     <PaperProvider theme={isDark ? darkTheme : theme}>
-      <AuthProvider>
-        <AppProvider>
-          <NavigationContainer
-            theme={isDark ? navigationDarkTheme : navigationLightTheme}
-          >
-            <StatusBar style={isDark ? "light" : "dark"} />
-            <RootNavigator />
-          </NavigationContainer>
-        </AppProvider>
-      </AuthProvider>
+      <ToastProvider>
+        <AuthProvider>
+          <AppProvider>
+            <NavigationContainer
+              theme={isDark ? navigationDarkTheme : navigationLightTheme}
+            >
+              <StatusBar style={isDark ? "light" : "dark"} />
+              <RootNavigator />
+            </NavigationContainer>
+          </AppProvider>
+        </AuthProvider>
+      </ToastProvider>
     </PaperProvider>
   );
 }

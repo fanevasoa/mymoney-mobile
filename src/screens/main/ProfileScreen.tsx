@@ -25,6 +25,7 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "../../contexts/AuthContext";
 import { useApp } from "../../contexts/AppContext";
 import { useTheme } from "../../contexts/ThemeContext";
+import { useToast } from "../../contexts/ToastContext";
 import { authService } from "../../api";
 import { changeLanguage, getCurrentLanguage } from "../../i18n";
 import { colors, spacing, borderRadius } from "../../theme";
@@ -35,6 +36,7 @@ export default function ProfileScreen(): React.JSX.Element {
   const { user, logout } = useAuth();
   const { clearData, dashboardData } = useApp();
   const { themeMode, setThemeMode, colors: themeColors } = useTheme();
+  const { showToast } = useToast();
   const [language, setLanguageState] = React.useState(getCurrentLanguage());
 
   const [passwordDialogVisible, setPasswordDialogVisible] =
@@ -65,15 +67,15 @@ export default function ProfileScreen(): React.JSX.Element {
 
   const handleChangePassword = async (): Promise<void> => {
     if (!currentPassword || !newPassword || !confirmPassword) {
-      Alert.alert("Error", "Please fill in all fields");
+      showToast(t("profile.fillAllFields"), "error");
       return;
     }
     if (newPassword.length < 6) {
-      Alert.alert("Error", "New password must be at least 6 characters");
+      showToast(t("profile.passwordMinLength"), "error");
       return;
     }
     if (newPassword !== confirmPassword) {
-      Alert.alert("Error", "New passwords do not match");
+      showToast(t("profile.passwordsNoMatch"), "error");
       return;
     }
 
@@ -81,7 +83,7 @@ export default function ProfileScreen(): React.JSX.Element {
       setIsChangingPassword(true);
       await authService.changePassword({ currentPassword, newPassword });
 
-      Alert.alert("Success", "Password changed successfully");
+      showToast(t("profile.passwordChanged"));
       setPasswordDialogVisible(false);
       setCurrentPassword("");
       setNewPassword("");
@@ -91,7 +93,7 @@ export default function ProfileScreen(): React.JSX.Element {
         error instanceof Error
           ? error.message
           : t("profile.failedChangePassword");
-      Alert.alert(t("common.error"), message);
+      showToast(message, "error");
     } finally {
       setIsChangingPassword(false);
     }
@@ -259,10 +261,7 @@ export default function ProfileScreen(): React.JSX.Element {
           left={(props) => <List.Icon {...props} icon="bell" />}
           right={(props) => <List.Icon {...props} icon="chevron-right" />}
           onPress={() =>
-            Alert.alert(
-              t("common.comingSoon"),
-              t("profile.notificationsComingSoon"),
-            )
+            showToast(t("profile.notificationsComingSoon"), "info")
           }
         />
         <Divider />
@@ -272,9 +271,7 @@ export default function ProfileScreen(): React.JSX.Element {
           description={t("profile.exportDataDesc")}
           left={(props) => <List.Icon {...props} icon="download" />}
           right={(props) => <List.Icon {...props} icon="chevron-right" />}
-          onPress={() =>
-            Alert.alert(t("common.comingSoon"), t("profile.exportComingSoon"))
-          }
+          onPress={() => showToast(t("profile.exportComingSoon"), "info")}
         />
       </Card>
 
@@ -295,10 +292,7 @@ export default function ProfileScreen(): React.JSX.Element {
           left={(props) => <List.Icon {...props} icon="shield-check" />}
           right={(props) => <List.Icon {...props} icon="chevron-right" />}
           onPress={() =>
-            Alert.alert(
-              t("profile.privacyPolicy"),
-              t("profile.privacyPolicyComingSoon"),
-            )
+            showToast(t("profile.privacyPolicyComingSoon"), "info")
           }
         />
         <Divider />
@@ -307,12 +301,7 @@ export default function ProfileScreen(): React.JSX.Element {
           title={t("profile.termsOfService")}
           left={(props) => <List.Icon {...props} icon="file-document" />}
           right={(props) => <List.Icon {...props} icon="chevron-right" />}
-          onPress={() =>
-            Alert.alert(
-              t("profile.termsOfService"),
-              t("profile.termsComingSoon"),
-            )
-          }
+          onPress={() => showToast(t("profile.termsComingSoon"), "info")}
         />
       </Card>
 

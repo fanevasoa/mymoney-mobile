@@ -65,6 +65,14 @@ export interface Account {
   isActive: boolean;
   accountTypeId: string;
   accountType?: AccountType;
+  sharedAccountId?: string | null;
+  sharedAccount?:
+    | (Pick<SharedAccount, "id" | "name" | "balance"> & {
+        description?: string | null;
+        myRole?: "manager" | "member" | null;
+        memberCount?: number;
+      })
+    | null;
   userId: string;
   createdAt: string;
   updatedAt: string;
@@ -75,6 +83,7 @@ export interface CreateAccountData {
   accountTypeId: string;
   balance?: number;
   description?: string | null;
+  isSharedAccount?: boolean;
 }
 
 export interface UpdateAccountData {
@@ -115,6 +124,12 @@ export interface CreateTransactionData {
   accountId: string;
   description?: string | null;
   category?: string | null;
+  isBorrowed?: boolean;
+  borrowerName?: string | null;
+  dueDate?: string | null;
+  isBorrowingResolution?: boolean;
+  borrowingId?: string | null;
+  resolutionAmount?: number | null;
 }
 
 export interface UpdateTransactionData {
@@ -309,15 +324,41 @@ export type DashboardStackParamList = {
   AccountDetail: { accountId: string };
 };
 
+export type SharedAccountScreensParamList = {
+  SharedAccountDetail: { sharedAccountId: string };
+  AddSharedAccountMember: { sharedAccountId: string };
+  SharedAccountIncome: { sharedAccountId: string };
+  CreateBudgetCampaign: { sharedAccountId: string };
+  BudgetCampaignDetail: { sharedAccountId: string; campaignId: string };
+  EditBudgetCampaign: {
+    sharedAccountId: string;
+    campaignId: string;
+    name: string;
+    description?: string | null;
+  };
+  AddBudgetItem: { sharedAccountId: string; campaignId: string };
+  EditBudgetItem: {
+    sharedAccountId: string;
+    campaignId: string;
+    itemId: string;
+    name: string;
+    quantity?: number | null;
+    unitPrice?: number | null;
+    amount: number;
+  };
+};
+
 export type AccountsStackParamList = {
   AccountsMain: undefined;
   AccountDetail: { accountId: string };
   AddAccount: undefined;
-};
+} & SharedAccountScreensParamList;
 
 export type AddStackParamList = {
   AddTransaction: { type?: string; accountId?: string };
   Transfer: undefined;
+  Borrowings: undefined;
+  BorrowingDetail: { borrowingId: string };
 };
 
 export type ReportsStackParamList = {
@@ -412,6 +453,222 @@ export interface ThemeContextValue {
   isDark: boolean;
   setThemeMode: (mode: ThemeMode) => void;
   colors: import("../theme").Colors;
+}
+
+// ============================================================================
+// Borrowing Types
+// ============================================================================
+
+export type BorrowingStatus = "unresolved" | "partially_resolved" | "resolved";
+
+export interface BorrowingResolution {
+  id: string;
+  amount: number;
+  borrowingId: string;
+  transactionId: string;
+  transaction?: Transaction;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Borrowing {
+  id: string;
+  amount: number;
+  remainingAmount: number;
+  description?: string | null;
+  borrowerName?: string | null;
+  dueDate?: string | null;
+  status: BorrowingStatus;
+  transactionId: string;
+  transaction?: Transaction;
+  resolutions?: BorrowingResolution[];
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UpdateBorrowingData {
+  description?: string | null;
+  borrowerName?: string | null;
+  dueDate?: string | null;
+}
+
+export interface BorrowingsParams {
+  page?: number;
+  limit?: number;
+  status?: BorrowingStatus;
+}
+
+// ============================================================================
+// Shared Account Types
+// ============================================================================
+
+export type SharedAccountMemberRole = "manager" | "member";
+
+export interface SharedAccountMember {
+  id: string;
+  role: SharedAccountMemberRole;
+  sharedAccountId: string;
+  userId: string;
+  user?: Pick<User, "id" | "name" | "email">;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SharedAccount {
+  id: string;
+  name: string;
+  description?: string | null;
+  balance: number;
+  createdBy: string;
+  creator?: Pick<User, "id" | "name" | "email">;
+  members?: SharedAccountMember[];
+  myRole?: SharedAccountMemberRole;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateSharedAccountData {
+  name: string;
+  description?: string | null;
+}
+
+export interface UpdateSharedAccountData {
+  name?: string;
+  description?: string | null;
+}
+
+export interface AddMemberData {
+  email: string;
+  role?: SharedAccountMemberRole;
+}
+
+export interface SharedAccountIncomeData {
+  amount: number;
+  description?: string | null;
+}
+
+// ============================================================================
+// Budget Campaign Types
+// ============================================================================
+
+export type BudgetCampaignStatus =
+  | "draft"
+  | "pending_approval"
+  | "approved"
+  | "rejected"
+  | "applied";
+
+export type BudgetItemStatus = "pending" | "approved" | "rejected";
+
+export interface BudgetItem {
+  id: string;
+  name: string;
+  quantity?: number | null;
+  unitPrice?: number | null;
+  amount: number;
+  status: BudgetItemStatus;
+  approvedBy?: string | null;
+  approver?: Pick<User, "id" | "name"> | null;
+  budgetCampaignId: string;
+  createdBy: string;
+  creator?: Pick<User, "id" | "name">;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BudgetCampaign {
+  id: string;
+  name: string;
+  description?: string | null;
+  status: BudgetCampaignStatus;
+  totalAmount: number;
+  sharedAccountId: string;
+  createdBy: string;
+  creator?: Pick<User, "id" | "name" | "email">;
+  approvedBy?: string | null;
+  approver?: Pick<User, "id" | "name" | "email"> | null;
+  approvedAt?: string | null;
+  appliedAt?: string | null;
+  items?: BudgetItem[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateBudgetCampaignData {
+  name: string;
+  description?: string | null;
+}
+
+export interface CreateBudgetItemData {
+  name: string;
+  quantity?: number | null;
+  unitPrice?: number | null;
+  amount?: number | null;
+}
+
+export interface UpdateBudgetCampaignData {
+  name?: string;
+  description?: string | null;
+}
+
+export interface UpdateBudgetItemData {
+  name?: string;
+  quantity?: number | null;
+  unitPrice?: number | null;
+  amount?: number | null;
+}
+
+// ============================================================================
+// Shared Account Transaction Types
+// ============================================================================
+
+export type SharedAccountTransactionType = "income" | "expense";
+export type SharedAccountTransactionStatus =
+  | "pending"
+  | "approved"
+  | "rejected";
+
+export interface SharedAccountTransaction {
+  id: string;
+  type: SharedAccountTransactionType;
+  amount: number;
+  description?: string | null;
+  status: SharedAccountTransactionStatus;
+  sharedAccountId: string;
+  budgetItemId?: string | null;
+  budgetItem?:
+    | (Pick<BudgetItem, "id" | "name" | "amount"> & {
+        budgetCampaign?: Pick<BudgetCampaign, "id" | "name">;
+      })
+    | null;
+  sourceAccountId?: string | null;
+  createdBy: string;
+  creator?: Pick<User, "id" | "name" | "email">;
+  approvedBy?: string | null;
+  approver?: Pick<User, "id" | "name" | "email"> | null;
+  approvedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateSharedAccountTransactionData {
+  type: SharedAccountTransactionType;
+  amount: number;
+  description?: string | null;
+  budgetItemId?: string | null;
+  sourceAccountId?: string | null;
+}
+
+export interface ApprovedBudgetItemForSelection {
+  id: string;
+  name: string;
+  amount: number;
+  quantity?: number | null;
+  unitPrice?: number | null;
+  campaignName: string;
+  campaignId: string;
+  creator?: Pick<User, "id" | "name">;
 }
 
 // ============================================================================

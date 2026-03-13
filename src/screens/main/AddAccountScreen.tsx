@@ -12,6 +12,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  Switch,
 } from "react-native";
 import { Text, TextInput, Button, Card, RadioButton } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -22,6 +23,7 @@ import { useTranslation } from "react-i18next";
 
 import { useApp } from "../../contexts/AppContext";
 import { useTheme } from "../../contexts/ThemeContext";
+import { useToast } from "../../contexts/ToastContext";
 import { colors, spacing, borderRadius } from "../../theme";
 import type { AccountsStackParamList, AccountType } from "../../types";
 
@@ -35,11 +37,13 @@ export default function AddAccountScreen({
   const { accountTypes, fetchAccountTypes, addAccount } = useApp();
   const { colors: themeColors } = useTheme();
   const { t } = useTranslation();
+  const { showToast } = useToast();
 
   const [name, setName] = useState<string>("");
   const [selectedTypeId, setSelectedTypeId] = useState<string | null>(null);
   const [balance, setBalance] = useState<string>("");
   const [description, setDescription] = useState<string>("");
+  const [isSharedAccount, setIsSharedAccount] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
 
@@ -90,15 +94,15 @@ export default function AddAccountScreen({
         accountTypeId: selectedTypeId!,
         balance: balance ? parseFloat(balance) : 0,
         description: description.trim() || null,
+        isSharedAccount,
       };
 
       const response = await accountService.createAccount(accountData);
 
       if (response.success) {
         addAccount(response.data.account);
-        Alert.alert("Success", "Account created successfully", [
-          { text: "OK", onPress: () => navigation.goBack() },
-        ]);
+        showToast(t("addAccount.accountCreated"));
+        setTimeout(() => navigation.goBack(), 300);
       }
     } catch (err) {
       const message =
@@ -234,6 +238,48 @@ export default function AddAccountScreen({
           textColor={themeColors.textPrimary}
         />
 
+        <View
+          style={[
+            styles.toggleSection,
+            { backgroundColor: themeColors.surface },
+          ]}
+        >
+          <View style={styles.toggleRow}>
+            <View style={styles.toggleInfo}>
+              <MaterialCommunityIcons
+                name="account-group"
+                size={22}
+                color={
+                  isSharedAccount ? colors.primary : themeColors.textSecondary
+                }
+              />
+              <View style={styles.toggleText}>
+                <Text
+                  style={[
+                    styles.toggleTitle,
+                    { color: themeColors.textPrimary },
+                  ]}
+                >
+                  Shared Account
+                </Text>
+                <Text
+                  style={[
+                    styles.toggleDesc,
+                    { color: themeColors.textSecondary },
+                  ]}
+                >
+                  Share this account with other users
+                </Text>
+              </View>
+            </View>
+            <Switch
+              value={isSharedAccount}
+              onValueChange={setIsSharedAccount}
+              trackColor={{ true: colors.primary }}
+            />
+          </View>
+        </View>
+
         <Button
           mode="contained"
           onPress={handleSubmit}
@@ -314,6 +360,33 @@ const styles = StyleSheet.create({
   input: {
     marginBottom: spacing.md,
     backgroundColor: colors.surface,
+  },
+  toggleSection: {
+    borderRadius: borderRadius.md,
+    padding: spacing.md,
+    marginBottom: spacing.md,
+  },
+  toggleRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  toggleInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+  toggleText: {
+    marginLeft: spacing.sm,
+    flex: 1,
+  },
+  toggleTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  toggleDesc: {
+    fontSize: 11,
+    marginTop: 2,
   },
   submitButton: {
     marginTop: spacing.md,

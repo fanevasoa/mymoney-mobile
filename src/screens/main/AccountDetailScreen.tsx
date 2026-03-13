@@ -30,6 +30,7 @@ import { useTranslation } from "react-i18next";
 import { accountService, transactionService } from "../../api";
 import { useApp } from "../../contexts/AppContext";
 import { useTheme } from "../../contexts/ThemeContext";
+import { useToast } from "../../contexts/ToastContext";
 import { colors, spacing, borderRadius } from "../../theme";
 import { formatCurrency, formatDate } from "../../utils/helpers";
 import type {
@@ -55,6 +56,7 @@ export default function AccountDetailScreen({
   const { removeAccount, updateAccount: updateAccountInState } = useApp();
   const { colors: themeColors } = useTheme();
   const { t } = useTranslation();
+  const { showToast } = useToast();
 
   const [account, setAccount] = useState<Account | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -77,7 +79,7 @@ export default function AccountDetailScreen({
       }
     } catch (error) {
       console.error("Error loading account:", error);
-      Alert.alert(t("common.error"), t("account.failedLoad"));
+      showToast(t("account.failedLoad"), "error");
     } finally {
       setIsLoading(false);
     }
@@ -109,7 +111,7 @@ export default function AccountDetailScreen({
               error instanceof Error
                 ? error.message
                 : t("account.failedDelete");
-            Alert.alert(t("common.error"), message);
+            showToast(message, "error");
           }
         },
       },
@@ -129,7 +131,7 @@ export default function AccountDetailScreen({
     } catch (error) {
       const message =
         error instanceof Error ? error.message : t("account.failedUpdate");
-      Alert.alert(t("common.error"), message);
+      showToast(message, "error");
     }
     setMenuVisible(false);
   };
@@ -249,12 +251,12 @@ export default function AccountDetailScreen({
         <Button
           mode="contained"
           icon="plus"
-          onPress={() =>
+          onPress={() => {
             navigation.navigate("Add", {
               screen: "AddTransaction",
               params: { accountId: account.id, type: "earning" },
-            })
-          }
+            });
+          }}
           style={[styles.actionButton, { backgroundColor: colors.earning }]}
         >
           {t("common.income")}
@@ -262,12 +264,12 @@ export default function AccountDetailScreen({
         <Button
           mode="contained"
           icon="minus"
-          onPress={() =>
+          onPress={() => {
             navigation.navigate("Add", {
               screen: "AddTransaction",
               params: { accountId: account.id, type: "expense" },
-            })
-          }
+            });
+          }}
           style={[styles.actionButton, { backgroundColor: colors.expense }]}
         >
           {t("common.expense")}

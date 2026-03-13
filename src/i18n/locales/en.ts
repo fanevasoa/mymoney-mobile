@@ -78,7 +78,8 @@ export default {
     addFirstAccount: "Tap the + button to add your first account",
     totalBalance: "Total Balance",
     deleteAccount: "Delete Account",
-    deleteConfirm: "Are you sure you want to delete this account? This action cannot be undone.",
+    deleteConfirm:
+      "Are you sure you want to delete this account? This action cannot be undone.",
     markInactive: "Mark as Inactive",
     markActive: "Mark as Active",
     failedLoad: "Failed to load account details",
@@ -98,6 +99,7 @@ export default {
     descriptionPlaceholder: "Add a note about this account",
     createAccount: "Create Account",
     creating: "Creating...",
+    accountCreated: "Account created successfully",
   },
 
   // Add Transaction
@@ -156,7 +158,12 @@ export default {
     failedTransfer: "Failed to process transfer",
     sameAccountError: "Please select different accounts",
     validAmountError: "Please enter a valid amount",
-    insufficientBalance: "Insufficient balance (including fee). Available: {{amount}}",
+    insufficientBalance:
+      "Insufficient balance (including fee). Available: {{amount}}",
+    sharedAccountNote:
+      "This transfer requires manager approval. The amount will be deducted now and refunded if rejected.",
+    sharedAccountPending: "Transfer submitted and pending manager approval",
+    submitToSharedAccount: "Submit Transfer",
   },
 
   // Transactions
@@ -185,6 +192,146 @@ export default {
     noCategoryData: "No category data available",
   },
 
+  // Shared Accounts
+  sharedAccount: {
+    // Roles & members
+    manager: "Manager",
+    member: "Member",
+    members: "Members",
+    membersCount: "{{count}} members",
+    unknown: "Unknown",
+    balance: "Balance",
+
+    // Shared Account Detail
+    recentTransactions: "Recent Transactions",
+    noTransactions: "No transactions yet",
+    pendingApproval: "{{count}} transaction pending approval",
+    pendingApproval_plural: "{{count}} transactions pending approval",
+    approve: "Approve",
+    reject: "Reject",
+    failedUpdateTx: "Failed to update transaction",
+    budgetCampaigns: "Budget Campaigns",
+    noCampaigns: "No budget campaigns yet",
+    byCreator: "by {{name}} · {{count}} items",
+    byName: "by {{name}}",
+
+    // Status labels
+    statusDraft: "Draft",
+    statusPending: "Pending",
+    statusApproved: "Approved",
+    statusRejected: "Rejected",
+    statusApplied: "Applied",
+
+    // Shared Accounts List
+    noSharedAccounts: "No shared accounts yet",
+    createToStart: "Create one to start managing shared finances",
+
+    // Create Shared Account
+    accountNameRequired: "Account name is required",
+    accountCreated: "Shared account created successfully",
+    failedCreateAccount: "Failed to create account",
+    accountNameLabel: "Account Name *",
+    accountNamePlaceholder: "e.g., Family Budget",
+    descriptionOptional: "Description (optional)",
+    accountDescPlaceholder: "What is this account for?",
+    creating: "Creating...",
+    createSharedAccount: "Create Shared Account",
+
+    // Add Member
+    emailRequired: "Email is required",
+    memberAdded: "Member added successfully",
+    failedAddMember: "Failed to add member",
+    emailLabel: "Email Address *",
+    emailPlaceholder: "user@example.com",
+    role: "Role",
+    adding: "Adding...",
+    addMember: "Add Member",
+
+    // Add Shared Account Transaction
+    newExpense: "New Expense",
+    newIncome: "New Income",
+    selectBudgetItem: "Select Budget Item",
+    optional: "optional",
+    loadingBudgetItems: "Loading approved budget items...",
+    noBudgetItems:
+      "No approved budget items available. Create and approve a budget campaign first.",
+    amountRequired: "Amount *",
+    descriptionLabel: "Description",
+    approvalNote:
+      "This transaction will be submitted for manager approval before it affects the account balance.",
+    submitForApproval: "Submit for Approval",
+    validAmount: "Please enter a valid amount",
+    txCreated: "Transaction created and pending manager approval",
+    failedCreateTx: "Failed to create transaction",
+    fundFromAccount: "Fund from Account",
+    selectSourceAccount:
+      "Please select a personal account to fund this transfer",
+    fundingNote:
+      "The amount will be deducted from your personal account immediately. If rejected by the manager, it will be refunded.",
+
+    // Shared Account Income
+    incomeAmount: "INCOME AMOUNT",
+    incomeDescPlaceholder: "What is this income for?",
+    incomeAdded: "Income added successfully",
+    failedAddIncome: "Failed to add income",
+    addIncome: "Add Income",
+
+    // Budget Campaign
+    campaignNameRequired: "Campaign name is required",
+    campaignCreated: "Budget campaign created successfully",
+    failedCreateCampaign: "Failed to create campaign",
+    campaignNameLabel: "Campaign Name *",
+    campaignNamePlaceholder: "e.g., Monthly Groceries",
+    campaignDescPlaceholder: "Budget campaign details",
+    createCampaign: "Create Campaign",
+    campaignUpdated: "Campaign updated successfully",
+    failedUpdateCampaign: "Failed to update campaign",
+    saving: "Saving...",
+    saveChanges: "Save Changes",
+
+    // Budget Campaign Detail
+    edit: "Edit",
+    items: "Items",
+    approvedTotal: "Approved Total",
+    createdBy: "Created by",
+    managerActions: "Manager Actions",
+    approveAll: "Approve All",
+    rejectAll: "Reject All",
+    applyAsExpenses: "Apply as Expenses",
+    noItems: "No items yet. Add budget items to this campaign.",
+    deleteItem: "Delete Item",
+    deleteConfirm: "Are you sure?",
+    actionFailed: "Action failed",
+    deleteFailed: "Delete failed",
+    approveCampaign: "Approve Campaign",
+    rejectCampaign: "Reject Campaign",
+    confirmApprove: "Are you sure you want to approve this campaign?",
+    confirmReject: "Are you sure you want to reject this campaign?",
+    applyCampaign: "Apply Campaign",
+    applyConfirm:
+      "This will deduct all approved expenses from the shared account balance. Continue?",
+    apply: "Apply",
+    campaignApplied:
+      "Campaign applied. Total expense: {{expense}}. New balance: {{balance}}",
+    applyFailed: "Apply failed",
+
+    // Budget Item
+    itemNameRequired: "Item name is required",
+    itemAdded: "Budget item added successfully",
+    failedAddItem: "Failed to add item",
+    itemNameLabel: "Item Name *",
+    itemNamePlaceholder: "e.g., Rice 25kg",
+    useQuantity: "Use Quantity × Unit Price",
+    quantity: "Quantity",
+    unitPrice: "Unit Price",
+    amountAuto: "Amount (auto-calculated)",
+    addAnother: "Add Another",
+    done: "Done",
+    addItem: "Add Item",
+    itemUpdated: "Budget item updated successfully",
+    failedUpdateItem: "Failed to update item",
+  },
+
   // Profile
   profile: {
     title: "Profile",
@@ -204,9 +351,13 @@ export default {
     change: "Change",
     passwordChanged: "Password changed successfully",
     failedChangePassword: "Failed to change password",
+    fillAllFields: "Please fill in all fields",
+    passwordMinLength: "New password must be at least 6 characters",
+    passwordsNoMatch: "New passwords do not match",
     notifications: "Notifications",
     notificationsDesc: "Manage notification preferences",
-    notificationsComingSoon: "Notification settings will be available in a future update.",
+    notificationsComingSoon:
+      "Notification settings will be available in a future update.",
     exportData: "Export Data",
     exportDataDesc: "Export your financial data",
     exportComingSoon: "Data export will be available in a future update.",

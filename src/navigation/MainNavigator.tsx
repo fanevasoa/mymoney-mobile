@@ -24,6 +24,16 @@ import TransferScreen from "../screens/main/TransferScreen";
 import TransactionsScreen from "../screens/main/TransactionsScreen";
 import ReportsScreen from "../screens/main/ReportsScreen";
 import ProfileScreen from "../screens/main/ProfileScreen";
+import BorrowingsScreen from "../screens/main/BorrowingsScreen";
+import BorrowingDetailScreen from "../screens/main/BorrowingDetailScreen";
+import SharedAccountDetailScreen from "../screens/main/SharedAccountDetailScreen";
+import AddSharedAccountMemberScreen from "../screens/main/AddSharedAccountMemberScreen";
+import SharedAccountIncomeScreen from "../screens/main/SharedAccountIncomeScreen";
+import CreateBudgetCampaignScreen from "../screens/main/CreateBudgetCampaignScreen";
+import BudgetCampaignDetailScreen from "../screens/main/BudgetCampaignDetailScreen";
+import AddBudgetItemScreen from "../screens/main/AddBudgetItemScreen";
+import EditBudgetCampaignScreen from "../screens/main/EditBudgetCampaignScreen";
+import EditBudgetItemScreen from "../screens/main/EditBudgetItemScreen";
 
 import type {
   MainTabParamList,
@@ -101,6 +111,46 @@ function AccountsStackNavigator(): React.JSX.Element {
         component={AddAccountScreen}
         options={{ title: t("addAccount.title") }}
       />
+      <AccountsStack.Screen
+        name="SharedAccountDetail"
+        component={SharedAccountDetailScreen}
+        options={{ title: "Shared Account" }}
+      />
+      <AccountsStack.Screen
+        name="AddSharedAccountMember"
+        component={AddSharedAccountMemberScreen}
+        options={{ title: "Add Member" }}
+      />
+      <AccountsStack.Screen
+        name="SharedAccountIncome"
+        component={SharedAccountIncomeScreen}
+        options={{ title: "Add Income" }}
+      />
+      <AccountsStack.Screen
+        name="CreateBudgetCampaign"
+        component={CreateBudgetCampaignScreen}
+        options={{ title: "New Budget Campaign" }}
+      />
+      <AccountsStack.Screen
+        name="BudgetCampaignDetail"
+        component={BudgetCampaignDetailScreen}
+        options={{ title: "Budget Campaign" }}
+      />
+      <AccountsStack.Screen
+        name="EditBudgetCampaign"
+        component={EditBudgetCampaignScreen}
+        options={{ title: "Edit Campaign" }}
+      />
+      <AccountsStack.Screen
+        name="AddBudgetItem"
+        component={AddBudgetItemScreen}
+        options={{ title: "Add Budget Item" }}
+      />
+      <AccountsStack.Screen
+        name="EditBudgetItem"
+        component={EditBudgetItemScreen}
+        options={{ title: "Edit Budget Item" }}
+      />
     </AccountsStack.Navigator>
   );
 }
@@ -119,6 +169,16 @@ function AddStackNavigator(): React.JSX.Element {
         name="Transfer"
         component={TransferScreen}
         options={{ title: t("transfer.title") }}
+      />
+      <AddStack.Screen
+        name="Borrowings"
+        component={BorrowingsScreen}
+        options={{ title: "Borrowings" }}
+      />
+      <AddStack.Screen
+        name="BorrowingDetail"
+        component={BorrowingDetailScreen}
+        options={{ title: "Borrowing Detail" }}
       />
     </AddStack.Navigator>
   );

@@ -11,7 +11,6 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  Alert,
   TouchableOpacity,
 } from "react-native";
 import { Text, TextInput, Button, Card, Divider } from "react-native-paper";
@@ -20,9 +19,10 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 import { useTranslation } from "react-i18next";
 
-import { transferService } from "../../api";
+import { transferService, sharedAccountService } from "../../api";
 import { useApp } from "../../contexts/AppContext";
 import { useTheme } from "../../contexts/ThemeContext";
+import { useToast } from "../../contexts/ToastContext";
 import { colors, spacing, borderRadius } from "../../theme";
 import { formatCurrency } from "../../utils/helpers";
 import type { AddStackParamList, Account } from "../../types";
@@ -31,12 +31,26 @@ type Props = NativeStackScreenProps<AddStackParamList, "Transfer">;
 
 type IconName = keyof typeof MaterialCommunityIcons.glyphMap;
 
+const getIconName = (icon: string | undefined): IconName => {
+  switch (icon) {
+    case "bank":
+      return "bank";
+    case "phone":
+      return "cellphone";
+    case "cash":
+      return "cash";
+    default:
+      return "wallet";
+  }
+};
+
 export default function TransferScreen({
   navigation,
 }: Props): React.JSX.Element {
   const { accounts, fetchAccounts, refreshData } = useApp();
   const { colors: themeColors } = useTheme();
   const { t } = useTranslation();
+  const { showToast } = useToast();
 
   const [fromAccountId, setFromAccountId] = useState<string | null>(null);
   const [toAccountId, setToAccountId] = useState<string | null>(null);
@@ -45,6 +59,12 @@ export default function TransferScreen({
   const [description, setDescription] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
+
+  const getAccount = (id: string | null): Account | undefined =>
+    accounts.find((acc) => acc.id === id);
+
+  const selectedToAccount = getAccount(toAccountId);
+  const isToSharedAccount = !!selectedToAccount?.sharedAccountId;
 
   useEffect(() => {
     fetchAccounts();
@@ -58,9 +78,6 @@ export default function TransferScreen({
       if (!fromAccountId) setFromAccountId(accounts[0].id);
     }
   }, [accounts, fromAccountId, toAccountId]);
-
-  const getAccount = (id: string | null): Account | undefined =>
-    accounts.find((acc) => acc.id === id);
 
   const handleSwapAccounts = (): void => {
     const temp = fromAccountId;
@@ -93,10 +110,10 @@ export default function TransferScreen({
     }
 
     const fromAccount = getAccount(fromAccountId);
-    if (
-      fromAccount &&
-      totalDeduction > parseFloat(String(fromAccount.balance))
-    ) {
+    const deduction = isToSharedAccount
+      ? parseFloat(amount) || 0
+      : totalDeduction;
+    if (fromAccount && deduction > parseFloat(String(fromAccount.balance))) {
       setError(
         t("transfer.insufficientBalance", {
           amount: formatCurrency(fromAccount.balance),
@@ -116,21 +133,43 @@ export default function TransferScreen({
     try {
       setIsLoading(true);
 
-      const transferData = {
-        fromAccountId: fromAccountId!,
-        toAccountId: toAccountId!,
-        amount: parseFloat(amount),
-        fee: fee ? parseFloat(fee) : 0,
-        description: description.trim() || null,
-      };
+      if (isToSharedAccount && selectedToAccount?.sharedAccountId) {
+        // Transfer to shared account → creates pending shared account transaction
+        const response =
+          await sharedAccountService.createSharedAccountTransaction(
+            selectedToAccount.sharedAccountId,
+            {
+              type: "income",
+              amount: parseFloat(amount),
+              description:
+                description.trim() ||
+                `Transfer from ${getAccount(fromAccountId)?.name || "account"}`,
+              sourceAccountId: fromAccountId,
+            },
+          );
 
-      const response = await transferService.createTransfer(transferData);
+        if (response.success) {
+          await refreshData();
+          showToast(t("transfer.sharedAccountPending"));
+          setTimeout(() => navigation.goBack(), 300);
+        }
+      } else {
+        // Regular transfer between personal accounts
+        const transferData = {
+          fromAccountId: fromAccountId!,
+          toAccountId: toAccountId!,
+          amount: parseFloat(amount),
+          fee: fee ? parseFloat(fee) : 0,
+          description: description.trim() || null,
+        };
 
-      if (response.success) {
-        await refreshData();
-        Alert.alert(t("common.success"), t("transfer.successMessage"), [
-          { text: "OK", onPress: () => navigation.goBack() },
-        ]);
+        const response = await transferService.createTransfer(transferData);
+
+        if (response.success) {
+          await refreshData();
+          showToast(t("transfer.successMessage"));
+          setTimeout(() => navigation.goBack(), 300);
+        }
       }
     } catch (err) {
       const message =
@@ -141,33 +180,29 @@ export default function TransferScreen({
     }
   };
 
-  const getIconName = (icon: string | undefined): IconName => {
-    switch (icon) {
-      case "bank":
-        return "bank";
-      case "phone":
-        return "cellphone";
-      case "cash":
-        return "cash";
-      default:
-        return "wallet";
-    }
-  };
-
   const renderAccountSelector = (
     title: string,
     selectedId: string | null,
     onSelect: (id: string) => void,
     excludeId: string | null,
-  ): React.JSX.Element => (
-    <View style={styles.accountSection}>
-      <Text style={[styles.sectionTitle, { color: themeColors.textSecondary }]}>
-        {title}
-      </Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        {accounts
-          .filter((acc) => acc.id !== excludeId)
-          .map((account) => (
+    filterShared?: boolean,
+  ): React.JSX.Element => {
+    const filteredAccounts = accounts.filter((acc) => {
+      if (acc.id === excludeId) return false;
+      // "From" picker: only personal accounts
+      if (filterShared === false && acc.sharedAccountId) return false;
+      return true;
+    });
+
+    return (
+      <View style={styles.accountSection}>
+        <Text
+          style={[styles.sectionTitle, { color: themeColors.textSecondary }]}
+        >
+          {title}
+        </Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          {filteredAccounts.map((account) => (
             <TouchableOpacity
               key={account.id}
               onPress={() => onSelect(account.id)}
@@ -183,15 +218,25 @@ export default function TransferScreen({
                     style={[
                       styles.accountIcon,
                       {
-                        backgroundColor:
-                          (account.accountType?.color || colors.primary) + "20",
+                        backgroundColor: account.sharedAccountId
+                          ? colors.primary + "20"
+                          : (account.accountType?.color || colors.primary) +
+                            "20",
                       },
                     ]}
                   >
                     <MaterialCommunityIcons
-                      name={getIconName(account.accountType?.icon)}
+                      name={
+                        account.sharedAccountId
+                          ? "account-group"
+                          : getIconName(account.accountType?.icon)
+                      }
                       size={20}
-                      color={account.accountType?.color || colors.primary}
+                      color={
+                        account.sharedAccountId
+                          ? colors.primary
+                          : account.accountType?.color || colors.primary
+                      }
                     />
                   </View>
                   <Text
@@ -215,9 +260,10 @@ export default function TransferScreen({
               </Card>
             </TouchableOpacity>
           ))}
-      </ScrollView>
-    </View>
-  );
+        </ScrollView>
+      </View>
+    );
+  };
 
   if (accounts.length < 2) {
     return (
@@ -241,7 +287,7 @@ export default function TransferScreen({
   }
 
   const fromAccount = getAccount(fromAccountId);
-  const toAccount = getAccount(toAccountId);
+  const toAccount = getAccount(toAccountId); // used in summary card
 
   return (
     <KeyboardAvoidingView
@@ -268,17 +314,19 @@ export default function TransferScreen({
           fromAccountId,
           setFromAccountId,
           toAccountId,
+          false,
         )}
 
         <View style={styles.swapContainer}>
           <TouchableOpacity
             style={styles.swapButton}
             onPress={handleSwapAccounts}
+            disabled={isToSharedAccount}
           >
             <MaterialCommunityIcons
               name="swap-vertical"
               size={24}
-              color={colors.primary}
+              color={isToSharedAccount ? colors.textDisabled : colors.primary}
             />
           </TouchableOpacity>
         </View>
@@ -288,6 +336,29 @@ export default function TransferScreen({
           toAccountId,
           setToAccountId,
           fromAccountId,
+        )}
+
+        {isToSharedAccount && (
+          <View
+            style={[
+              styles.sharedAccountWarning,
+              { backgroundColor: colors.warning + "10" },
+            ]}
+          >
+            <MaterialCommunityIcons
+              name="alert-outline"
+              size={16}
+              color={colors.warning}
+            />
+            <Text
+              style={[
+                styles.sharedAccountWarningText,
+                { color: themeColors.textSecondary },
+              ]}
+            >
+              {t("transfer.sharedAccountNote")}
+            </Text>
+          </View>
         )}
 
         <Divider style={styles.divider} />
@@ -310,23 +381,30 @@ export default function TransferScreen({
           textColor={themeColors.textPrimary}
         />
 
-        <Text
-          style={[styles.sectionTitle, { color: themeColors.textSecondary }]}
-        >
-          {t("transfer.transferFee")}
-        </Text>
-        <TextInput
-          mode="outlined"
-          placeholder="0.00"
-          value={fee}
-          onChangeText={setFee}
-          keyboardType="decimal-pad"
-          left={<TextInput.Affix text="$" />}
-          style={[styles.input, { backgroundColor: themeColors.surface }]}
-          outlineColor={themeColors.border}
-          activeOutlineColor={themeColors.primary}
-          textColor={themeColors.textPrimary}
-        />
+        {!isToSharedAccount && (
+          <>
+            <Text
+              style={[
+                styles.sectionTitle,
+                { color: themeColors.textSecondary },
+              ]}
+            >
+              {t("transfer.transferFee")}
+            </Text>
+            <TextInput
+              mode="outlined"
+              placeholder="0.00"
+              value={fee}
+              onChangeText={setFee}
+              keyboardType="decimal-pad"
+              left={<TextInput.Affix text="$" />}
+              style={[styles.input, { backgroundColor: themeColors.surface }]}
+              outlineColor={themeColors.border}
+              activeOutlineColor={themeColors.primary}
+              textColor={themeColors.textPrimary}
+            />
+          </>
+        )}
 
         <Text
           style={[styles.sectionTitle, { color: themeColors.textSecondary }]}
@@ -396,7 +474,11 @@ export default function TransferScreen({
           contentStyle={styles.submitButtonContent}
           icon="swap-horizontal"
         >
-          {isLoading ? t("transfer.processing") : t("transfer.transferMoney")}
+          {isLoading
+            ? t("transfer.processing")
+            : isToSharedAccount
+              ? t("transfer.submitToSharedAccount")
+              : t("transfer.transferMoney")}
         </Button>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -546,6 +628,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     color: colors.primary,
+  },
+  sharedAccountWarning: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    padding: spacing.sm,
+    borderRadius: borderRadius.md,
+    marginTop: spacing.sm,
+    marginBottom: spacing.xs,
+  },
+  sharedAccountWarningText: {
+    fontSize: 12,
+    flex: 1,
   },
   submitButton: {
     borderRadius: borderRadius.md,

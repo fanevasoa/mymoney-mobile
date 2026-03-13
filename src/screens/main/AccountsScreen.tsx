@@ -94,63 +94,140 @@ export default function AccountsScreen({
     0,
   );
 
-  const renderAccount = ({ item }: { item: Account }): React.JSX.Element => (
-    <TouchableOpacity
-      onPress={() =>
-        navigation.navigate("AccountDetail", { accountId: item.id })
-      }
-    >
-      <Card style={styles.accountCard}>
-        <Card.Content style={styles.accountContent}>
-          <View style={styles.accountLeft}>
-            <View
-              style={[
-                styles.accountIcon,
-                {
-                  backgroundColor:
-                    (item.accountType?.color || colors.primary) + "20",
-                },
-              ]}
-            >
-              <MaterialCommunityIcons
-                name={getIconName(item.accountType?.icon)}
-                size={24}
-                color={item.accountType?.color || colors.primary}
-              />
+  const handleAccountPress = (item: Account) => {
+    if (item.sharedAccountId) {
+      navigation.navigate("SharedAccountDetail", {
+        sharedAccountId: item.sharedAccountId,
+      });
+    } else {
+      navigation.navigate("AccountDetail", { accountId: item.id });
+    }
+  };
+
+  const renderAccount = ({ item }: { item: Account }): React.JSX.Element => {
+    const isShared = !!item.sharedAccountId;
+    const sa = item.sharedAccount;
+
+    return (
+      <TouchableOpacity onPress={() => handleAccountPress(item)}>
+        <Card style={styles.accountCard}>
+          <Card.Content>
+            <View style={styles.accountContent}>
+              <View style={styles.accountLeft}>
+                <View
+                  style={[
+                    styles.accountIcon,
+                    {
+                      backgroundColor:
+                        (item.accountType?.color || colors.primary) + "20",
+                    },
+                  ]}
+                >
+                  <MaterialCommunityIcons
+                    name={
+                      isShared
+                        ? "account-group"
+                        : getIconName(item.accountType?.icon)
+                    }
+                    size={24}
+                    color={item.accountType?.color || colors.primary}
+                  />
+                </View>
+                <View style={styles.accountInfo}>
+                  <View style={styles.accountNameRow}>
+                    <Text
+                      style={[
+                        styles.accountName,
+                        { color: themeColors.textPrimary },
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {item.name}
+                    </Text>
+                    {isShared && sa?.myRole && (
+                      <Chip
+                        textStyle={{
+                          fontSize: 9,
+                          color:
+                            sa.myRole === "manager"
+                              ? colors.primary
+                              : themeColors.textSecondary,
+                        }}
+                        style={{
+                          backgroundColor:
+                            sa.myRole === "manager"
+                              ? colors.primary + "15"
+                              : themeColors.border + "50",
+                          height: 22,
+                        }}
+                        compact
+                      >
+                        {sa.myRole === "manager" ? "Manager" : "Member"}
+                      </Chip>
+                    )}
+                  </View>
+                  {isShared && sa?.description ? (
+                    <Text
+                      style={[
+                        styles.accountTypeName,
+                        { color: themeColors.textSecondary },
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {sa.description}
+                    </Text>
+                  ) : (
+                    <Text
+                      style={[
+                        styles.accountTypeName,
+                        { color: themeColors.textSecondary },
+                      ]}
+                    >
+                      {item.accountType?.name}
+                    </Text>
+                  )}
+                </View>
+              </View>
+              <View style={styles.accountRight}>
+                <Text
+                  style={[
+                    styles.accountBalance,
+                    { color: themeColors.textPrimary },
+                  ]}
+                >
+                  {formatCurrency(item.balance)}
+                </Text>
+                {!item.isActive && (
+                  <Text style={styles.inactiveLabel}>
+                    {t("common.inactive")}
+                  </Text>
+                )}
+              </View>
             </View>
-            <View style={styles.accountInfo}>
-              <Text
-                style={[styles.accountName, { color: themeColors.textPrimary }]}
-              >
-                {item.name}
-              </Text>
-              <Text
-                style={[
-                  styles.accountTypeName,
-                  { color: themeColors.textSecondary },
-                ]}
-              >
-                {item.accountType?.name}
-              </Text>
-            </View>
-          </View>
-          <View style={styles.accountRight}>
-            <Text
-              style={[
-                styles.accountBalance,
-                { color: themeColors.textPrimary },
-              ]}
-            >
-              {formatCurrency(item.balance)}
-            </Text>
-            {!item.isActive && (
-              <Text style={styles.inactiveLabel}>{t("common.inactive")}</Text>
+            {isShared && (
+              <View style={styles.sharedFooter}>
+                <View style={styles.membersRow}>
+                  <MaterialCommunityIcons
+                    name="account-multiple"
+                    size={14}
+                    color={themeColors.textSecondary}
+                  />
+                  <Text
+                    style={[
+                      styles.membersCount,
+                      { color: themeColors.textSecondary },
+                    ]}
+                  >
+                    {sa?.memberCount || 0} members
+                  </Text>
+                </View>
+              </View>
             )}
-          </View>
-        </Card.Content>
-      </Card>
-    </TouchableOpacity>
-  );
+          </Card.Content>
+        </Card>
+      </TouchableOpacity>
+    );
+  };
 
   const renderEmpty = (): React.JSX.Element => (
     <View style={styles.emptyContainer}>
@@ -329,10 +406,16 @@ const styles = StyleSheet.create({
   accountInfo: {
     flex: 1,
   },
+  accountNameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
   accountName: {
     fontSize: 16,
     fontWeight: "600",
     color: colors.textPrimary,
+    flexShrink: 1,
   },
   accountTypeName: {
     fontSize: 12,
@@ -351,6 +434,20 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: colors.warning,
     marginTop: 2,
+  },
+  sharedFooter: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "center",
+    marginTop: spacing.xs,
+  },
+  membersRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  membersCount: {
+    fontSize: 12,
   },
   emptyContainer: {
     alignItems: "center",
