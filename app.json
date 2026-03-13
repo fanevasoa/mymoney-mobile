@@ -17,14 +17,18 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.mymoney.app"
+      "bundleIdentifier": "com.mymoney.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#6366F1"
       },
-      "package": "com.mymoney.app"
+      "package": "com.mymoney.app",
+      "versionCode": 2
     },
     "web": {
       "favicon": "./assets/favicon.png"
