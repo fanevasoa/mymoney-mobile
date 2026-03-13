@@ -65,7 +65,7 @@ export default function SharedAccountDetailScreen({
   const [campaigns, setCampaigns] = useState<BudgetCampaign[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showMembers, setShowMembers] = useState(false);
-  const [showCampaigns, setShowCampaigns] = useState(false);
+  const [showCampaigns, setShowCampaigns] = useState(true);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -305,6 +305,146 @@ export default function SharedAccountDetailScreen({
           </Text>
         </View>
       )}
+
+      {/* Budget Campaigns (collapsible) */}
+      <TouchableOpacity
+        onPress={() => setShowCampaigns(!showCampaigns)}
+        activeOpacity={0.7}
+      >
+        <Card style={[styles.card, { backgroundColor: themeColors.surface }]}>
+          <Card.Content>
+            <View style={styles.collapsibleHeader}>
+              <Text
+                style={[
+                  styles.sectionTitle,
+                  { color: themeColors.textPrimary },
+                ]}
+              >
+                {t("sharedAccount.budgetCampaigns")} ({campaigns.length})
+              </Text>
+              <View style={styles.collapsibleRight}>
+                <TouchableOpacity
+                  onPress={() =>
+                    navigation.navigate("CreateBudgetCampaign", {
+                      sharedAccountId,
+                    })
+                  }
+                >
+                  <MaterialCommunityIcons
+                    name="plus-circle-outline"
+                    size={22}
+                    color={colors.primary}
+                  />
+                </TouchableOpacity>
+                <MaterialCommunityIcons
+                  name={showCampaigns ? "chevron-up" : "chevron-down"}
+                  size={22}
+                  color={themeColors.textSecondary}
+                />
+              </View>
+            </View>
+
+            {showCampaigns && (
+              <>
+                {campaigns.length === 0 ? (
+                  <Text
+                    style={[
+                      styles.emptyText,
+                      { color: themeColors.textSecondary },
+                    ]}
+                  >
+                    {t("sharedAccount.noCampaigns")}
+                  </Text>
+                ) : (
+                  campaigns.map((campaign) => (
+                    <TouchableOpacity
+                      key={campaign.id}
+                      onPress={() =>
+                        navigation.navigate("BudgetCampaignDetail", {
+                          sharedAccountId,
+                          campaignId: campaign.id,
+                        })
+                      }
+                    >
+                      <View
+                        style={[
+                          styles.campaignRow,
+                          { borderBottomColor: themeColors.border },
+                        ]}
+                      >
+                        <View style={styles.campaignLeft}>
+                          <Text
+                            style={[
+                              styles.campaignName,
+                              { color: themeColors.textPrimary },
+                            ]}
+                            numberOfLines={1}
+                          >
+                            {campaign.name}
+                          </Text>
+                          <Text
+                            style={[
+                              styles.campaignCreator,
+                              { color: themeColors.textSecondary },
+                            ]}
+                          >
+                            {t("sharedAccount.byCreator", {
+                              name:
+                                campaign.creator?.name ||
+                                t("sharedAccount.unknown"),
+                              count: campaign.items?.length || 0,
+                            })}
+                          </Text>
+                        </View>
+                        <View style={styles.campaignRight}>
+                          <Text
+                            style={[
+                              styles.campaignAmount,
+                              { color: themeColors.textPrimary },
+                            ]}
+                          >
+                            {formatCurrency(campaign.totalAmount)}
+                          </Text>
+                          <Chip
+                            textStyle={{
+                              fontSize: 9,
+                              color: getCampaignStatusColor(campaign.status),
+                              lineHeight: 14,
+                            }}
+                            style={{
+                              backgroundColor:
+                                getCampaignStatusColor(campaign.status) + "15",
+                              paddingVertical: 0,
+                              paddingHorizontal: 2,
+                            }}
+                            compact
+                          >
+                            {getCampaignStatusLabel(campaign.status)}
+                          </Chip>
+                        </View>
+                      </View>
+                    </TouchableOpacity>
+                  ))
+                )}
+
+                <Button
+                  mode="contained"
+                  icon="plus"
+                  onPress={() =>
+                    navigation.navigate("CreateBudgetCampaign", {
+                      sharedAccountId,
+                    })
+                  }
+                  style={styles.addBudgetItemButton}
+                  contentStyle={styles.addBudgetItemButtonContent}
+                >
+                  {t("sharedAccount.addBudgetCampaign")}
+                </Button>
+              </>
+            )}
+          </Card.Content>
+        </Card>
+      </TouchableOpacity>
 
       {/* Recent Transactions */}
       <View style={styles.section}>
@@ -550,132 +690,6 @@ export default function SharedAccountDetailScreen({
           </Card.Content>
         </Card>
       </TouchableOpacity>
-
-      {/* Budget Campaigns (collapsible) */}
-      <TouchableOpacity
-        onPress={() => setShowCampaigns(!showCampaigns)}
-        activeOpacity={0.7}
-      >
-        <Card style={[styles.card, { backgroundColor: themeColors.surface }]}>
-          <Card.Content>
-            <View style={styles.collapsibleHeader}>
-              <Text
-                style={[
-                  styles.sectionTitle,
-                  { color: themeColors.textPrimary },
-                ]}
-              >
-                {t("sharedAccount.budgetCampaigns")} ({campaigns.length})
-              </Text>
-              <View style={styles.collapsibleRight}>
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.navigate("CreateBudgetCampaign", {
-                      sharedAccountId,
-                    })
-                  }
-                >
-                  <MaterialCommunityIcons
-                    name="plus-circle-outline"
-                    size={22}
-                    color={colors.primary}
-                  />
-                </TouchableOpacity>
-                <MaterialCommunityIcons
-                  name={showCampaigns ? "chevron-up" : "chevron-down"}
-                  size={22}
-                  color={themeColors.textSecondary}
-                />
-              </View>
-            </View>
-
-            {showCampaigns && (
-              <>
-                {campaigns.length === 0 ? (
-                  <Text
-                    style={[
-                      styles.emptyText,
-                      { color: themeColors.textSecondary },
-                    ]}
-                  >
-                    {t("sharedAccount.noCampaigns")}
-                  </Text>
-                ) : (
-                  campaigns.map((campaign) => (
-                    <TouchableOpacity
-                      key={campaign.id}
-                      onPress={() =>
-                        navigation.navigate("BudgetCampaignDetail", {
-                          sharedAccountId,
-                          campaignId: campaign.id,
-                        })
-                      }
-                    >
-                      <View
-                        style={[
-                          styles.campaignRow,
-                          { borderBottomColor: themeColors.border },
-                        ]}
-                      >
-                        <View style={styles.campaignLeft}>
-                          <Text
-                            style={[
-                              styles.campaignName,
-                              { color: themeColors.textPrimary },
-                            ]}
-                            numberOfLines={1}
-                          >
-                            {campaign.name}
-                          </Text>
-                          <Text
-                            style={[
-                              styles.campaignCreator,
-                              { color: themeColors.textSecondary },
-                            ]}
-                          >
-                            {t("sharedAccount.byCreator", {
-                              name:
-                                campaign.creator?.name ||
-                                t("sharedAccount.unknown"),
-                              count: campaign.items?.length || 0,
-                            })}
-                          </Text>
-                        </View>
-                        <View style={styles.campaignRight}>
-                          <Text
-                            style={[
-                              styles.campaignAmount,
-                              { color: themeColors.textPrimary },
-                            ]}
-                          >
-                            {formatCurrency(campaign.totalAmount)}
-                          </Text>
-                          <Chip
-                            textStyle={{
-                              fontSize: 9,
-                              color: getCampaignStatusColor(campaign.status),
-                              lineHeight: 14,
-                            }}
-                            style={{
-                              backgroundColor:
-                                getCampaignStatusColor(campaign.status) + "15",
-                              paddingVertical: 0,
-                              paddingHorizontal: 2,
-                            }}
-                            compact
-                          >
-                            {getCampaignStatusLabel(campaign.status)}
-                          </Chip>
-                        </View>
-                      </View>
-                    </TouchableOpacity>
-                  ))
-                )}
-              </>
-            )}
-          </Card.Content>
-        </Card>
-      </TouchableOpacity>
     </ScrollView>
   );
 }
@@ -881,5 +895,13 @@ const styles = StyleSheet.create({
   campaignAmount: {
     fontSize: 14,
     fontWeight: "700",
+  },
+  addBudgetItemButton: {
+    marginTop: spacing.md,
+    borderRadius: borderRadius.md,
+    backgroundColor: colors.primary,
+  },
+  addBudgetItemButtonContent: {
+    paddingVertical: spacing.xs,
   },
 });

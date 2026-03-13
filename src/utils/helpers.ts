@@ -71,22 +71,21 @@ interface ApiErrorLike {
  */
 export function formatCurrency(
   amount: number | null | undefined,
-  currency: string = DEFAULT_CURRENCY,
-  decimals: number = DEFAULT_DECIMALS
+  _currency: string = DEFAULT_CURRENCY,
+  decimals: number = DEFAULT_DECIMALS,
 ): string {
   const safeAmount = Number(amount) || 0;
   const safeDecimals = Math.max(0, Math.floor(decimals));
 
-  try {
-    return new Intl.NumberFormat(DEFAULT_LOCALE, {
-      style: "currency",
-      currency,
-      minimumFractionDigits: safeDecimals,
-      maximumFractionDigits: safeDecimals,
-    }).format(safeAmount);
-  } catch {
-    return `${currency} ${safeAmount.toFixed(safeDecimals)}`;
-  }
+  const fixed = safeAmount.toFixed(safeDecimals);
+  const [intPart, decPart] = fixed.split(".");
+  const sign = intPart.startsWith("-") ? "-" : "";
+  const digits = intPart.replace("-", "");
+  const grouped = digits.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+
+  return decPart !== undefined
+    ? `${sign}${grouped}.${decPart} Ar`
+    : `${sign}${grouped} Ar`;
 }
 
 // ============================================================================
@@ -109,7 +108,7 @@ function isValidDate(date: Date): boolean {
  */
 export function formatDate(
   dateInput: DateInput,
-  options: DateFormatOptions = {}
+  options: DateFormatOptions = {},
 ): string {
   const date = parseDate(dateInput);
 
@@ -178,7 +177,7 @@ export function formatRelativeTime(dateInput: DateInput): string {
  */
 export function truncateText(
   text: string | null | undefined,
-  maxLength: number = DEFAULT_TRUNCATE_LENGTH
+  maxLength: number = DEFAULT_TRUNCATE_LENGTH,
 ): string {
   if (!text) {
     return "";
@@ -243,7 +242,7 @@ export function isValidEmail(email: string | null | undefined): boolean {
  */
 export function debounce<T extends (...args: unknown[]) => unknown>(
   func: T,
-  wait: number = DEFAULT_DEBOUNCE_WAIT
+  wait: number = DEFAULT_DEBOUNCE_WAIT,
 ): DebouncedFunction<T> & { cancel: () => void } {
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
 

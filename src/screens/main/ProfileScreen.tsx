@@ -29,6 +29,7 @@ import { useToast } from "../../contexts/ToastContext";
 import { authService } from "../../api";
 import { changeLanguage, getCurrentLanguage } from "../../i18n";
 import { colors, spacing, borderRadius } from "../../theme";
+import { formatCurrency } from "../../utils/helpers";
 import type { ThemeMode } from "../../types";
 
 export default function ProfileScreen(): React.JSX.Element {
@@ -182,7 +183,7 @@ export default function ProfileScreen(): React.JSX.Element {
             />
             <View style={styles.statItem}>
               <Text style={[styles.statValue, { color: themeColors.primary }]}>
-                ${(dashboardData?.totalBalance || 0).toLocaleString()}
+                {formatCurrency(dashboardData?.totalBalance)}
               </Text>
               <Text
                 style={[styles.statLabel, { color: themeColors.textSecondary }]}

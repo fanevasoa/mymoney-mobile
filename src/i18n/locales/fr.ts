@@ -68,6 +68,7 @@ export default {
     accountCount_plural: "{{count}} comptes",
     recentTransactions: "Transactions récentes",
     noTransactions: "Aucune transaction",
+    sharedAccounts: "Comptes partagés",
   },
 
   // Accounts
@@ -211,6 +212,7 @@ export default {
     failedUpdateTx: "Échec de la mise à jour de la transaction",
     budgetCampaigns: "Campagnes budgétaires",
     noCampaigns: "Aucune campagne budgétaire",
+    addBudgetCampaign: "Ajouter une campagne",
     byCreator: "par {{name}} · {{count}} articles",
     byName: "par {{name}}",
 
@@ -290,6 +292,7 @@ export default {
     rejectAll: "Tout rejeter",
     applyAsExpenses: "Appliquer comme dépenses",
     noItems: "Aucun article. Ajoutez des articles à cette campagne.",
+    addBudgetItem: "Ajouter un article",
     deleteItem: "Supprimer l'article",
     deleteConfirm: "Êtes-vous sûr ?",
     actionFailed: "Échec de l'action",

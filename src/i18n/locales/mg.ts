@@ -68,6 +68,7 @@ export default {
     accountCount_plural: "{{count}} kaonty",
     recentTransactions: "Fifanakalozana farany",
     noTransactions: "Tsy mbola misy fifanakalozana",
+    sharedAccounts: "Kaonty iraisan'olona",
   },
 
   // Accounts
@@ -210,6 +211,7 @@ export default {
     failedUpdateTx: "Tsy nahomby ny fanavaozana ny fifanakalozana",
     budgetCampaigns: "Tetibola",
     noCampaigns: "Tsy mbola misy tetibola",
+    addBudgetCampaign: "Hanampy tetibola",
     byCreator: "nataon'i {{name}} · {{count}} zavatra",
     byName: "nataon'i {{name}}",
 
@@ -289,6 +291,7 @@ export default {
     rejectAll: "Handà daholo",
     applyAsExpenses: "Hampihatra ho fandaniana",
     noItems: "Tsy mbola misy zavatra. Ampio zavatra amin'ity tetibola ity.",
+    addBudgetItem: "Hanampy zavatra",
     deleteItem: "Hamafa zavatra",
     deleteConfirm: "Tena azahoana antoka ve?",
     actionFailed: "Tsy nahomby ny asa",

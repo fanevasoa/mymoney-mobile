@@ -90,7 +90,7 @@ export default function AddBudgetItemScreen({
 
       if (response.success) {
         showToast(t("sharedAccount.itemAdded"));
-        resetForm();
+        navigation.goBack();
       }
     } catch (err) {
       setError(

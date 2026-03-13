@@ -19,6 +19,8 @@ import React, {
 } from "react";
 import { accountService, dashboardService } from "../api";
 import { useAuth } from "./AuthContext";
+import { useToast } from "./ToastContext";
+import type { ApiError } from "../types";
 import type {
   Account,
   AccountType,
@@ -49,22 +51,25 @@ export function AppProvider({ children }: AppProviderProps): React.JSX.Element {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [accountTypes, setAccountTypes] = useState<AccountType[]>([]);
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(
-    null
+    null,
   );
   const [isLoadingAccounts, setIsLoadingAccounts] = useState<boolean>(false);
   const [isLoadingDashboard, setIsLoadingDashboard] = useState<boolean>(false);
   const [refreshKey, setRefreshKey] = useState<number>(0);
 
   const { isAuthenticated } = useAuth();
+  const { showToast } = useToast();
   const prevIsAuthenticated = useRef(isAuthenticated);
 
   // Fetch data when authentication state changes to true, clear on logout
   useEffect(() => {
     if (isAuthenticated && !prevIsAuthenticated.current) {
       // Just became authenticated — load data
-      Promise.all([fetchAccountTypes(), fetchAccounts(), fetchDashboard()]).catch(
-        (err) => console.error("Error loading initial data:", err)
-      );
+      Promise.all([
+        fetchAccountTypes(),
+        fetchAccounts(),
+        fetchDashboard(),
+      ]).catch((err) => console.error("Error loading initial data:", err));
     } else if (!isAuthenticated && prevIsAuthenticated.current) {
       // Just logged out — clear data
       clearData();
@@ -84,9 +89,12 @@ export function AppProvider({ children }: AppProviderProps): React.JSX.Element {
         setAccountTypes(response.data.accountTypes);
       }
     } catch (error) {
-      console.error("Error fetching account types:", error);
+      const apiError = error as ApiError;
+      if (apiError.isAuthError) {
+        showToast(apiError.message, "error");
+      }
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, showToast]);
 
   /**
    * Fetch user accounts
@@ -101,11 +109,14 @@ export function AppProvider({ children }: AppProviderProps): React.JSX.Element {
         setAccounts(response.data.accounts);
       }
     } catch (error) {
-      console.error("Error fetching accounts:", error);
+      const apiError = error as ApiError;
+      if (apiError.isAuthError) {
+        showToast(apiError.message, "error");
+      }
     } finally {
       setIsLoadingAccounts(false);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, showToast]);
 
   /**
    * Fetch dashboard summary
@@ -120,11 +131,14 @@ export function AppProvider({ children }: AppProviderProps): React.JSX.Element {
         setDashboardData(response.data);
       }
     } catch (error) {
-      console.error("Error fetching dashboard:", error);
+      const apiError = error as ApiError;
+      if (apiError.isAuthError) {
+        showToast(apiError.message, "error");
+      }
     } finally {
       setIsLoadingDashboard(false);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, showToast]);
 
   /**
    * Refresh all data
@@ -146,7 +160,7 @@ export function AppProvider({ children }: AppProviderProps): React.JSX.Element {
    */
   const updateAccount = useCallback((updatedAccount: Account): void => {
     setAccounts((prev) =>
-      prev.map((acc) => (acc.id === updatedAccount.id ? updatedAccount : acc))
+      prev.map((acc) => (acc.id === updatedAccount.id ? updatedAccount : acc)),
     );
   }, []);
 
@@ -203,7 +217,7 @@ export function AppProvider({ children }: AppProviderProps): React.JSX.Element {
       updateAccount,
       removeAccount,
       clearData,
-    ]
+    ],
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

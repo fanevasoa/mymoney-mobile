@@ -48,6 +48,8 @@ export default function AccountsScreen({
 
   useFocusEffect(
     useCallback(() => {
+      setSelectedTypeId(null);
+      setSearchQuery("");
       fetchAccountTypes();
       fetchAccounts();
     }, [fetchAccountTypes, fetchAccounts]),

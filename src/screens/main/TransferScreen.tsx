@@ -374,7 +374,7 @@ export default function TransferScreen({
           value={amount}
           onChangeText={setAmount}
           keyboardType="decimal-pad"
-          left={<TextInput.Affix text="$" />}
+          left={<TextInput.Affix text="Ar" />}
           style={[styles.input, { backgroundColor: themeColors.surface }]}
           outlineColor={themeColors.border}
           activeOutlineColor={themeColors.primary}
@@ -397,7 +397,7 @@ export default function TransferScreen({
               value={fee}
               onChangeText={setFee}
               keyboardType="decimal-pad"
-              left={<TextInput.Affix text="$" />}
+              left={<TextInput.Affix text="Ar" />}
               style={[styles.input, { backgroundColor: themeColors.surface }]}
               outlineColor={themeColors.border}
               activeOutlineColor={themeColors.primary}

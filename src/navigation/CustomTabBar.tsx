@@ -94,8 +94,26 @@ export default function CustomTabBar({
               canPreventDefault: true,
             });
 
-            if (!isFocused && !event.defaultPrevented) {
-              navigation.navigate(route.name);
+            if (!event.defaultPrevented) {
+              if (isFocused) {
+                // If already on this tab, pop to the top of the stack
+                navigation.navigate(route.name, {
+                  screen:
+                    route.name === "Dashboard"
+                      ? "DashboardMain"
+                      : route.name === "Accounts"
+                        ? "AccountsMain"
+                        : route.name === "Add"
+                          ? "AddTransaction"
+                          : route.name === "Reports"
+                            ? "ReportsMain"
+                            : route.name === "Profile"
+                              ? "ProfileMain"
+                              : undefined,
+                });
+              } else {
+                navigation.navigate(route.name);
+              }
             }
           };
 

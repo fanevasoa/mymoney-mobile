@@ -68,6 +68,7 @@ export default {
     accountCount_plural: "{{count}} accounts",
     recentTransactions: "Recent Transactions",
     noTransactions: "No transactions yet",
+    sharedAccounts: "Shared Accounts",
   },
 
   // Accounts
@@ -212,6 +213,7 @@ export default {
     failedUpdateTx: "Failed to update transaction",
     budgetCampaigns: "Budget Campaigns",
     noCampaigns: "No budget campaigns yet",
+    addBudgetCampaign: "Add Budget Campaign",
     byCreator: "by {{name}} · {{count}} items",
     byName: "by {{name}}",
 
@@ -299,6 +301,7 @@ export default {
     rejectAll: "Reject All",
     applyAsExpenses: "Apply as Expenses",
     noItems: "No items yet. Add budget items to this campaign.",
+    addBudgetItem: "Add Budget Item",
     deleteItem: "Delete Item",
     deleteConfirm: "Are you sure?",
     actionFailed: "Action failed",

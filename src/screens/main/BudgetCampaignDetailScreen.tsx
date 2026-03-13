@@ -666,6 +666,23 @@ export default function BudgetCampaignDetailScreen({
                 </View>
               ))
             )}
+
+            {campaign.status !== "applied" && (
+              <Button
+                mode="contained"
+                icon="plus"
+                onPress={() =>
+                  navigation.navigate("AddBudgetItem", {
+                    sharedAccountId,
+                    campaignId,
+                  })
+                }
+                style={styles.addItemButton}
+                contentStyle={styles.addItemButtonContent}
+              >
+                {t("sharedAccount.addBudgetItem")}
+              </Button>
+            )}
           </Card.Content>
         </Card>
       </ScrollView>
@@ -797,5 +814,13 @@ const styles = StyleSheet.create({
     margin: 0,
     width: 28,
     height: 28,
+  },
+  addItemButton: {
+    marginTop: spacing.md,
+    borderRadius: borderRadius.md,
+    backgroundColor: colors.primary,
+  },
+  addItemButtonContent: {
+    paddingVertical: spacing.xs,
   },
 });

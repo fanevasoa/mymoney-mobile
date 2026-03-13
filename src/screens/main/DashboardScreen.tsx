@@ -12,7 +12,7 @@ import {
   RefreshControl,
   TouchableOpacity,
 } from "react-native";
-import { Text, Card } from "react-native-paper";
+import { Text, Card, Chip } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import type { CompositeScreenProps } from "@react-navigation/native";
@@ -24,6 +24,7 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "../../contexts/AuthContext";
 import { useApp } from "../../contexts/AppContext";
 import { useTheme } from "../../contexts/ThemeContext";
+import { useToast } from "../../contexts/ToastContext";
 import { dashboardService } from "../../api";
 import { colors, spacing, borderRadius } from "../../theme";
 import { formatCurrency, formatDate } from "../../utils/helpers";
@@ -32,6 +33,7 @@ import type {
   DashboardStackParamList,
   Transaction,
   TransactionType,
+  ApiError,
 } from "../../types";
 
 type Props = CompositeScreenProps<
@@ -51,6 +53,7 @@ export default function DashboardScreen({
   const { fetchAccountTypes, fetchAccounts, fetchDashboard, dashboardData } =
     useApp();
   const { colors: themeColors } = useTheme();
+  const { showToast } = useToast();
   const { t } = useTranslation();
 
   const [recentTransactions, setRecentTransactions] = useState<Transaction[]>(
@@ -72,11 +75,14 @@ export default function DashboardScreen({
         setRecentTransactions(response.data.transactions);
       }
     } catch (error) {
-      console.error("Error loading dashboard:", error);
+      const apiError = error as ApiError;
+      if (apiError.isAuthError) {
+        showToast(apiError.message, "error");
+      }
     } finally {
       setIsLoading(false);
     }
-  }, [fetchAccountTypes, fetchAccounts, fetchDashboard]);
+  }, [fetchAccountTypes, fetchAccounts, fetchDashboard, showToast]);
 
   // Only use useFocusEffect to avoid double-loading on mount
   useFocusEffect(
@@ -403,6 +409,108 @@ export default function DashboardScreen({
           ))}
         </View>
 
+        {/* Shared Accounts */}
+        {dashboardData?.sharedAccountsSummary &&
+          dashboardData.sharedAccountsSummary.length > 0 && (
+            <View style={styles.section}>
+              <Text
+                style={[
+                  styles.sectionTitle,
+                  { color: themeColors.textPrimary },
+                ]}
+              >
+                {t("dashboard.sharedAccounts")}
+              </Text>
+              {dashboardData.sharedAccountsSummary.map((sa) => (
+                <TouchableOpacity
+                  key={sa.id}
+                  onPress={() =>
+                    navigation.navigate("Accounts", {
+                      screen: "SharedAccountDetail",
+                      params: { sharedAccountId: sa.id },
+                    })
+                  }
+                >
+                  <Card style={styles.accountCard}>
+                    <Card.Content style={styles.accountCardContent}>
+                      <View style={styles.accountInfo}>
+                        <View
+                          style={[
+                            styles.accountIcon,
+                            { backgroundColor: colors.primary + "20" },
+                          ]}
+                        >
+                          <MaterialCommunityIcons
+                            name="account-group"
+                            size={20}
+                            color={colors.primary}
+                          />
+                        </View>
+                        <View style={{ flex: 1, overflow: "hidden" }}>
+                          <View style={styles.sharedAccountName}>
+                            <Text
+                              style={[
+                                styles.accountName,
+                                { color: themeColors.textPrimary },
+                              ]}
+                              numberOfLines={1}
+                            >
+                              {sa.name}
+                            </Text>
+                            <Chip
+                              textStyle={{
+                                fontSize: 8,
+                                color:
+                                  sa.myRole === "manager"
+                                    ? colors.primary
+                                    : themeColors.textSecondary,
+                                lineHeight: 10,
+                              }}
+                              style={{
+                                backgroundColor:
+                                  sa.myRole === "manager"
+                                    ? colors.primary + "15"
+                                    : themeColors.border + "50",
+                                paddingVertical: 0,
+                                paddingHorizontal: 2,
+                              }}
+                              compact
+                            >
+                              {sa.myRole === "manager"
+                                ? t("sharedAccount.manager")
+                                : t("sharedAccount.member")}
+                            </Chip>
+                          </View>
+
+                          <View style={styles.sharedAccountMeta}>
+                            <Text
+                              style={[
+                                styles.sharedAccountMembers,
+                                { color: themeColors.textSecondary },
+                              ]}
+                            >
+                              {t("sharedAccount.membersCount", {
+                                count: sa.membersCount,
+                              })}
+                            </Text>
+                            <Text
+                              style={[
+                                styles.accountBalance,
+                                { color: themeColors.textPrimary },
+                              ]}
+                            >
+                              {formatCurrency(sa.balance)}
+                            </Text>
+                          </View>
+                        </View>
+                      </View>
+                    </Card.Content>
+                  </Card>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+
         {/* Recent Transactions */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
@@ -639,6 +747,7 @@ const styles = StyleSheet.create({
   accountInfo: {
     flexDirection: "row",
     alignItems: "center",
+    flex: 1,
   },
   accountIcon: {
     width: 40,
@@ -661,6 +770,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     color: colors.textPrimary,
+    marginLeft: spacing.sm,
+    flexShrink: 0,
+    minWidth: 60,
+    textAlign: "right",
   },
   transactionCard: {
     marginBottom: spacing.sm,
@@ -701,5 +814,19 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: colors.textSecondary,
     paddingVertical: spacing.md,
+  },
+  sharedAccountName: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: spacing.xs,
+  },
+  sharedAccountMeta: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: spacing.xs,
+    marginTop: 2,
+  },
+  sharedAccountMembers: {
+    fontSize: 11,
   },
 });

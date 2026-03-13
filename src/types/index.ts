@@ -205,11 +205,21 @@ export interface TodaySummary {
   net: number;
 }
 
+export interface SharedAccountSummary {
+  id: string;
+  name: string;
+  description?: string;
+  balance: number;
+  myRole: string;
+  membersCount: number;
+}
+
 export interface DashboardData {
   totalBalance: number;
   accountCount: number;
   accountTypesSummary: AccountTypeSummary[];
   accountsSummary: AccountSummary[];
+  sharedAccountsSummary?: SharedAccountSummary[];
   today: TodaySummary;
 }
 
