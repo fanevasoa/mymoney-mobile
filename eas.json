@@ -34,6 +34,9 @@
     },
     "production": {
       "autoIncrement": true,
+      "android": {
+        "buildType": "apk"
+      },
       "env": {
         "EXPO_PUBLIC_API_URL": "https://fiary.fanevix.tech/api",
         "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "your-web-client-id.apps.googleusercontent.com",
