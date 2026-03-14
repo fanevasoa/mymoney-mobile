@@ -37,6 +37,16 @@ export default {
     add: "Add",
     reports: "Reports",
     profile: "Profile",
+    sharedAccount: "Shared Account",
+    addMember: "Add Member",
+    addIncome: "Add Income",
+    newBudgetCampaign: "New Budget Campaign",
+    budgetCampaign: "Budget Campaign",
+    editCampaign: "Edit Campaign",
+    addBudgetItem: "Add Budget Item",
+    editBudgetItem: "Edit Budget Item",
+    borrowings: "Borrowings",
+    borrowingDetail: "Borrowing Detail",
   },
 
   // Auth
@@ -101,6 +111,8 @@ export default {
     createAccount: "Create Account",
     creating: "Creating...",
     accountCreated: "Account created successfully",
+    sharedAccount: "Shared Account",
+    sharedAccountDesc: "Share this account with other users",
   },
 
   // Add Transaction
@@ -295,6 +307,7 @@ export default {
     edit: "Edit",
     items: "Items",
     approvedTotal: "Approved Total",
+    unapprovedTotal: "Unapproved",
     createdBy: "Created by",
     managerActions: "Manager Actions",
     approveAll: "Approve All",
@@ -317,6 +330,11 @@ export default {
     campaignApplied:
       "Campaign applied. Total expense: {{expense}}. New balance: {{balance}}",
     applyFailed: "Apply failed",
+    deleteCampaign: "Delete Campaign",
+    deleteCampaignConfirm:
+      "Are you sure you want to delete this campaign? All items will be removed. This cannot be undone.",
+    campaignDeleted: "Budget campaign deleted successfully",
+    failedDeleteCampaign: "Failed to delete campaign",
 
     // Budget Item
     itemNameRequired: "Item name is required",

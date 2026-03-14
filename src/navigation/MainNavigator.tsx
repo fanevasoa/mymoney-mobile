@@ -114,42 +114,42 @@ function AccountsStackNavigator(): React.JSX.Element {
       <AccountsStack.Screen
         name="SharedAccountDetail"
         component={SharedAccountDetailScreen}
-        options={{ title: "Shared Account" }}
+        options={{ title: t("nav.sharedAccount") }}
       />
       <AccountsStack.Screen
         name="AddSharedAccountMember"
         component={AddSharedAccountMemberScreen}
-        options={{ title: "Add Member" }}
+        options={{ title: t("nav.addMember") }}
       />
       <AccountsStack.Screen
         name="SharedAccountIncome"
         component={SharedAccountIncomeScreen}
-        options={{ title: "Add Income" }}
+        options={{ title: t("nav.addIncome") }}
       />
       <AccountsStack.Screen
         name="CreateBudgetCampaign"
         component={CreateBudgetCampaignScreen}
-        options={{ title: "New Budget Campaign" }}
+        options={{ title: t("nav.newBudgetCampaign") }}
       />
       <AccountsStack.Screen
         name="BudgetCampaignDetail"
         component={BudgetCampaignDetailScreen}
-        options={{ title: "Budget Campaign" }}
+        options={{ title: t("nav.budgetCampaign") }}
       />
       <AccountsStack.Screen
         name="EditBudgetCampaign"
         component={EditBudgetCampaignScreen}
-        options={{ title: "Edit Campaign" }}
+        options={{ title: t("nav.editCampaign") }}
       />
       <AccountsStack.Screen
         name="AddBudgetItem"
         component={AddBudgetItemScreen}
-        options={{ title: "Add Budget Item" }}
+        options={{ title: t("nav.addBudgetItem") }}
       />
       <AccountsStack.Screen
         name="EditBudgetItem"
         component={EditBudgetItemScreen}
-        options={{ title: "Edit Budget Item" }}
+        options={{ title: t("nav.editBudgetItem") }}
       />
     </AccountsStack.Navigator>
   );
@@ -173,12 +173,12 @@ function AddStackNavigator(): React.JSX.Element {
       <AddStack.Screen
         name="Borrowings"
         component={BorrowingsScreen}
-        options={{ title: "Borrowings" }}
+        options={{ title: t("nav.borrowings") }}
       />
       <AddStack.Screen
         name="BorrowingDetail"
         component={BorrowingDetailScreen}
-        options={{ title: "Borrowing Detail" }}
+        options={{ title: t("nav.borrowingDetail") }}
       />
     </AddStack.Navigator>
   );

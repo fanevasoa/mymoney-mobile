@@ -220,6 +220,40 @@ export default function BudgetCampaignDetailScreen({
     );
   };
 
+  const handleDeleteCampaign = async () => {
+    Alert.alert(
+      t("sharedAccount.deleteCampaign"),
+      t("sharedAccount.deleteCampaignConfirm"),
+      [
+        { text: t("common.cancel"), style: "cancel" },
+        {
+          text: t("common.delete"),
+          style: "destructive",
+          onPress: async () => {
+            try {
+              setActionLoading(true);
+              await sharedAccountService.deleteBudgetCampaign(
+                sharedAccountId,
+                campaignId,
+              );
+              showToast(t("sharedAccount.campaignDeleted"));
+              navigation.goBack();
+            } catch (err) {
+              showToast(
+                err instanceof Error
+                  ? err.message
+                  : t("sharedAccount.failedDeleteCampaign"),
+                "error",
+              );
+            } finally {
+              setActionLoading(false);
+            }
+          },
+        },
+      ],
+    );
+  };
+
   const getItemStatusColor = (status: string): string => {
     switch (status) {
       case "approved":
@@ -295,6 +329,11 @@ export default function BudgetCampaignDetailScreen({
       ?.filter((i) => i.status === "approved")
       .reduce((s, i) => s + i.amount, 0) || 0;
 
+  const unapprovedTotal =
+    campaign.items
+      ?.filter((i) => i.status !== "approved")
+      .reduce((s, i) => s + i.amount, 0) || 0;
+
   return (
     <View
       style={[styles.container, { backgroundColor: themeColors.background }]}
@@ -310,56 +349,63 @@ export default function BudgetCampaignDetailScreen({
           style={[styles.headerCard, { backgroundColor: themeColors.surface }]}
         >
           <Card.Content>
-            <View style={styles.headerRow}>
-              <Text
-                style={[
-                  styles.campaignName,
-                  { color: themeColors.textPrimary },
-                ]}
-              >
-                {campaign.name}
-              </Text>
-              <Chip
-                textStyle={{
-                  fontSize: 10,
-                  color: getCampaignStatusColor(campaign.status),
-                  lineHeight: 15,
-                }}
-                style={{
-                  backgroundColor:
-                    getCampaignStatusColor(campaign.status) + "15",
-                  paddingVertical: 0,
-                  paddingHorizontal: 2,
-                }}
-                compact
-              >
-                {getCampaignStatusLabel(campaign.status)}
-              </Chip>
-            </View>
+            <Text
+              style={[styles.campaignName, { color: themeColors.textPrimary }]}
+            >
+              {campaign.name}
+            </Text>
 
             {campaign.status !== "applied" && (
-              <TouchableOpacity
-                style={styles.editCampaignLink}
-                onPress={() =>
-                  navigation.navigate("EditBudgetCampaign", {
-                    sharedAccountId,
-                    campaignId,
-                    name: campaign.name,
-                    description: campaign.description,
-                  })
-                }
-              >
-                <MaterialCommunityIcons
-                  name="pencil"
-                  size={16}
-                  color={colors.primary}
-                />
-                <Text
-                  style={{ color: colors.primary, fontSize: 12, marginLeft: 4 }}
+              <View style={styles.campaignActions}>
+                <TouchableOpacity
+                  style={styles.editCampaignLink}
+                  onPress={() =>
+                    navigation.navigate("EditBudgetCampaign", {
+                      sharedAccountId,
+                      campaignId,
+                      name: campaign.name,
+                      description: campaign.description,
+                    })
+                  }
                 >
-                  {t("sharedAccount.edit")}
-                </Text>
-              </TouchableOpacity>
+                  <MaterialCommunityIcons
+                    name="pencil"
+                    size={16}
+                    color={colors.primary}
+                  />
+                  <Text
+                    style={{
+                      color: colors.primary,
+                      fontSize: 12,
+                      marginLeft: 4,
+                    }}
+                  >
+                    {t("sharedAccount.edit")}
+                  </Text>
+                </TouchableOpacity>
+                {(campaign.createdBy === user?.id || isManager) && (
+                  <TouchableOpacity
+                    style={styles.deleteCampaignLink}
+                    onPress={handleDeleteCampaign}
+                    disabled={actionLoading}
+                  >
+                    <MaterialCommunityIcons
+                      name="delete-outline"
+                      size={16}
+                      color={colors.expense}
+                    />
+                    <Text
+                      style={{
+                        color: colors.expense,
+                        fontSize: 12,
+                        marginLeft: 4,
+                      }}
+                    >
+                      {t("common.delete")}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
             )}
 
             {campaign.description ? (
@@ -409,12 +455,10 @@ export default function BudgetCampaignDetailScreen({
                     { color: themeColors.textSecondary },
                   ]}
                 >
-                  {t("sharedAccount.createdBy")}
+                  {t("sharedAccount.unapprovedTotal")}
                 </Text>
-                <Text
-                  style={[styles.statValue, { color: themeColors.textPrimary }]}
-                >
-                  {campaign.creator?.name || "—"}
+                <Text style={[styles.statValue, { color: colors.expense }]}>
+                  {formatCurrency(unapprovedTotal)}
                 </Text>
               </View>
             </View>
@@ -521,12 +565,26 @@ export default function BudgetCampaignDetailScreen({
               </Text>
             ) : (
               campaign.items.map((item) => (
-                <View
+                <TouchableOpacity
                   key={item.id}
                   style={[
                     styles.itemRow,
                     { borderBottomColor: themeColors.border },
                   ]}
+                  onPress={() => {
+                    if (campaign.status !== "applied") {
+                      navigation.navigate("EditBudgetItem", {
+                        sharedAccountId,
+                        campaignId,
+                        itemId: item.id,
+                        name: item.name,
+                        quantity: item.quantity,
+                        unitPrice: item.unitPrice,
+                        amount: item.amount,
+                      });
+                    }
+                  }}
+                  activeOpacity={campaign.status !== "applied" ? 0.7 : 1}
                 >
                   <View style={styles.itemLeft}>
                     <Text
@@ -663,7 +721,7 @@ export default function BudgetCampaignDetailScreen({
                         )}
                     </View>
                   </View>
-                </View>
+                </TouchableOpacity>
               ))
             )}
 
@@ -805,10 +863,19 @@ const styles = StyleSheet.create({
   approveButtons: {
     flexDirection: "row",
   },
+  campaignActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
+    marginBottom: spacing.xs,
+  },
   editCampaignLink: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: spacing.xs,
+  },
+  deleteCampaignLink: {
+    flexDirection: "row",
+    alignItems: "center",
   },
   miniButton: {
     margin: 0,

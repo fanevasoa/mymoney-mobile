@@ -27,6 +27,7 @@ import { sharedAccountService } from "../../api";
 import { useApp } from "../../contexts/AppContext";
 import { useTheme } from "../../contexts/ThemeContext";
 import { useToast } from "../../contexts/ToastContext";
+import { useAuth } from "../../contexts/AuthContext";
 import { colors, spacing, borderRadius } from "../../theme";
 import { formatCurrency, formatDate } from "../../utils/helpers";
 import type {
@@ -51,6 +52,7 @@ export default function SharedAccountDetailScreen({
   const { colors: themeColors } = useTheme();
   const { t } = useTranslation();
   const { showToast } = useToast();
+  const { user } = useAuth();
   const { accounts } = useApp();
   const { sharedAccountId } = route.params;
 
@@ -129,6 +131,37 @@ export default function SharedAccountDetailScreen({
           : t("sharedAccount.failedUpdateTx");
       showToast(msg, "error");
     }
+  };
+
+  const handleDeleteCampaign = (campaign: BudgetCampaign) => {
+    Alert.alert(
+      t("sharedAccount.deleteCampaign"),
+      t("sharedAccount.deleteCampaignConfirm"),
+      [
+        { text: t("common.cancel"), style: "cancel" },
+        {
+          text: t("common.delete"),
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await sharedAccountService.deleteBudgetCampaign(
+                sharedAccountId,
+                campaign.id,
+              );
+              showToast(t("sharedAccount.campaignDeleted"));
+              fetchData();
+            } catch (err) {
+              showToast(
+                err instanceof Error
+                  ? err.message
+                  : t("sharedAccount.failedDeleteCampaign"),
+                "error",
+              );
+            }
+          },
+        },
+      ],
+    );
   };
 
   const getStatusColor = (status: string): string => {
@@ -405,22 +438,61 @@ export default function SharedAccountDetailScreen({
                           >
                             {formatCurrency(campaign.totalAmount)}
                           </Text>
-                          <Chip
-                            textStyle={{
-                              fontSize: 9,
-                              color: getCampaignStatusColor(campaign.status),
-                              lineHeight: 14,
-                            }}
-                            style={{
-                              backgroundColor:
-                                getCampaignStatusColor(campaign.status) + "15",
-                              paddingVertical: 0,
-                              paddingHorizontal: 2,
-                            }}
-                            compact
-                          >
-                            {getCampaignStatusLabel(campaign.status)}
-                          </Chip>
+                          <View style={styles.campaignTotalsRow}>
+                            <Text
+                              style={[
+                                styles.campaignApproved,
+                                { color: colors.earning },
+                              ]}
+                            >
+                              {formatCurrency(
+                                campaign.items
+                                  ?.filter((i) => i.status === "approved")
+                                  .reduce((s, i) => s + i.amount, 0) || 0,
+                              )}
+                            </Text>
+                            <Text
+                              style={[
+                                styles.campaignTotalSep,
+                                { color: themeColors.textSecondary },
+                              ]}
+                            >
+                              /
+                            </Text>
+                            <Text
+                              style={[
+                                styles.campaignUnapproved,
+                                { color: colors.expense },
+                              ]}
+                            >
+                              {formatCurrency(
+                                campaign.items
+                                  ?.filter((i) => i.status !== "approved")
+                                  .reduce((s, i) => s + i.amount, 0) || 0,
+                              )}
+                            </Text>
+                          </View>
+                          {campaign.status !== "applied" &&
+                            (campaign.createdBy === user?.id || isManager) && (
+                              <TouchableOpacity
+                                onPress={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteCampaign(campaign);
+                                }}
+                                hitSlop={{
+                                  top: 8,
+                                  bottom: 8,
+                                  left: 8,
+                                  right: 8,
+                                }}
+                              >
+                                <MaterialCommunityIcons
+                                  name="delete-outline"
+                                  size={18}
+                                  color={colors.expense}
+                                />
+                              </TouchableOpacity>
+                            )}
                         </View>
                       </View>
                     </TouchableOpacity>
@@ -892,9 +964,30 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
     gap: 4,
   },
+  campaignRightRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
+  },
   campaignAmount: {
     fontSize: 14,
     fontWeight: "700",
+  },
+  campaignTotalsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 2,
+  },
+  campaignApproved: {
+    fontSize: 10,
+    fontWeight: "500",
+  },
+  campaignTotalSep: {
+    fontSize: 10,
+  },
+  campaignUnapproved: {
+    fontSize: 10,
+    fontWeight: "500",
   },
   addBudgetItemButton: {
     marginTop: spacing.md,

@@ -260,7 +260,7 @@ export default function AddAccountScreen({
                     { color: themeColors.textPrimary },
                   ]}
                 >
-                  Shared Account
+                  {t("addAccount.sharedAccount")}
                 </Text>
                 <Text
                   style={[
@@ -268,7 +268,7 @@ export default function AddAccountScreen({
                     { color: themeColors.textSecondary },
                   ]}
                 >
-                  Share this account with other users
+                  {t("addAccount.sharedAccountDesc")}
                 </Text>
               </View>
             </View>

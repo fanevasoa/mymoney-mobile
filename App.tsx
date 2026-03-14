@@ -17,6 +17,7 @@ import { ThemeProvider, useTheme } from "./src/contexts/ThemeContext";
 import { AuthProvider } from "./src/contexts/AuthContext";
 import { AppProvider } from "./src/contexts/AppContext";
 import { ToastProvider } from "./src/contexts/ToastContext";
+import { BalanceVisibilityProvider } from "./src/contexts/BalanceVisibilityContext";
 import { RootNavigator } from "./src/navigation";
 import {
   theme,
@@ -33,12 +34,14 @@ function AppContent(): React.JSX.Element {
       <ToastProvider>
         <AuthProvider>
           <AppProvider>
-            <NavigationContainer
-              theme={isDark ? navigationDarkTheme : navigationLightTheme}
-            >
-              <StatusBar style={isDark ? "light" : "dark"} />
-              <RootNavigator />
-            </NavigationContainer>
+            <BalanceVisibilityProvider>
+              <NavigationContainer
+                theme={isDark ? navigationDarkTheme : navigationLightTheme}
+              >
+                <StatusBar style={isDark ? "light" : "dark"} />
+                <RootNavigator />
+              </NavigationContainer>
+            </BalanceVisibilityProvider>
           </AppProvider>
         </AuthProvider>
       </ToastProvider>

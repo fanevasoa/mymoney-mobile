@@ -21,6 +21,7 @@ import { useTranslation } from "react-i18next";
 
 import { useApp } from "../../contexts/AppContext";
 import { useTheme } from "../../contexts/ThemeContext";
+import { useBalanceVisibility } from "../../contexts/BalanceVisibilityContext";
 import { colors, spacing, borderRadius } from "../../theme";
 import { formatCurrency } from "../../utils/helpers";
 import type { AccountsStackParamList, Account, AccountType } from "../../types";
@@ -40,6 +41,7 @@ export default function AccountsScreen({
     isLoadingAccounts,
   } = useApp();
   const { colors: themeColors } = useTheme();
+  const { isVisible, toggle, maskedBalance } = useBalanceVisibility();
   const { t } = useTranslation();
 
   const [selectedTypeId, setSelectedTypeId] = useState<string | null>(null);
@@ -197,7 +199,9 @@ export default function AccountsScreen({
                     { color: themeColors.textPrimary },
                   ]}
                 >
-                  {formatCurrency(item.balance)}
+                  {!isShared && !isVisible("accounts_total")
+                    ? maskedBalance
+                    : formatCurrency(item.balance)}
                 </Text>
                 {!item.isActive && (
                   <Text style={styles.inactiveLabel}>
@@ -288,11 +292,27 @@ export default function AccountsScreen({
 
       <Card style={styles.totalCard}>
         <Card.Content style={styles.totalContent}>
-          <Text style={styles.totalLabel}>
-            Total ({filteredAccounts.length} account
-            {filteredAccounts.length !== 1 ? "s" : ""})
+          <View style={styles.totalLabelRow}>
+            <Text style={styles.totalLabel}>
+              Total ({filteredAccounts.length} account
+              {filteredAccounts.length !== 1 ? "s" : ""})
+            </Text>
+            <TouchableOpacity
+              onPress={() => toggle("accounts_total")}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <MaterialCommunityIcons
+                name={isVisible("accounts_total") ? "eye" : "eye-off"}
+                size={20}
+                color={colors.textInverse}
+              />
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.totalAmount}>
+            {isVisible("accounts_total")
+              ? formatCurrency(totalBalance)
+              : maskedBalance}
           </Text>
-          <Text style={styles.totalAmount}>{formatCurrency(totalBalance)}</Text>
         </Card.Content>
       </Card>
     </View>
@@ -368,6 +388,9 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
   },
   totalContent: {
+    //
+  },
+  totalLabelRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",

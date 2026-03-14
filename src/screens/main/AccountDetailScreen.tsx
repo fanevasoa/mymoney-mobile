@@ -11,6 +11,7 @@ import {
   ScrollView,
   RefreshControl,
   Alert,
+  TouchableOpacity,
 } from "react-native";
 import {
   Text,
@@ -31,6 +32,7 @@ import { accountService, transactionService } from "../../api";
 import { useApp } from "../../contexts/AppContext";
 import { useTheme } from "../../contexts/ThemeContext";
 import { useToast } from "../../contexts/ToastContext";
+import { useBalanceVisibility } from "../../contexts/BalanceVisibilityContext";
 import { colors, spacing, borderRadius } from "../../theme";
 import { formatCurrency, formatDate } from "../../utils/helpers";
 import type {
@@ -57,6 +59,7 @@ export default function AccountDetailScreen({
   const { colors: themeColors } = useTheme();
   const { t } = useTranslation();
   const { showToast } = useToast();
+  const { isVisible, toggle, maskedBalance } = useBalanceVisibility();
 
   const [account, setAccount] = useState<Account | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -235,7 +238,23 @@ export default function AccountDetailScreen({
           </View>
           <Text style={styles.accountName}>{account.name}</Text>
           <Text style={styles.accountType}>{account.accountType?.name}</Text>
-          <Text style={styles.balance}>{formatCurrency(account.balance)}</Text>
+          <TouchableOpacity
+            onPress={() => toggle("account_detail_balance")}
+            style={styles.balanceRow}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.balance}>
+              {isVisible("account_detail_balance")
+                ? formatCurrency(account.balance)
+                : maskedBalance}
+            </Text>
+            <MaterialCommunityIcons
+              name={isVisible("account_detail_balance") ? "eye" : "eye-off"}
+              size={20}
+              color={colors.textInverse}
+              style={{ opacity: 0.8 }}
+            />
+          </TouchableOpacity>
           {!account.isActive && (
             <View style={styles.inactiveBadge}>
               <Text style={styles.inactiveBadgeText}>
@@ -296,9 +315,25 @@ export default function AccountDetailScreen({
 
       {/* Transactions */}
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: themeColors.textPrimary }]}>
-          {t("dashboard.recentTransactions")}
-        </Text>
+        <View style={styles.sectionHeader}>
+          <Text
+            style={[styles.sectionTitle, { color: themeColors.textPrimary }]}
+          >
+            {t("dashboard.recentTransactions")}
+          </Text>
+          <TouchableOpacity
+            onPress={() => toggle("account_detail_transactions")}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <MaterialCommunityIcons
+              name={
+                isVisible("account_detail_transactions") ? "eye" : "eye-off"
+              }
+              size={18}
+              color={themeColors.textSecondary}
+            />
+          </TouchableOpacity>
+        </View>
         {transactions.length === 0 ? (
           <Card style={styles.emptyCard}>
             <Card.Content>
@@ -329,7 +364,10 @@ export default function AccountDetailScreen({
                         ]}
                         numberOfLines={1}
                       >
-                        {transaction.description || transaction.type}
+                        {transaction.description ||
+                          (transaction.type === "earning"
+                            ? t("common.income")
+                            : t("common.expense"))}
                       </Text>
                       <Text
                         style={[
@@ -352,8 +390,9 @@ export default function AccountDetailScreen({
                       },
                     ]}
                   >
-                    {transaction.type === "earning" ? "+" : "-"}
-                    {formatCurrency(transaction.amount)}
+                    {isVisible("account_detail_transactions")
+                      ? `${transaction.type === "earning" ? "+" : "-"}${formatCurrency(transaction.amount)}`
+                      : maskedBalance}
                   </Text>
                 </Card.Content>
               </Card>
@@ -407,11 +446,16 @@ const styles = StyleSheet.create({
     opacity: 0.8,
     marginTop: spacing.xs,
   },
+  balanceRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    marginTop: spacing.md,
+  },
   balance: {
     fontSize: 36,
     fontWeight: "bold",
     color: colors.textInverse,
-    marginTop: spacing.md,
   },
   inactiveBadge: {
     backgroundColor: "rgba(255,255,255,0.2)",
@@ -450,11 +494,16 @@ const styles = StyleSheet.create({
   section: {
     marginBottom: spacing.lg,
   },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: spacing.sm,
+  },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "600",
     color: colors.textPrimary,
-    marginBottom: spacing.sm,
   },
   transactionCard: {
     marginBottom: spacing.sm,

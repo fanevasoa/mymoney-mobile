@@ -25,6 +25,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useApp } from "../../contexts/AppContext";
 import { useTheme } from "../../contexts/ThemeContext";
 import { useToast } from "../../contexts/ToastContext";
+import { useBalanceVisibility } from "../../contexts/BalanceVisibilityContext";
 import { dashboardService } from "../../api";
 import { colors, spacing, borderRadius } from "../../theme";
 import { formatCurrency, formatDate } from "../../utils/helpers";
@@ -54,6 +55,7 @@ export default function DashboardScreen({
     useApp();
   const { colors: themeColors } = useTheme();
   const { showToast } = useToast();
+  const { isVisible, toggle, maskedBalance } = useBalanceVisibility();
   const { t } = useTranslation();
 
   const [recentTransactions, setRecentTransactions] = useState<Transaction[]>(
@@ -156,11 +158,25 @@ export default function DashboardScreen({
         {/* Total Balance Card */}
         <Card style={styles.balanceCard}>
           <Card.Content>
-            <Text style={styles.balanceLabel}>
-              {t("dashboard.totalBalance")}
-            </Text>
+            <View style={styles.balanceLabelRow}>
+              <Text style={styles.balanceLabel}>
+                {t("dashboard.totalBalance")}
+              </Text>
+              <TouchableOpacity
+                onPress={() => toggle("dashboard_balance")}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <MaterialCommunityIcons
+                  name={isVisible("dashboard_balance") ? "eye" : "eye-off"}
+                  size={20}
+                  color={colors.textInverse}
+                />
+              </TouchableOpacity>
+            </View>
             <Text style={styles.balanceAmount}>
-              {formatCurrency(dashboardData?.totalBalance)}
+              {isVisible("dashboard_balance")
+                ? formatCurrency(dashboardData?.totalBalance)
+                : maskedBalance}
             </Text>
             <View style={styles.todayStats}>
               <View style={styles.todayStat}>
@@ -173,7 +189,9 @@ export default function DashboardScreen({
                 <Text
                   style={[styles.todayStatAmount, { color: colors.earning }]}
                 >
-                  +{formatCurrency(dashboardData?.today?.earnings)}
+                  {isVisible("dashboard_balance")
+                    ? `+${formatCurrency(dashboardData?.today?.earnings)}`
+                    : maskedBalance}
                 </Text>
               </View>
               <View style={styles.statDivider} />
@@ -187,7 +205,9 @@ export default function DashboardScreen({
                 <Text
                   style={[styles.todayStatAmount, { color: colors.expense }]}
                 >
-                  -{formatCurrency(dashboardData?.today?.expenses)}
+                  {isVisible("dashboard_balance")
+                    ? `-${formatCurrency(dashboardData?.today?.expenses)}`
+                    : maskedBalance}
                 </Text>
               </View>
             </View>
@@ -287,11 +307,23 @@ export default function DashboardScreen({
 
         {/* Account Types Summary */}
         <View style={styles.section}>
-          <Text
-            style={[styles.sectionTitle, { color: themeColors.textPrimary }]}
-          >
-            {t("dashboard.byAccountType")}
-          </Text>
+          <View style={styles.sectionHeader}>
+            <Text
+              style={[styles.sectionTitle, { color: themeColors.textPrimary }]}
+            >
+              {t("dashboard.byAccountType")}
+            </Text>
+            <TouchableOpacity
+              onPress={() => toggle("dashboard_accounts")}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <MaterialCommunityIcons
+                name={isVisible("dashboard_accounts") ? "eye" : "eye-off"}
+                size={18}
+                color={themeColors.textSecondary}
+              />
+            </TouchableOpacity>
+          </View>
           <View style={styles.accountTypesGrid}>
             {dashboardData?.accountTypesSummary?.map((type) => (
               <Card key={type.id} style={styles.accountTypeCard}>
@@ -322,7 +354,9 @@ export default function DashboardScreen({
                       { color: themeColors.textPrimary },
                     ]}
                   >
-                    {formatCurrency(type.balance)}
+                    {isVisible("dashboard_accounts")
+                      ? formatCurrency(type.balance)
+                      : maskedBalance}
                   </Text>
                   <Text
                     style={[
@@ -401,7 +435,9 @@ export default function DashboardScreen({
                       { color: themeColors.textPrimary },
                     ]}
                   >
-                    {formatCurrency(account.balance)}
+                    {isVisible("dashboard_accounts")
+                      ? formatCurrency(account.balance)
+                      : maskedBalance}
                   </Text>
                 </Card.Content>
               </Card>
@@ -409,7 +445,7 @@ export default function DashboardScreen({
           ))}
         </View>
 
-        {/* Shared Accounts */}
+        {/* Shared Accounts (always visible) */}
         {dashboardData?.sharedAccountsSummary &&
           dashboardData.sharedAccountsSummary.length > 0 && (
             <View style={styles.section}>
@@ -519,11 +555,23 @@ export default function DashboardScreen({
             >
               {t("dashboard.recentTransactions")}
             </Text>
-            <TouchableOpacity
-              onPress={() => navigation.navigate("Transactions", {})}
-            >
-              <Text style={styles.seeAllText}>{t("common.seeAll")}</Text>
-            </TouchableOpacity>
+            <View style={styles.sectionHeaderRight}>
+              <TouchableOpacity
+                onPress={() => toggle("dashboard_transactions")}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <MaterialCommunityIcons
+                  name={isVisible("dashboard_transactions") ? "eye" : "eye-off"}
+                  size={18}
+                  color={themeColors.textSecondary}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => navigation.navigate("Transactions", {})}
+              >
+                <Text style={styles.seeAllText}>{t("common.seeAll")}</Text>
+              </TouchableOpacity>
+            </View>
           </View>
           {recentTransactions.length === 0 ? (
             <Card style={styles.emptyCard}>
@@ -558,7 +606,10 @@ export default function DashboardScreen({
                           ]}
                           numberOfLines={1}
                         >
-                          {transaction.description || transaction.type}
+                          {transaction.description ||
+                            (transaction.type === "earning"
+                              ? t("common.income")
+                              : t("common.expense"))}
                         </Text>
                         <Text
                           style={[
@@ -582,8 +633,9 @@ export default function DashboardScreen({
                         },
                       ]}
                     >
-                      {transaction.type === "earning" ? "+" : "-"}
-                      {formatCurrency(transaction.amount)}
+                      {isVisible("dashboard_transactions")
+                        ? `${transaction.type === "earning" ? "+" : "-"}${formatCurrency(transaction.amount)}`
+                        : maskedBalance}
                     </Text>
                   </Card.Content>
                 </Card>
@@ -621,6 +673,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     marginBottom: spacing.md,
     borderRadius: borderRadius.lg,
+  },
+  balanceLabelRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   balanceLabel: {
     fontSize: 14,
@@ -686,6 +743,11 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: spacing.sm,
+  },
+  sectionHeaderRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
   },
   sectionTitle: {
     fontSize: 18,

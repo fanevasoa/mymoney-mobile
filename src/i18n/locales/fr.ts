@@ -37,6 +37,16 @@ export default {
     add: "Ajouter",
     reports: "Rapports",
     profile: "Profil",
+    sharedAccount: "Compte partagé",
+    addMember: "Ajouter un membre",
+    addIncome: "Ajouter un revenu",
+    newBudgetCampaign: "Nouvelle campagne budgétaire",
+    budgetCampaign: "Campagne budgétaire",
+    editCampaign: "Modifier la campagne",
+    addBudgetItem: "Ajouter un article",
+    editBudgetItem: "Modifier l'article",
+    borrowings: "Emprunts",
+    borrowingDetail: "Détail de l'emprunt",
   },
 
   // Auth
@@ -101,6 +111,8 @@ export default {
     createAccount: "Créer le compte",
     creating: "Création...",
     accountCreated: "Compte créé avec succès",
+    sharedAccount: "Compte partagé",
+    sharedAccountDesc: "Partager ce compte avec d'autres utilisateurs",
   },
 
   // Add Transaction
@@ -286,6 +298,7 @@ export default {
     edit: "Modifier",
     items: "Articles",
     approvedTotal: "Total approuvé",
+    unapprovedTotal: "Non approuvé",
     createdBy: "Créé par",
     managerActions: "Actions gestionnaire",
     approveAll: "Tout approuver",
@@ -308,6 +321,11 @@ export default {
     campaignApplied:
       "Campagne appliquée. Dépense totale : {{expense}}. Nouveau solde : {{balance}}",
     applyFailed: "Échec de l'application",
+    deleteCampaign: "Supprimer la campagne",
+    deleteCampaignConfirm:
+      "Êtes-vous sûr de vouloir supprimer cette campagne ? Tous les articles seront supprimés. Cette action est irréversible.",
+    campaignDeleted: "Campagne budgétaire supprimée avec succès",
+    failedDeleteCampaign: "Échec de la suppression de la campagne",
 
     itemNameRequired: "Le nom de l'article est requis",
     itemAdded: "Article budgétaire ajouté avec succès",

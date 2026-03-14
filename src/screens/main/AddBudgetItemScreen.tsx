@@ -40,7 +40,7 @@ export default function AddBudgetItemScreen({
   const { sharedAccountId, campaignId } = route.params;
 
   const [name, setName] = useState("");
-  const [useQuantity, setUseQuantity] = useState(false);
+  const [useQuantity, setUseQuantity] = useState(true);
   const [quantity, setQuantity] = useState("");
   const [unitPrice, setUnitPrice] = useState("");
   const [amount, setAmount] = useState("");

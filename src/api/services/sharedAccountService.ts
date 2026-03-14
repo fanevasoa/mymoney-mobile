@@ -206,6 +206,15 @@ export const deleteBudgetItem = async (
   );
 };
 
+export const deleteBudgetCampaign = async (
+  sharedAccountId: string,
+  campaignId: string,
+): Promise<ApiResponse<{ message: string }>> => {
+  return apiClient.delete<ApiResponse<{ message: string }>>(
+    `/shared-accounts/${sharedAccountId}/budget-campaigns/${campaignId}`,
+  );
+};
+
 export const approveBudgetCampaign = async (
   sharedAccountId: string,
   campaignId: string,
@@ -311,6 +320,7 @@ const sharedAccountService = {
   updateBudgetItem,
   approveBudgetItem,
   deleteBudgetItem,
+  deleteBudgetCampaign,
   approveBudgetCampaign,
   applyBudgetCampaign,
   getSharedAccountTransactions,
