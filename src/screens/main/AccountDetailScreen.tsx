@@ -24,6 +24,7 @@ import {
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { CompositeScreenProps } from "@react-navigation/native";
+import { useFocusEffect } from "@react-navigation/native";
 import type { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
 
 import { useTranslation } from "react-i18next";
@@ -88,9 +89,11 @@ export default function AccountDetailScreen({
     }
   }, [accountId]);
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [loadData]),
+  );
 
   const onRefresh = async (): Promise<void> => {
     setIsRefreshing(true);
@@ -273,7 +276,11 @@ export default function AccountDetailScreen({
           onPress={() => {
             navigation.navigate("Add", {
               screen: "AddTransaction",
-              params: { accountId: account.id, type: "earning" },
+              params: {
+                accountId: account.id,
+                type: "earning",
+                returnToAccount: true,
+              },
             });
           }}
           style={[styles.actionButton, { backgroundColor: colors.earning }]}
@@ -286,7 +293,11 @@ export default function AccountDetailScreen({
           onPress={() => {
             navigation.navigate("Add", {
               screen: "AddTransaction",
-              params: { accountId: account.id, type: "expense" },
+              params: {
+                accountId: account.id,
+                type: "expense",
+                returnToAccount: true,
+              },
             });
           }}
           style={[styles.actionButton, { backgroundColor: colors.expense }]}

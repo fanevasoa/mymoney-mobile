@@ -7,6 +7,7 @@ import { View, StyleSheet, FlatList, RefreshControl } from "react-native";
 import { Text, Card, Chip, Searchbar } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { useFocusEffect } from "@react-navigation/native";
 
 import { useTranslation } from "react-i18next";
 
@@ -92,6 +93,13 @@ export default function TransactionsScreen({
     setIsLoading(true);
     fetchTransactions(true);
   }, [selectedType, selectedAccountId]);
+
+  useFocusEffect(
+    useCallback(() => {
+      setPage(1);
+      fetchTransactions(true);
+    }, []),
+  );
 
   const onRefresh = async () => {
     setIsRefreshing(true);

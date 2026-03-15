@@ -82,6 +82,7 @@ export default function AddTransactionScreen({
 
   const initialType = route.params?.type || "expense";
   const preselectedAccountId = route.params?.accountId;
+  const returnToAccount = route.params?.returnToAccount;
 
   const [type, setType] = useState<TransactionType>(
     initialType as TransactionType,
@@ -121,6 +122,16 @@ export default function AddTransactionScreen({
   const [selectedBudgetItem, setSelectedBudgetItem] =
     useState<ApprovedBudgetItemForSelection | null>(null);
   const [isLoadingItems, setIsLoadingItems] = useState(false);
+
+  // Sync route params to state when navigating from another screen
+  useEffect(() => {
+    if (route.params?.accountId) {
+      setSelectedAccountId(route.params.accountId);
+    }
+    if (route.params?.type) {
+      setType(route.params.type as TransactionType);
+    }
+  }, [route.params?.accountId, route.params?.type]);
 
   useFocusEffect(
     useCallback(() => {
@@ -247,6 +258,21 @@ export default function AddTransactionScreen({
     return true;
   };
 
+  const resetForm = () => {
+    setAmount("");
+    setDescription("");
+    setCategory("");
+    setError("");
+    setIsBorrowed(false);
+    setBorrowerName("");
+    setDueDate("");
+    setIsBorrowingResolution(false);
+    setSelectedBorrowingId(null);
+    setResolutionAmount("");
+    setSelectedBudgetItem(null);
+    setTimeout(() => amountInputRef.current?.focus(), 300);
+  };
+
   const handleSubmit = async (): Promise<void> => {
     if (isLoading) return; // Prevent double-tap race condition
     setError("");
@@ -270,9 +296,16 @@ export default function AddTransactionScreen({
           );
 
         if (response.success) {
-          await refreshData();
           showToast(t("sharedAccount.txCreated"));
-          setTimeout(() => navigation.goBack(), 300);
+          await refreshData();
+          if (returnToAccount) {
+            navigation.getParent()?.navigate("Accounts", {
+              screen: "AccountDetail",
+              params: { accountId: selectedAccountId },
+            });
+          } else {
+            resetForm();
+          }
         }
       } else {
         // Regular transaction
@@ -308,14 +341,21 @@ export default function AddTransactionScreen({
           await transactionService.createTransaction(transactionData);
 
         if (response.success) {
-          await refreshData();
           showToast(
             t("addTransaction.addedSuccess", {
               type:
                 type === "earning" ? t("common.income") : t("common.expense"),
             }),
           );
-          setTimeout(() => navigation.goBack(), 300);
+          await refreshData();
+          if (returnToAccount) {
+            navigation.getParent()?.navigate("Accounts", {
+              screen: "AccountDetail",
+              params: { accountId: selectedAccountId },
+            });
+          } else {
+            resetForm();
+          }
         }
       }
     } catch (err) {

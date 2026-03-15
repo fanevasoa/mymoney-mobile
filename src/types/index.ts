@@ -365,7 +365,11 @@ export type AccountsStackParamList = {
 } & SharedAccountScreensParamList;
 
 export type AddStackParamList = {
-  AddTransaction: { type?: string; accountId?: string };
+  AddTransaction: {
+    type?: string;
+    accountId?: string;
+    returnToAccount?: boolean;
+  };
   Transfer: undefined;
   Borrowings: undefined;
   BorrowingDetail: { borrowingId: string };

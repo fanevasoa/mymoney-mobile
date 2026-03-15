@@ -213,6 +213,16 @@ function ProfileStackNavigator(): React.JSX.Element {
 }
 
 export default function MainNavigator(): React.JSX.Element {
+  const resetStackOnTabPress = (e: any, navigation: any) => {
+    const state = navigation.getState();
+    const route = state.routes.find((r: any) => r.key === e.target);
+    if (route?.state?.routes && route.state.routes.length > 1) {
+      e.preventDefault();
+      const firstRouteName = route.state.routes[0].name;
+      navigation.navigate(route.name, { screen: firstRouteName });
+    }
+  };
+
   return (
     <Tab.Navigator
       tabBar={(props) => <CustomTabBar {...props} />}
@@ -220,17 +230,44 @@ export default function MainNavigator(): React.JSX.Element {
         headerShown: false,
       }}
     >
-      <Tab.Screen name="Dashboard" component={DashboardStackNavigator} />
-      <Tab.Screen name="Accounts" component={AccountsStackNavigator} />
+      <Tab.Screen
+        name="Dashboard"
+        component={DashboardStackNavigator}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => resetStackOnTabPress(e, navigation),
+        })}
+      />
+      <Tab.Screen
+        name="Accounts"
+        component={AccountsStackNavigator}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => resetStackOnTabPress(e, navigation),
+        })}
+      />
       <Tab.Screen
         name="Add"
         component={AddStackNavigator}
         options={{
           tabBarLabel: "Add",
         }}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => resetStackOnTabPress(e, navigation),
+        })}
       />
-      <Tab.Screen name="Reports" component={ReportsStackNavigator} />
-      <Tab.Screen name="Profile" component={ProfileStackNavigator} />
+      <Tab.Screen
+        name="Reports"
+        component={ReportsStackNavigator}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => resetStackOnTabPress(e, navigation),
+        })}
+      />
+      <Tab.Screen
+        name="Profile"
+        component={ProfileStackNavigator}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => resetStackOnTabPress(e, navigation),
+        })}
+      />
     </Tab.Navigator>
   );
 }
