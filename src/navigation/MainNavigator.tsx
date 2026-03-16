@@ -34,6 +34,7 @@ import BudgetCampaignDetailScreen from "../screens/main/BudgetCampaignDetailScre
 import AddBudgetItemScreen from "../screens/main/AddBudgetItemScreen";
 import EditBudgetCampaignScreen from "../screens/main/EditBudgetCampaignScreen";
 import EditBudgetItemScreen from "../screens/main/EditBudgetItemScreen";
+import EditTransactionScreen from "../screens/main/EditTransactionScreen";
 
 import type {
   MainTabParamList,
@@ -86,6 +87,11 @@ function DashboardStackNavigator(): React.JSX.Element {
         name="AccountDetail"
         component={AccountDetailScreen}
         options={{ title: t("common.accounts") }}
+      />
+      <DashboardStack.Screen
+        name="EditTransaction"
+        component={EditTransactionScreen}
+        options={{ title: t("nav.editTransaction") }}
       />
     </DashboardStack.Navigator>
   );
@@ -151,6 +157,11 @@ function AccountsStackNavigator(): React.JSX.Element {
         component={EditBudgetItemScreen}
         options={{ title: t("nav.editBudgetItem") }}
       />
+      <AccountsStack.Screen
+        name="EditTransaction"
+        component={EditTransactionScreen}
+        options={{ title: t("nav.editTransaction") }}
+      />
     </AccountsStack.Navigator>
   );
 }
@@ -179,6 +190,11 @@ function AddStackNavigator(): React.JSX.Element {
         name="BorrowingDetail"
         component={BorrowingDetailScreen}
         options={{ title: t("nav.borrowingDetail") }}
+      />
+      <AddStack.Screen
+        name="EditTransaction"
+        component={EditTransactionScreen}
+        options={{ title: t("nav.editTransaction") }}
       />
     </AddStack.Navigator>
   );

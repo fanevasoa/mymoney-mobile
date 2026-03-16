@@ -47,6 +47,7 @@ export default {
     editBudgetItem: "Edit Budget Item",
     borrowings: "Borrowings",
     borrowingDetail: "Borrowing Detail",
+    editTransaction: "Edit Transaction",
   },
 
   // Auth
@@ -96,6 +97,7 @@ export default {
     failedLoad: "Failed to load account details",
     failedDelete: "Failed to delete account",
     failedUpdate: "Failed to update account",
+    rename: "Rename",
   },
 
   // Add Account
@@ -132,6 +134,26 @@ export default {
     selectAccountError: "Please select an account",
     insufficientBalance: "Insufficient balance. Available: {{amount}}",
     transferBetween: "Transfer between accounts",
+  },
+
+  // Edit Transaction
+  editTransaction: {
+    title: "Edit Transaction",
+    date: "Date",
+    save: "Save Changes",
+    saving: "Saving...",
+    delete: "Delete Transaction",
+    deleting: "Deleting...",
+    deleteTitle: "Delete Transaction",
+    deleteConfirm:
+      "Are you sure you want to delete this transaction? This action cannot be undone.",
+    updateSuccess: "Transaction updated successfully",
+    deleteSuccess: "Transaction deleted successfully",
+    failedLoad: "Failed to load transaction",
+    failedUpdate: "Failed to update transaction",
+    failedDelete: "Failed to delete transaction",
+    notFound: "Transaction not found",
+    invalidDate: "Please enter a valid date (YYYY-MM-DD)",
   },
 
   // Categories
@@ -177,6 +199,11 @@ export default {
       "This transfer requires manager approval. The amount will be deducted now and refunded if rejected.",
     sharedAccountPending: "Transfer submitted and pending manager approval",
     submitToSharedAccount: "Submit Transfer",
+    sharedAccountWithdrawalNote:
+      "This withdrawal requires manager approval. The shared account will be debited once approved.",
+    sharedAccountWithdrawalPending:
+      "Withdrawal request submitted and pending manager approval",
+    submitWithdrawal: "Request Withdrawal",
   },
 
   // Transactions

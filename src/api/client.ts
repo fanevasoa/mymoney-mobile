@@ -28,6 +28,7 @@ interface TypedApiClient {
   get<T>(url: string, config?: object): Promise<T>;
   post<T>(url: string, data?: unknown, config?: object): Promise<T>;
   put<T>(url: string, data?: unknown, config?: object): Promise<T>;
+  patch<T>(url: string, data?: unknown, config?: object): Promise<T>;
   delete<T>(url: string, config?: object): Promise<T>;
   interceptors: typeof baseClient.interceptors;
 }
@@ -78,7 +79,7 @@ export const removeToken = async (): Promise<void> => {
 // Request interceptor - add auth token to requests
 baseClient.interceptors.request.use(
   async (
-    config: InternalAxiosRequestConfig
+    config: InternalAxiosRequestConfig,
   ): Promise<InternalAxiosRequestConfig> => {
     const token = await getToken();
     if (token && config.headers) {
@@ -88,7 +89,7 @@ baseClient.interceptors.request.use(
   },
   (error: AxiosError) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 // Response interceptor - handle errors
@@ -181,7 +182,7 @@ baseClient.interceptors.response.use(
       errors: data?.errors || [],
     };
     return Promise.reject(defaultError);
-  }
+  },
 );
 
 const apiClient = baseClient as unknown as TypedApiClient;

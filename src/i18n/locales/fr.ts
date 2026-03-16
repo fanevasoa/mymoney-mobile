@@ -47,6 +47,7 @@ export default {
     editBudgetItem: "Modifier l'article",
     borrowings: "Emprunts",
     borrowingDetail: "Détail de l'emprunt",
+    editTransaction: "Modifier la transaction",
   },
 
   // Auth
@@ -96,6 +97,7 @@ export default {
     failedLoad: "Échec du chargement des détails du compte",
     failedDelete: "Échec de la suppression du compte",
     failedUpdate: "Échec de la mise à jour du compte",
+    rename: "Renommer",
   },
 
   // Add Account
@@ -132,6 +134,26 @@ export default {
     selectAccountError: "Veuillez sélectionner un compte",
     insufficientBalance: "Solde insuffisant. Disponible : {{amount}}",
     transferBetween: "Transférer entre comptes",
+  },
+
+  // Edit Transaction
+  editTransaction: {
+    title: "Modifier la transaction",
+    date: "Date",
+    save: "Enregistrer",
+    saving: "Enregistrement...",
+    delete: "Supprimer la transaction",
+    deleting: "Suppression...",
+    deleteTitle: "Supprimer la transaction",
+    deleteConfirm:
+      "Êtes-vous sûr de vouloir supprimer cette transaction ? Cette action est irréversible.",
+    updateSuccess: "Transaction modifiée avec succès",
+    deleteSuccess: "Transaction supprimée avec succès",
+    failedLoad: "Échec du chargement de la transaction",
+    failedUpdate: "Échec de la modification de la transaction",
+    failedDelete: "Échec de la suppression de la transaction",
+    notFound: "Transaction introuvable",
+    invalidDate: "Veuillez entrer une date valide (AAAA-MM-JJ)",
   },
 
   // Categories
@@ -178,6 +200,11 @@ export default {
       "Ce transfert nécessite l'approbation du gestionnaire. Le montant sera déduit maintenant et remboursé en cas de rejet.",
     sharedAccountPending: "Transfert soumis et en attente d'approbation",
     submitToSharedAccount: "Soumettre le transfert",
+    sharedAccountWithdrawalNote:
+      "Ce retrait nécessite l'approbation du gestionnaire. Le compte partagé sera débité une fois approuvé.",
+    sharedAccountWithdrawalPending:
+      "Demande de retrait soumise et en attente d'approbation",
+    submitWithdrawal: "Demander un retrait",
   },
 
   // Transactions

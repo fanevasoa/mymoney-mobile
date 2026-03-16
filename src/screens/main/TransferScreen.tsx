@@ -4,7 +4,7 @@
  * Form to transfer money between accounts.
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   StyleSheet,
@@ -46,13 +46,17 @@ const getIconName = (icon: string | undefined): IconName => {
 
 export default function TransferScreen({
   navigation,
+  route,
 }: Props): React.JSX.Element {
   const { accounts, fetchAccounts, refreshData } = useApp();
   const { colors: themeColors } = useTheme();
   const { t } = useTranslation();
   const { showToast } = useToast();
 
-  const [fromAccountId, setFromAccountId] = useState<string | null>(null);
+  const preselectedFromId = route.params?.fromAccountId || null;
+  const [fromAccountId, setFromAccountId] = useState<string | null>(
+    preselectedFromId,
+  );
   const [toAccountId, setToAccountId] = useState<string | null>(null);
   const [amount, setAmount] = useState<string>("");
   const [fee, setFee] = useState<string>("");
@@ -63,17 +67,67 @@ export default function TransferScreen({
   const getAccount = (id: string | null): Account | undefined =>
     accounts.find((acc) => acc.id === id);
 
+  const selectedFromAccount = getAccount(fromAccountId);
   const selectedToAccount = getAccount(toAccountId);
+  const isFromSharedAccount = !!selectedFromAccount?.sharedAccountId;
   const isToSharedAccount = !!selectedToAccount?.sharedAccountId;
 
   useEffect(() => {
     fetchAccounts();
   }, [fetchAccounts]);
 
+  // Helper: find first personal (non-shared) account different from excludeId
+  const findPersonalAccount = (excludeId: string | null): Account | undefined =>
+    accounts.find((a) => a.id !== excludeId && !a.sharedAccountId);
+
+  // Sync fromAccountId from route params (handles re-navigation to already mounted screen)
+  useEffect(() => {
+    if (preselectedFromId) {
+      setFromAccountId(preselectedFromId);
+      const fromAcc = accounts.find((a) => a.id === preselectedFromId);
+      const isShared = !!fromAcc?.sharedAccountId;
+      // Pick an appropriate "to" account
+      if (
+        toAccountId === preselectedFromId ||
+        !toAccountId ||
+        (isShared &&
+          accounts.find((a) => a.id === toAccountId)?.sharedAccountId)
+      ) {
+        if (isShared) {
+          const personal = findPersonalAccount(preselectedFromId);
+          if (personal) setToAccountId(personal.id);
+        } else {
+          const other = accounts.find((a) => a.id !== preselectedFromId);
+          if (other) setToAccountId(other.id);
+        }
+      }
+    }
+  }, [preselectedFromId]);
+
+  // When fromAccountId changes to a shared account, ensure toAccountId is a personal account
+  useEffect(() => {
+    if (isFromSharedAccount && toAccountId) {
+      const toAcc = accounts.find((a) => a.id === toAccountId);
+      if (toAcc?.sharedAccountId) {
+        const personal = findPersonalAccount(fromAccountId);
+        if (personal) setToAccountId(personal.id);
+      }
+    }
+  }, [fromAccountId, isFromSharedAccount]);
+
   useEffect(() => {
     if (accounts.length >= 2) {
       if (!fromAccountId) setFromAccountId(accounts[0].id);
-      if (!toAccountId) setToAccountId(accounts[1].id);
+      if (!toAccountId) {
+        const fromAcc = accounts.find((a) => a.id === fromAccountId);
+        if (fromAcc?.sharedAccountId) {
+          const personal = findPersonalAccount(fromAccountId);
+          if (personal) setToAccountId(personal.id);
+        } else {
+          const other = accounts.find((a) => a.id !== fromAccountId);
+          setToAccountId(other?.id || accounts[1].id);
+        }
+      }
     } else if (accounts.length === 1) {
       if (!fromAccountId) setFromAccountId(accounts[0].id);
     }
@@ -109,17 +163,20 @@ export default function TransferScreen({
       return false;
     }
 
-    const fromAccount = getAccount(fromAccountId);
-    const deduction = isToSharedAccount
-      ? parseFloat(amount) || 0
-      : totalDeduction;
-    if (fromAccount && deduction > parseFloat(String(fromAccount.balance))) {
-      setError(
-        t("transfer.insufficientBalance", {
-          amount: formatCurrency(fromAccount.balance),
-        }),
-      );
-      return false;
+    // Skip client-side balance check for shared→personal (server validates on approval)
+    if (!isFromSharedAccount) {
+      const fromAccount = getAccount(fromAccountId);
+      const deduction = isToSharedAccount
+        ? parseFloat(amount) || 0
+        : totalDeduction;
+      if (fromAccount && deduction > parseFloat(String(fromAccount.balance))) {
+        setError(
+          t("transfer.insufficientBalance", {
+            amount: formatCurrency(fromAccount.balance),
+          }),
+        );
+        return false;
+      }
     }
 
     return true;
@@ -133,7 +190,27 @@ export default function TransferScreen({
     try {
       setIsLoading(true);
 
-      if (isToSharedAccount && selectedToAccount?.sharedAccountId) {
+      if (isFromSharedAccount && selectedFromAccount?.sharedAccountId) {
+        // Transfer from shared account → creates pending expense with destination
+        const response =
+          await sharedAccountService.createSharedAccountTransaction(
+            selectedFromAccount.sharedAccountId,
+            {
+              type: "expense",
+              amount: parseFloat(amount),
+              description:
+                description.trim() ||
+                `Withdrawal to ${getAccount(toAccountId)?.name || "account"}`,
+              destinationAccountId: toAccountId,
+            },
+          );
+
+        if (response.success) {
+          await refreshData();
+          showToast(t("transfer.sharedAccountWithdrawalPending"));
+          setTimeout(() => navigation.goBack(), 300);
+        }
+      } else if (isToSharedAccount && selectedToAccount?.sharedAccountId) {
         // Transfer to shared account → creates pending shared account transaction
         const response =
           await sharedAccountService.createSharedAccountTransaction(
@@ -187,12 +264,19 @@ export default function TransferScreen({
     excludeId: string | null,
     filterShared?: boolean,
   ): React.JSX.Element => {
-    const filteredAccounts = accounts.filter((acc) => {
-      if (acc.id === excludeId) return false;
-      // "From" picker: only personal accounts
-      if (filterShared === false && acc.sharedAccountId) return false;
-      return true;
-    });
+    const filteredAccounts = accounts
+      .filter((acc) => {
+        if (acc.id === excludeId) return false;
+        // When filterShared is false, exclude shared accounts
+        if (filterShared === false && acc.sharedAccountId) return false;
+        return true;
+      })
+      // Put favorites first, then selected account
+      .sort((a, b) => {
+        if (a.id === selectedId) return -1;
+        if (b.id === selectedId) return 1;
+        return (b.isFavorite ? 1 : 0) - (a.isFavorite ? 1 : 0);
+      });
 
     return (
       <View style={styles.accountSection}>
@@ -314,19 +398,22 @@ export default function TransferScreen({
           fromAccountId,
           setFromAccountId,
           toAccountId,
-          false,
         )}
 
         <View style={styles.swapContainer}>
           <TouchableOpacity
             style={styles.swapButton}
             onPress={handleSwapAccounts}
-            disabled={isToSharedAccount}
+            disabled={isToSharedAccount || isFromSharedAccount}
           >
             <MaterialCommunityIcons
               name="swap-vertical"
               size={24}
-              color={isToSharedAccount ? colors.textDisabled : colors.primary}
+              color={
+                isToSharedAccount || isFromSharedAccount
+                  ? colors.textDisabled
+                  : colors.primary
+              }
             />
           </TouchableOpacity>
         </View>
@@ -336,6 +423,30 @@ export default function TransferScreen({
           toAccountId,
           setToAccountId,
           fromAccountId,
+          isFromSharedAccount ? false : undefined,
+        )}
+
+        {isFromSharedAccount && (
+          <View
+            style={[
+              styles.sharedAccountWarning,
+              { backgroundColor: colors.warning + "10" },
+            ]}
+          >
+            <MaterialCommunityIcons
+              name="alert-outline"
+              size={16}
+              color={colors.warning}
+            />
+            <Text
+              style={[
+                styles.sharedAccountWarningText,
+                { color: themeColors.textSecondary },
+              ]}
+            >
+              {t("transfer.sharedAccountWithdrawalNote")}
+            </Text>
+          </View>
         )}
 
         {isToSharedAccount && (
@@ -381,7 +492,7 @@ export default function TransferScreen({
           textColor={themeColors.textPrimary}
         />
 
-        {!isToSharedAccount && (
+        {!isToSharedAccount && !isFromSharedAccount && (
           <>
             <Text
               style={[
@@ -476,9 +587,11 @@ export default function TransferScreen({
         >
           {isLoading
             ? t("transfer.processing")
-            : isToSharedAccount
-              ? t("transfer.submitToSharedAccount")
-              : t("transfer.transferMoney")}
+            : isFromSharedAccount
+              ? t("transfer.submitWithdrawal")
+              : isToSharedAccount
+                ? t("transfer.submitToSharedAccount")
+                : t("transfer.transferMoney")}
         </Button>
       </ScrollView>
     </KeyboardAvoidingView>

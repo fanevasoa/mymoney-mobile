@@ -63,6 +63,7 @@ export interface Account {
   balance: number;
   description?: string | null;
   isActive: boolean;
+  isFavorite?: boolean;
   accountTypeId: string;
   accountType?: AccountType;
   sharedAccountId?: string | null;
@@ -90,6 +91,7 @@ export interface UpdateAccountData {
   name?: string;
   description?: string | null;
   isActive?: boolean;
+  isFavorite?: boolean;
 }
 
 export interface AccountsParams {
@@ -135,6 +137,9 @@ export interface CreateTransactionData {
 export interface UpdateTransactionData {
   description?: string | null;
   category?: string | null;
+  amount?: number;
+  type?: TransactionType;
+  date?: string;
 }
 
 export interface TransactionsParams {
@@ -332,6 +337,7 @@ export type DashboardStackParamList = {
   DashboardMain: undefined;
   Transactions: { accountId?: string };
   AccountDetail: { accountId: string };
+  EditTransaction: { transactionId: string };
 };
 
 export type SharedAccountScreensParamList = {
@@ -362,6 +368,7 @@ export type AccountsStackParamList = {
   AccountsMain: undefined;
   AccountDetail: { accountId: string };
   AddAccount: undefined;
+  EditTransaction: { transactionId: string };
 } & SharedAccountScreensParamList;
 
 export type AddStackParamList = {
@@ -370,7 +377,8 @@ export type AddStackParamList = {
     accountId?: string;
     returnToAccount?: boolean;
   };
-  Transfer: undefined;
+  EditTransaction: { transactionId: string };
+  Transfer: { fromAccountId?: string } | undefined;
   Borrowings: undefined;
   BorrowingDetail: { borrowingId: string };
 };
@@ -672,6 +680,7 @@ export interface CreateSharedAccountTransactionData {
   description?: string | null;
   budgetItemId?: string | null;
   sourceAccountId?: string | null;
+  destinationAccountId?: string | null;
 }
 
 export interface ApprovedBudgetItemForSelection {

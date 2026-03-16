@@ -3,7 +3,13 @@
  */
 
 import React, { useEffect, useState, useCallback } from "react";
-import { View, StyleSheet, FlatList, RefreshControl } from "react-native";
+import {
+  View,
+  StyleSheet,
+  FlatList,
+  RefreshControl,
+  TouchableOpacity,
+} from "react-native";
 import { Text, Card, Chip, Searchbar } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -40,6 +46,7 @@ const formatTime = (dateString: string): string => {
 
 export default function TransactionsScreen({
   route,
+  navigation,
 }: Props): React.JSX.Element {
   const { accounts } = useApp();
   const { colors: themeColors } = useTheme();
@@ -142,39 +149,51 @@ export default function TransactionsScreen({
     }
   };
 
-  const renderTransaction = (t: Transaction) => {
-    const icon = getIcon(t.type);
+  const renderTransaction = (tx: Transaction) => {
+    const icon = getIcon(tx.type);
     return (
-      <Card key={t.id} style={styles.card}>
-        <Card.Content style={styles.cardContent}>
-          <View style={styles.left}>
-            <MaterialCommunityIcons
-              name={icon.name}
-              size={36}
-              color={icon.color}
-            />
-            <View style={styles.info}>
-              <Text style={styles.desc} numberOfLines={1}>
-                {t.description || t.type}
-              </Text>
-              <Text style={styles.meta}>
-                {t.account?.name}
-                {t.category ? ` - ${t.category}` : ""}
-              </Text>
-              <Text style={styles.time}>{formatTime(t.createdAt)}</Text>
+      <TouchableOpacity
+        key={tx.id}
+        onPress={() =>
+          navigation.navigate("EditTransaction", {
+            transactionId: tx.id,
+          })
+        }
+      >
+        <Card style={styles.card}>
+          <Card.Content style={styles.cardContent}>
+            <View style={styles.left}>
+              <MaterialCommunityIcons
+                name={icon.name}
+                size={36}
+                color={icon.color}
+              />
+              <View style={styles.info}>
+                <Text style={styles.desc} numberOfLines={1}>
+                  {tx.description || tx.type}
+                </Text>
+                <Text style={styles.meta}>
+                  {tx.account?.name}
+                  {tx.category ? ` - ${tx.category}` : ""}
+                </Text>
+                <Text style={styles.time}>{formatTime(tx.createdAt)}</Text>
+              </View>
             </View>
-          </View>
-          <Text
-            style={[
-              styles.amount,
-              { color: t.type === "earning" ? colors.earning : colors.expense },
-            ]}
-          >
-            {t.type === "earning" ? "+" : "-"}
-            {formatCurrency(t.amount)}
-          </Text>
-        </Card.Content>
-      </Card>
+            <Text
+              style={[
+                styles.amount,
+                {
+                  color:
+                    tx.type === "earning" ? colors.earning : colors.expense,
+                },
+              ]}
+            >
+              {tx.type === "earning" ? "+" : "-"}
+              {formatCurrency(tx.amount)}
+            </Text>
+          </Card.Content>
+        </Card>
+      </TouchableOpacity>
     );
   };
 

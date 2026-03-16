@@ -22,6 +22,8 @@ import { useTranslation } from "react-i18next";
 import { useApp } from "../../contexts/AppContext";
 import { useTheme } from "../../contexts/ThemeContext";
 import { useBalanceVisibility } from "../../contexts/BalanceVisibilityContext";
+import { useToast } from "../../contexts/ToastContext";
+import accountService from "../../api/services/accountService";
 import { colors, spacing, borderRadius } from "../../theme";
 import { formatCurrency } from "../../utils/helpers";
 import type { AccountsStackParamList, Account, AccountType } from "../../types";
@@ -38,11 +40,13 @@ export default function AccountsScreen({
     accountTypes,
     fetchAccounts,
     fetchAccountTypes,
+    updateAccount,
     isLoadingAccounts,
   } = useApp();
   const { colors: themeColors } = useTheme();
   const { isVisible, toggle, maskedBalance } = useBalanceVisibility();
   const { t } = useTranslation();
+  const { showToast } = useToast();
 
   const [selectedTypeId, setSelectedTypeId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -98,6 +102,19 @@ export default function AccountsScreen({
     0,
   );
 
+  const handleToggleFavorite = async (item: Account) => {
+    try {
+      const response = await accountService.toggleFavorite(item.id);
+      if (response.success) {
+        updateAccount(response.data.account);
+      }
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to update favorite";
+      showToast(message, "error");
+    }
+  };
+
   const handleAccountPress = (item: Account) => {
     if (item.sharedAccountId) {
       navigation.navigate("SharedAccountDetail", {
@@ -149,25 +166,33 @@ export default function AccountsScreen({
                       {item.name}
                     </Text>
                     {isShared && sa?.myRole && (
-                      <Chip
-                        textStyle={{
-                          fontSize: 9,
-                          color:
-                            sa.myRole === "manager"
-                              ? colors.primary
-                              : themeColors.textSecondary,
-                        }}
-                        style={{
-                          backgroundColor:
-                            sa.myRole === "manager"
-                              ? colors.primary + "15"
-                              : themeColors.border + "50",
-                          height: 22,
-                        }}
-                        compact
+                      <View
+                        style={[
+                          styles.roleBadge,
+                          {
+                            backgroundColor:
+                              sa.myRole === "manager"
+                                ? colors.primary + "15"
+                                : themeColors.border + "50",
+                          },
+                        ]}
                       >
-                        {sa.myRole === "manager" ? "Manager" : "Member"}
-                      </Chip>
+                        <Text
+                          style={[
+                            styles.roleBadgeText,
+                            {
+                              color:
+                                sa.myRole === "manager"
+                                  ? colors.primary
+                                  : themeColors.textSecondary,
+                            },
+                          ]}
+                        >
+                          {sa.myRole === "manager"
+                            ? t("sharedAccount.manager")
+                            : t("sharedAccount.member")}
+                        </Text>
+                      </View>
                     )}
                   </View>
                   {isShared && sa?.description ? (
@@ -193,6 +218,21 @@ export default function AccountsScreen({
                 </View>
               </View>
               <View style={styles.accountRight}>
+                <TouchableOpacity
+                  onPress={() => handleToggleFavorite(item)}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  style={styles.favoriteButton}
+                >
+                  <MaterialCommunityIcons
+                    name={item.isFavorite ? "star" : "star-outline"}
+                    size={20}
+                    color={
+                      item.isFavorite
+                        ? colors.warning
+                        : themeColors.textSecondary
+                    }
+                  />
+                </TouchableOpacity>
                 <Text
                   style={[
                     styles.accountBalance,
@@ -224,7 +264,9 @@ export default function AccountsScreen({
                       { color: themeColors.textSecondary },
                     ]}
                   >
-                    {sa?.memberCount || 0} members
+                    {t("sharedAccount.membersCount", {
+                      count: sa?.memberCount || 0,
+                    })}
                   </Text>
                 </View>
               </View>
@@ -266,7 +308,7 @@ export default function AccountsScreen({
       <FlatList
         horizontal
         data={[
-          { id: null, name: "All" } as unknown as AccountType,
+          { id: null, name: t("common.all") } as unknown as AccountType,
           ...accountTypes,
         ]}
         keyExtractor={(item) => item.id || "all"}
@@ -294,8 +336,8 @@ export default function AccountsScreen({
         <Card.Content style={styles.totalContent}>
           <View style={styles.totalLabelRow}>
             <Text style={styles.totalLabel}>
-              Total ({filteredAccounts.length} account
-              {filteredAccounts.length !== 1 ? "s" : ""})
+              {t("account.totalBalance")} (
+              {t("dashboard.accountCount", { count: filteredAccounts.length })})
             </Text>
             <TouchableOpacity
               onPress={() => toggle("accounts_total")}
@@ -435,6 +477,16 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
+    flexWrap: "wrap",
+  },
+  roleBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+  roleBadgeText: {
+    fontSize: 10,
+    fontWeight: "600",
   },
   accountName: {
     fontSize: 16,
@@ -449,6 +501,9 @@ const styles = StyleSheet.create({
   },
   accountRight: {
     alignItems: "flex-end",
+  },
+  favoriteButton: {
+    marginBottom: 2,
   },
   accountBalance: {
     fontSize: 18,

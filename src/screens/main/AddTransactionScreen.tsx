@@ -142,7 +142,9 @@ export default function AddTransactionScreen({
     }, []),
   );
 
-  const activeAccounts = accounts.filter((acc) => acc.isActive);
+  const activeAccounts = accounts
+    .filter((acc) => acc.isActive)
+    .sort((a, b) => (b.isFavorite ? 1 : 0) - (a.isFavorite ? 1 : 0));
 
   useEffect(() => {
     fetchAccounts();

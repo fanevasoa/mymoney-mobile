@@ -47,6 +47,7 @@ export default {
     editBudgetItem: "Hanova zavatra",
     borrowings: "Trosa",
     borrowingDetail: "Antsipirihan'ny trosa",
+    editTransaction: "Hanova fifanakalozana",
   },
 
   // Auth
@@ -96,6 +97,7 @@ export default {
     failedLoad: "Tsy nahomby ny fampidirana ny antsipiriany",
     failedDelete: "Tsy nahomby ny famafana ny kaonty",
     failedUpdate: "Tsy nahomby ny fanavaozana ny kaonty",
+    rename: "Hanova anarana",
   },
 
   // Add Account
@@ -132,6 +134,26 @@ export default {
     selectAccountError: "Misafidiana kaonty azafady",
     insufficientBalance: "Tsy ampy ny vola. Azo ampiasaina: {{amount}}",
     transferBetween: "Hamindra vola eo amin'ny kaonty",
+  },
+
+  // Edit Transaction
+  editTransaction: {
+    title: "Hanova fifanakalozana",
+    date: "Daty",
+    save: "Hitahiry",
+    saving: "Mitahiry...",
+    delete: "Hamafa fifanakalozana",
+    deleting: "Mamafa...",
+    deleteTitle: "Hamafa fifanakalozana",
+    deleteConfirm:
+      "Tena te hamafa ity fifanakalozana ity ve ianao? Tsy azo averina intsony izany.",
+    updateSuccess: "Fifanakalozana voaova soa aman-tsara",
+    deleteSuccess: "Fifanakalozana voafafa soa aman-tsara",
+    failedLoad: "Tsy nahomby ny fandefasana ny fifanakalozana",
+    failedUpdate: "Tsy nahomby ny fanovana ny fifanakalozana",
+    failedDelete: "Tsy nahomby ny famafana ny fifanakalozana",
+    notFound: "Tsy hita ny fifanakalozana",
+    invalidDate: "Ampidiro daty manankery azafady (TTTT-VV-AA)",
   },
 
   // Categories
@@ -177,6 +199,11 @@ export default {
       "Ity famindrana ity dia mila fankatoavan'ny mpitantana. Ny vola dia hesorina ankehitriny ary averina raha lavina.",
     sharedAccountPending: "Famindrana nalefa ary miandry fankatoavana",
     submitToSharedAccount: "Halefa ny famindrana",
+    sharedAccountWithdrawalNote:
+      "Ity fisintonana ity dia mila fankatoavan'ny mpitantana. Ny kaonty iombonana dia hesorina rehefa nekena.",
+    sharedAccountWithdrawalPending:
+      "Fangatahana fisintonana nalefa ary miandry fankatoavana",
+    submitWithdrawal: "Hangataka fisintonana",
   },
 
   // Transactions

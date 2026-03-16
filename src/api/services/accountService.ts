@@ -33,7 +33,7 @@ interface AccountTypesResponse {
  * Get all accounts for the current user
  */
 export const getAccounts = async (
-  params: AccountsParams = {}
+  params: AccountsParams = {},
 ): Promise<ApiResponse<AccountsResponse>> => {
   return apiClient.get<ApiResponse<AccountsResponse>>("/accounts", { params });
 };
@@ -42,7 +42,7 @@ export const getAccounts = async (
  * Get account by ID
  */
 export const getAccountById = async (
-  id: string
+  id: string,
 ): Promise<ApiResponse<{ account: Account }>> => {
   return apiClient.get<ApiResponse<{ account: Account }>>(`/accounts/${id}`);
 };
@@ -51,11 +51,11 @@ export const getAccountById = async (
  * Create a new account
  */
 export const createAccount = async (
-  accountData: CreateAccountData
+  accountData: CreateAccountData,
 ): Promise<ApiResponse<{ account: Account }>> => {
   return apiClient.post<ApiResponse<{ account: Account }>>(
     "/accounts",
-    accountData
+    accountData,
   );
 };
 
@@ -64,11 +64,22 @@ export const createAccount = async (
  */
 export const updateAccount = async (
   id: string,
-  accountData: UpdateAccountData
+  accountData: UpdateAccountData,
 ): Promise<ApiResponse<{ account: Account }>> => {
   return apiClient.put<ApiResponse<{ account: Account }>>(
     `/accounts/${id}`,
-    accountData
+    accountData,
+  );
+};
+
+/**
+ * Toggle account favorite status
+ */
+export const toggleFavorite = async (
+  id: string,
+): Promise<ApiResponse<{ account: Account }>> => {
+  return apiClient.patch<ApiResponse<{ account: Account }>>(
+    `/accounts/${id}/favorite`,
   );
 };
 
@@ -76,11 +87,9 @@ export const updateAccount = async (
  * Delete an account
  */
 export const deleteAccount = async (
-  id: string
+  id: string,
 ): Promise<ApiResponse<{ message: string }>> => {
-  return apiClient.delete<ApiResponse<{ message: string }>>(
-    `/accounts/${id}`
-  );
+  return apiClient.delete<ApiResponse<{ message: string }>>(`/accounts/${id}`);
 };
 
 /**
@@ -97,6 +106,7 @@ const accountService = {
   getAccountById,
   createAccount,
   updateAccount,
+  toggleFavorite,
   deleteAccount,
   getAccountTypes,
 } as const;

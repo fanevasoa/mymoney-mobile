@@ -306,144 +306,163 @@ export default function DashboardScreen({
         </View>
 
         {/* Account Types Summary */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text
-              style={[styles.sectionTitle, { color: themeColors.textPrimary }]}
-            >
-              {t("dashboard.byAccountType")}
-            </Text>
-            <TouchableOpacity
-              onPress={() => toggle("dashboard_accounts")}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            >
-              <MaterialCommunityIcons
-                name={isVisible("dashboard_accounts") ? "eye" : "eye-off"}
-                size={18}
-                color={themeColors.textSecondary}
-              />
-            </TouchableOpacity>
-          </View>
-          <View style={styles.accountTypesGrid}>
-            {dashboardData?.accountTypesSummary?.map((type) => (
-              <Card key={type.id} style={styles.accountTypeCard}>
-                <Card.Content style={styles.accountTypeContent}>
-                  <View
-                    style={[
-                      styles.accountTypeIcon,
-                      { backgroundColor: type.color + "20" },
-                    ]}
-                  >
-                    <MaterialCommunityIcons
-                      name={getAccountIcon(type.icon)}
-                      size={24}
-                      color={type.color}
-                    />
-                  </View>
-                  <Text
-                    style={[
-                      styles.accountTypeName,
-                      { color: themeColors.textSecondary },
-                    ]}
-                  >
-                    {type.name}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.accountTypeBalance,
-                      { color: themeColors.textPrimary },
-                    ]}
-                  >
-                    {isVisible("dashboard_accounts")
-                      ? formatCurrency(type.balance)
-                      : maskedBalance}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.accountTypeCount,
-                      { color: themeColors.textSecondary },
-                    ]}
-                  >
-                    {t("dashboard.accountCount", { count: type.accountCount })}
-                  </Text>
-                </Card.Content>
-              </Card>
-            ))}
-          </View>
-        </View>
-
-        {/* Accounts List */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text
-              style={[styles.sectionTitle, { color: themeColors.textPrimary }]}
-            >
-              {t("common.accounts")}
-            </Text>
-            <TouchableOpacity
-              onPress={() =>
-                navigation.navigate("Accounts", { screen: "AccountsMain" })
-              }
-            >
-              <Text style={styles.seeAllText}>{t("common.seeAll")}</Text>
-            </TouchableOpacity>
-          </View>
-          {dashboardData?.accountsSummary?.slice(0, 3).map((account) => (
-            <TouchableOpacity
-              key={account.id}
-              onPress={() =>
-                navigation.navigate("AccountDetail", { accountId: account.id })
-              }
-            >
-              <Card style={styles.accountCard}>
-                <Card.Content style={styles.accountCardContent}>
-                  <View style={styles.accountInfo}>
-                    <View
-                      style={[
-                        styles.accountIcon,
-                        { backgroundColor: account.accountType?.color + "20" },
-                      ]}
-                    >
-                      <MaterialCommunityIcons
-                        name={getAccountIcon(account.accountType?.icon)}
-                        size={20}
-                        color={account.accountType?.color || colors.primary}
-                      />
-                    </View>
-                    <View>
-                      <Text
+        {dashboardData?.accountTypesSummary &&
+          dashboardData.accountTypesSummary.length > 0 && (
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Text
+                  style={[
+                    styles.sectionTitle,
+                    { color: themeColors.textPrimary },
+                  ]}
+                >
+                  {t("dashboard.byAccountType")}
+                </Text>
+                <TouchableOpacity
+                  onPress={() => toggle("dashboard_accounts")}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <MaterialCommunityIcons
+                    name={isVisible("dashboard_accounts") ? "eye" : "eye-off"}
+                    size={18}
+                    color={themeColors.textSecondary}
+                  />
+                </TouchableOpacity>
+              </View>
+              <View style={styles.accountTypesGrid}>
+                {dashboardData.accountTypesSummary.map((type) => (
+                  <Card key={type.id} style={styles.accountTypeCard}>
+                    <Card.Content style={styles.accountTypeContent}>
+                      <View
                         style={[
-                          styles.accountName,
-                          { color: themeColors.textPrimary },
+                          styles.accountTypeIcon,
+                          { backgroundColor: type.color + "20" },
                         ]}
                       >
-                        {account.name}
-                      </Text>
+                        <MaterialCommunityIcons
+                          name={getAccountIcon(type.icon)}
+                          size={24}
+                          color={type.color}
+                        />
+                      </View>
                       <Text
                         style={[
-                          styles.accountType,
+                          styles.accountTypeName,
                           { color: themeColors.textSecondary },
                         ]}
                       >
-                        {account.accountType?.name}
+                        {type.name}
                       </Text>
-                    </View>
-                  </View>
-                  <Text
-                    style={[
-                      styles.accountBalance,
-                      { color: themeColors.textPrimary },
-                    ]}
-                  >
-                    {isVisible("dashboard_accounts")
-                      ? formatCurrency(account.balance)
-                      : maskedBalance}
-                  </Text>
-                </Card.Content>
-              </Card>
-            </TouchableOpacity>
-          ))}
-        </View>
+                      <Text
+                        style={[
+                          styles.accountTypeBalance,
+                          { color: themeColors.textPrimary },
+                        ]}
+                      >
+                        {isVisible("dashboard_accounts")
+                          ? formatCurrency(type.balance)
+                          : maskedBalance}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.accountTypeCount,
+                          { color: themeColors.textSecondary },
+                        ]}
+                      >
+                        {t("dashboard.accountCount", {
+                          count: type.accountCount,
+                        })}
+                      </Text>
+                    </Card.Content>
+                  </Card>
+                ))}
+              </View>
+            </View>
+          )}
+
+        {/* Accounts List */}
+        {dashboardData?.accountsSummary &&
+          dashboardData.accountsSummary.length > 0 && (
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Text
+                  style={[
+                    styles.sectionTitle,
+                    { color: themeColors.textPrimary },
+                  ]}
+                >
+                  {t("common.accounts")}
+                </Text>
+                <TouchableOpacity
+                  onPress={() =>
+                    navigation.navigate("Accounts", { screen: "AccountsMain" })
+                  }
+                >
+                  <Text style={styles.seeAllText}>{t("common.seeAll")}</Text>
+                </TouchableOpacity>
+              </View>
+              {dashboardData.accountsSummary.slice(0, 3).map((account) => (
+                <TouchableOpacity
+                  key={account.id}
+                  onPress={() =>
+                    navigation.navigate("AccountDetail", {
+                      accountId: account.id,
+                    })
+                  }
+                >
+                  <Card style={styles.accountCard}>
+                    <Card.Content style={styles.accountCardContent}>
+                      <View style={styles.accountInfo}>
+                        <View
+                          style={[
+                            styles.accountIcon,
+                            {
+                              backgroundColor:
+                                account.accountType?.color + "20",
+                            },
+                          ]}
+                        >
+                          <MaterialCommunityIcons
+                            name={getAccountIcon(account.accountType?.icon)}
+                            size={20}
+                            color={account.accountType?.color || colors.primary}
+                          />
+                        </View>
+                        <View>
+                          <Text
+                            style={[
+                              styles.accountName,
+                              { color: themeColors.textPrimary },
+                            ]}
+                          >
+                            {account.name}
+                          </Text>
+                          <Text
+                            style={[
+                              styles.accountType,
+                              { color: themeColors.textSecondary },
+                            ]}
+                          >
+                            {account.accountType?.name}
+                          </Text>
+                        </View>
+                      </View>
+                      <Text
+                        style={[
+                          styles.accountBalance,
+                          { color: themeColors.textPrimary },
+                        ]}
+                      >
+                        {isVisible("dashboard_accounts")
+                          ? formatCurrency(account.balance)
+                          : maskedBalance}
+                      </Text>
+                    </Card.Content>
+                  </Card>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
 
         {/* Shared Accounts (always visible) */}
         {dashboardData?.sharedAccountsSummary &&
@@ -548,101 +567,102 @@ export default function DashboardScreen({
           )}
 
         {/* Recent Transactions */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text
-              style={[styles.sectionTitle, { color: themeColors.textPrimary }]}
-            >
-              {t("dashboard.recentTransactions")}
-            </Text>
-            <View style={styles.sectionHeaderRight}>
-              <TouchableOpacity
-                onPress={() => toggle("dashboard_transactions")}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        {recentTransactions.length > 0 && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text
+                style={[
+                  styles.sectionTitle,
+                  { color: themeColors.textPrimary },
+                ]}
               >
-                <MaterialCommunityIcons
-                  name={isVisible("dashboard_transactions") ? "eye" : "eye-off"}
-                  size={18}
-                  color={themeColors.textSecondary}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => navigation.navigate("Transactions", {})}
-              >
-                <Text style={styles.seeAllText}>{t("common.seeAll")}</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-          {recentTransactions.length === 0 ? (
-            <Card style={styles.emptyCard}>
-              <Card.Content>
-                <Text
-                  style={[
-                    styles.emptyText,
-                    { color: themeColors.textSecondary },
-                  ]}
+                {t("dashboard.recentTransactions")}
+              </Text>
+              <View style={styles.sectionHeaderRight}>
+                <TouchableOpacity
+                  onPress={() => toggle("dashboard_transactions")}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 >
-                  {t("dashboard.noTransactions")}
-                </Text>
-              </Card.Content>
-            </Card>
-          ) : (
-            recentTransactions.map((transaction) => {
+                  <MaterialCommunityIcons
+                    name={
+                      isVisible("dashboard_transactions") ? "eye" : "eye-off"
+                    }
+                    size={18}
+                    color={themeColors.textSecondary}
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => navigation.navigate("Transactions", {})}
+                >
+                  <Text style={styles.seeAllText}>{t("common.seeAll")}</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+            {recentTransactions.map((transaction) => {
               const icon = getTransactionIcon(transaction.type);
               return (
-                <Card key={transaction.id} style={styles.transactionCard}>
-                  <Card.Content style={styles.transactionContent}>
-                    <View style={styles.transactionLeft}>
-                      <MaterialCommunityIcons
-                        name={icon.name}
-                        size={32}
-                        color={icon.color}
-                      />
-                      <View style={styles.transactionInfo}>
-                        <Text
-                          style={[
-                            styles.transactionDescription,
-                            { color: themeColors.textPrimary },
-                          ]}
-                          numberOfLines={1}
-                        >
-                          {transaction.description ||
-                            (transaction.type === "earning"
-                              ? t("common.income")
-                              : t("common.expense"))}
-                        </Text>
-                        <Text
-                          style={[
-                            styles.transactionMeta,
-                            { color: themeColors.textSecondary },
-                          ]}
-                        >
-                          {transaction.account?.name} •{" "}
-                          {formatDate(transaction.createdAt)}
-                        </Text>
+                <TouchableOpacity
+                  key={transaction.id}
+                  onPress={() =>
+                    navigation.navigate("EditTransaction", {
+                      transactionId: transaction.id,
+                    })
+                  }
+                >
+                  <Card style={styles.transactionCard}>
+                    <Card.Content style={styles.transactionContent}>
+                      <View style={styles.transactionLeft}>
+                        <MaterialCommunityIcons
+                          name={icon.name}
+                          size={32}
+                          color={icon.color}
+                        />
+                        <View style={styles.transactionInfo}>
+                          <Text
+                            style={[
+                              styles.transactionDescription,
+                              { color: themeColors.textPrimary },
+                            ]}
+                            numberOfLines={1}
+                          >
+                            {transaction.description ||
+                              (transaction.type === "earning"
+                                ? t("common.income")
+                                : t("common.expense"))}
+                          </Text>
+                          <Text
+                            style={[
+                              styles.transactionMeta,
+                              { color: themeColors.textSecondary },
+                            ]}
+                          >
+                            {transaction.account?.name} •{" "}
+                            {formatDate(transaction.createdAt)}
+                          </Text>
+                        </View>
                       </View>
-                    </View>
-                    <Text
-                      style={[
-                        styles.transactionAmount,
-                        {
-                          color:
-                            transaction.type === "earning"
-                              ? colors.earning
-                              : colors.expense,
-                        },
-                      ]}
-                    >
-                      {isVisible("dashboard_transactions")
-                        ? `${transaction.type === "earning" ? "+" : "-"}${formatCurrency(transaction.amount)}`
-                        : maskedBalance}
-                    </Text>
-                  </Card.Content>
-                </Card>
+                      <Text
+                        style={[
+                          styles.transactionAmount,
+                          {
+                            color:
+                              transaction.type === "earning"
+                                ? colors.earning
+                                : colors.expense,
+                          },
+                        ]}
+                      >
+                        {isVisible("dashboard_transactions")
+                          ? `${transaction.type === "earning" ? "+" : "-"}${formatCurrency(transaction.amount)}`
+                          : maskedBalance}
+                      </Text>
+                    </Card.Content>
+                  </Card>
+                </TouchableOpacity>
               );
-            })
-          )}
-        </View>
+            })}
+          </View>
+        )}
       </ScrollView>
     </View>
   );

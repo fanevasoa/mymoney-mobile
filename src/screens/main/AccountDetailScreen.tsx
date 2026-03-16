@@ -20,6 +20,9 @@ import {
   IconButton,
   Menu,
   Divider,
+  Portal,
+  Dialog,
+  TextInput,
 } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -67,6 +70,9 @@ export default function AccountDetailScreen({
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [menuVisible, setMenuVisible] = useState<boolean>(false);
+  const [renameVisible, setRenameVisible] = useState<boolean>(false);
+  const [newName, setNewName] = useState<string>("");
+  const [isRenaming, setIsRenaming] = useState<boolean>(false);
 
   const loadData = useCallback(async (): Promise<void> => {
     try {
@@ -122,6 +128,27 @@ export default function AccountDetailScreen({
         },
       },
     ]);
+  };
+
+  const handleRename = async (): Promise<void> => {
+    if (!newName.trim() || newName.trim().length < 2) return;
+    try {
+      setIsRenaming(true);
+      const response = await accountService.updateAccount(accountId, {
+        name: newName.trim(),
+      });
+      if (response.success) {
+        setAccount(response.data.account);
+        updateAccountInState(response.data.account);
+        setRenameVisible(false);
+      }
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : t("account.failedUpdate");
+      showToast(message, "error");
+    } finally {
+      setIsRenaming(false);
+    }
   };
 
   const handleToggleActive = async (): Promise<void> => {
@@ -185,6 +212,15 @@ export default function AccountDetailScreen({
           }
         >
           <Menu.Item
+            onPress={() => {
+              setMenuVisible(false);
+              setNewName(account?.name || "");
+              setRenameVisible(true);
+            }}
+            title={t("account.rename")}
+            leadingIcon="pencil"
+          />
+          <Menu.Item
             onPress={handleToggleActive}
             title={
               account?.isActive
@@ -217,201 +253,267 @@ export default function AccountDetailScreen({
   }
 
   return (
-    <ScrollView
-      style={[styles.container, { backgroundColor: themeColors.background }]}
-      contentContainerStyle={styles.content}
-      refreshControl={
-        <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
-      }
-    >
-      {/* Account Header Card */}
-      <Card
-        style={[
-          styles.headerCard,
-          { backgroundColor: account.accountType?.color || colors.primary },
-        ]}
+    <>
+      <ScrollView
+        style={[styles.container, { backgroundColor: themeColors.background }]}
+        contentContainerStyle={styles.content}
+        refreshControl={
+          <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
+        }
       >
-        <Card.Content style={styles.headerContent}>
-          <View style={styles.headerIcon}>
-            <MaterialCommunityIcons
-              name={getIconName(account.accountType?.icon)}
-              size={40}
-              color={colors.textInverse}
-            />
-          </View>
-          <Text style={styles.accountName}>{account.name}</Text>
-          <Text style={styles.accountType}>{account.accountType?.name}</Text>
-          <TouchableOpacity
-            onPress={() => toggle("account_detail_balance")}
-            style={styles.balanceRow}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.balance}>
-              {isVisible("account_detail_balance")
-                ? formatCurrency(account.balance)
-                : maskedBalance}
-            </Text>
-            <MaterialCommunityIcons
-              name={isVisible("account_detail_balance") ? "eye" : "eye-off"}
-              size={20}
-              color={colors.textInverse}
-              style={{ opacity: 0.8 }}
-            />
-          </TouchableOpacity>
-          {!account.isActive && (
-            <View style={styles.inactiveBadge}>
-              <Text style={styles.inactiveBadgeText}>
-                {t("common.inactive")}
-              </Text>
+        {/* Account Header Card */}
+        <Card
+          style={[
+            styles.headerCard,
+            { backgroundColor: account.accountType?.color || colors.primary },
+          ]}
+        >
+          <Card.Content style={styles.headerContent}>
+            <View style={styles.headerIcon}>
+              <MaterialCommunityIcons
+                name={getIconName(account.accountType?.icon)}
+                size={40}
+                color={colors.textInverse}
+              />
             </View>
-          )}
-        </Card.Content>
-      </Card>
-
-      {/* Quick Actions */}
-      <View style={styles.quickActions}>
-        <Button
-          mode="contained"
-          icon="plus"
-          onPress={() => {
-            navigation.navigate("Add", {
-              screen: "AddTransaction",
-              params: {
-                accountId: account.id,
-                type: "earning",
-                returnToAccount: true,
-              },
-            });
-          }}
-          style={[styles.actionButton, { backgroundColor: colors.earning }]}
-        >
-          {t("common.income")}
-        </Button>
-        <Button
-          mode="contained"
-          icon="minus"
-          onPress={() => {
-            navigation.navigate("Add", {
-              screen: "AddTransaction",
-              params: {
-                accountId: account.id,
-                type: "expense",
-                returnToAccount: true,
-              },
-            });
-          }}
-          style={[styles.actionButton, { backgroundColor: colors.expense }]}
-        >
-          {t("common.expense")}
-        </Button>
-      </View>
-
-      {/* Account Info */}
-      {account.description && (
-        <Card style={styles.infoCard}>
-          <Card.Content>
-            <Text
-              style={[styles.infoLabel, { color: themeColors.textSecondary }]}
+            <Text style={styles.accountName}>{account.name}</Text>
+            <Text style={styles.accountType}>{account.accountType?.name}</Text>
+            <TouchableOpacity
+              onPress={() => toggle("account_detail_balance")}
+              style={styles.balanceRow}
+              activeOpacity={0.7}
             >
-              {t("common.description")}
-            </Text>
-            <Text
-              style={[styles.infoValue, { color: themeColors.textPrimary }]}
-            >
-              {account.description}
-            </Text>
+              <Text style={styles.balance}>
+                {isVisible("account_detail_balance")
+                  ? formatCurrency(account.balance)
+                  : maskedBalance}
+              </Text>
+              <MaterialCommunityIcons
+                name={isVisible("account_detail_balance") ? "eye" : "eye-off"}
+                size={20}
+                color={colors.textInverse}
+                style={{ opacity: 0.8 }}
+              />
+            </TouchableOpacity>
+            {!account.isActive && (
+              <View style={styles.inactiveBadge}>
+                <Text style={styles.inactiveBadgeText}>
+                  {t("common.inactive")}
+                </Text>
+              </View>
+            )}
           </Card.Content>
         </Card>
-      )}
 
-      {/* Transactions */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text
-            style={[styles.sectionTitle, { color: themeColors.textPrimary }]}
+        {/* Quick Actions */}
+        <View style={styles.quickActions}>
+          <Button
+            mode="contained"
+            icon="plus"
+            onPress={() => {
+              navigation.navigate("Add", {
+                screen: "AddTransaction",
+                params: {
+                  accountId: account.id,
+                  type: "earning",
+                  returnToAccount: true,
+                },
+              });
+            }}
+            style={[styles.actionButton, { backgroundColor: colors.earning }]}
           >
-            {t("dashboard.recentTransactions")}
-          </Text>
-          <TouchableOpacity
-            onPress={() => toggle("account_detail_transactions")}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            {t("common.income")}
+          </Button>
+          <Button
+            mode="contained"
+            icon="minus"
+            onPress={() => {
+              navigation.navigate("Add", {
+                screen: "AddTransaction",
+                params: {
+                  accountId: account.id,
+                  type: "expense",
+                  returnToAccount: true,
+                },
+              });
+            }}
+            style={[styles.actionButton, { backgroundColor: colors.expense }]}
           >
-            <MaterialCommunityIcons
-              name={
-                isVisible("account_detail_transactions") ? "eye" : "eye-off"
-              }
-              size={18}
-              color={themeColors.textSecondary}
-            />
-          </TouchableOpacity>
+            {t("common.expense")}
+          </Button>
+          <Button
+            mode="contained"
+            icon="swap-horizontal"
+            onPress={() => {
+              navigation.navigate("Add", {
+                screen: "Transfer",
+                params: {
+                  fromAccountId: account.id,
+                },
+              });
+            }}
+            style={[styles.actionButton, { backgroundColor: colors.primary }]}
+          >
+            {t("common.transfer")}
+          </Button>
         </View>
-        {transactions.length === 0 ? (
-          <Card style={styles.emptyCard}>
+
+        {/* Account Info */}
+        {account.description && (
+          <Card style={styles.infoCard}>
             <Card.Content>
               <Text
-                style={[styles.emptyText, { color: themeColors.textSecondary }]}
+                style={[styles.infoLabel, { color: themeColors.textSecondary }]}
               >
-                {t("dashboard.noTransactions")}
+                {t("common.description")}
+              </Text>
+              <Text
+                style={[styles.infoValue, { color: themeColors.textPrimary }]}
+              >
+                {account.description}
               </Text>
             </Card.Content>
           </Card>
-        ) : (
-          transactions.map((transaction) => {
-            const icon = getTransactionIcon(transaction.type);
-            return (
-              <Card key={transaction.id} style={styles.transactionCard}>
-                <Card.Content style={styles.transactionContent}>
-                  <View style={styles.transactionLeft}>
-                    <MaterialCommunityIcons
-                      name={icon.name}
-                      size={32}
-                      color={icon.color}
-                    />
-                    <View style={styles.transactionInfo}>
-                      <Text
-                        style={[
-                          styles.transactionDescription,
-                          { color: themeColors.textPrimary },
-                        ]}
-                        numberOfLines={1}
-                      >
-                        {transaction.description ||
-                          (transaction.type === "earning"
-                            ? t("common.income")
-                            : t("common.expense"))}
-                      </Text>
-                      <Text
-                        style={[
-                          styles.transactionMeta,
-                          { color: themeColors.textSecondary },
-                        ]}
-                      >
-                        {formatDate(transaction.createdAt)}
-                      </Text>
-                    </View>
-                  </View>
-                  <Text
-                    style={[
-                      styles.transactionAmount,
-                      {
-                        color:
-                          transaction.type === "earning"
-                            ? colors.earning
-                            : colors.expense,
-                      },
-                    ]}
-                  >
-                    {isVisible("account_detail_transactions")
-                      ? `${transaction.type === "earning" ? "+" : "-"}${formatCurrency(transaction.amount)}`
-                      : maskedBalance}
-                  </Text>
-                </Card.Content>
-              </Card>
-            );
-          })
         )}
-      </View>
-    </ScrollView>
+
+        {/* Transactions */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text
+              style={[styles.sectionTitle, { color: themeColors.textPrimary }]}
+            >
+              {t("dashboard.recentTransactions")}
+            </Text>
+            <TouchableOpacity
+              onPress={() => toggle("account_detail_transactions")}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <MaterialCommunityIcons
+                name={
+                  isVisible("account_detail_transactions") ? "eye" : "eye-off"
+                }
+                size={18}
+                color={themeColors.textSecondary}
+              />
+            </TouchableOpacity>
+          </View>
+          {transactions.length === 0 ? (
+            <Card style={styles.emptyCard}>
+              <Card.Content>
+                <Text
+                  style={[
+                    styles.emptyText,
+                    { color: themeColors.textSecondary },
+                  ]}
+                >
+                  {t("dashboard.noTransactions")}
+                </Text>
+              </Card.Content>
+            </Card>
+          ) : (
+            transactions.map((transaction) => {
+              const icon = getTransactionIcon(transaction.type);
+              return (
+                <TouchableOpacity
+                  key={transaction.id}
+                  onPress={() =>
+                    navigation.navigate("EditTransaction", {
+                      transactionId: transaction.id,
+                    })
+                  }
+                >
+                  <Card style={styles.transactionCard}>
+                    <Card.Content style={styles.transactionContent}>
+                      <View style={styles.transactionLeft}>
+                        <MaterialCommunityIcons
+                          name={icon.name}
+                          size={32}
+                          color={icon.color}
+                        />
+                        <View style={styles.transactionInfo}>
+                          <Text
+                            style={[
+                              styles.transactionDescription,
+                              { color: themeColors.textPrimary },
+                            ]}
+                            numberOfLines={1}
+                          >
+                            {transaction.description ||
+                              (transaction.type === "earning"
+                                ? t("common.income")
+                                : t("common.expense"))}
+                          </Text>
+                          <Text
+                            style={[
+                              styles.transactionMeta,
+                              { color: themeColors.textSecondary },
+                            ]}
+                          >
+                            {formatDate(transaction.createdAt)}
+                          </Text>
+                        </View>
+                      </View>
+                      <Text
+                        style={[
+                          styles.transactionAmount,
+                          {
+                            color:
+                              transaction.type === "earning"
+                                ? colors.earning
+                                : colors.expense,
+                          },
+                        ]}
+                      >
+                        {isVisible("account_detail_transactions")
+                          ? `${transaction.type === "earning" ? "+" : "-"}${formatCurrency(transaction.amount)}`
+                          : maskedBalance}
+                      </Text>
+                    </Card.Content>
+                  </Card>
+                </TouchableOpacity>
+              );
+            })
+          )}
+        </View>
+      </ScrollView>
+
+      {/* Rename Dialog */}
+      <Portal>
+        <Dialog
+          visible={renameVisible}
+          onDismiss={() => setRenameVisible(false)}
+        >
+          <Dialog.Title>{t("account.rename")}</Dialog.Title>
+          <Dialog.Content>
+            <TextInput
+              mode="outlined"
+              label={t("addAccount.accountName")}
+              value={newName}
+              onChangeText={setNewName}
+              autoFocus
+              style={{ backgroundColor: themeColors.surface }}
+              outlineColor={themeColors.border}
+              activeOutlineColor={themeColors.primary}
+              textColor={themeColors.textPrimary}
+            />
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setRenameVisible(false)}>
+              {t("common.cancel")}
+            </Button>
+            <Button
+              onPress={handleRename}
+              loading={isRenaming}
+              disabled={
+                isRenaming || !newName.trim() || newName.trim().length < 2
+              }
+            >
+              {t("common.save")}
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
+    </>
   );
 }
 
