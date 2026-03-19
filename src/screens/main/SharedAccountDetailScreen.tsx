@@ -15,7 +15,18 @@ import {
   RefreshControl,
   Alert,
 } from "react-native";
-import { Text, Card, Chip, Button } from "react-native-paper";
+import {
+  Text,
+  Card,
+  Chip,
+  Button,
+  IconButton,
+  Menu,
+  Divider,
+  Portal,
+  Dialog,
+  TextInput,
+} from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { CompositeScreenProps } from "@react-navigation/native";
@@ -68,6 +79,10 @@ export default function SharedAccountDetailScreen({
   const [isLoading, setIsLoading] = useState(false);
   const [showMembers, setShowMembers] = useState(false);
   const [showCampaigns, setShowCampaigns] = useState(true);
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [renameVisible, setRenameVisible] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [isRenaming, setIsRenaming] = useState(false);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -112,6 +127,27 @@ export default function SharedAccountDetailScreen({
   );
 
   const isManager = account?.myRole === "manager";
+
+  const handleRename = async () => {
+    if (!newName.trim() || newName.trim().length < 2) return;
+    try {
+      setIsRenaming(true);
+      const response = await sharedAccountService.updateSharedAccount(
+        sharedAccountId,
+        { name: newName.trim() },
+      );
+      if (response.success) {
+        setAccount(response.data.sharedAccount);
+        setRenameVisible(false);
+      }
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : t("account.failedUpdate");
+      showToast(message, "error");
+    } finally {
+      setIsRenaming(false);
+    }
+  };
 
   const handleApprove = async (
     txId: string,
@@ -250,100 +286,122 @@ export default function SharedAccountDetailScreen({
   ).length;
 
   return (
-    <ScrollView
-      style={[styles.container, { backgroundColor: themeColors.background }]}
-      contentContainerStyle={styles.content}
-      refreshControl={
-        <RefreshControl refreshing={isLoading} onRefresh={fetchData} />
-      }
-    >
-      {/* Header Card */}
-      <Card style={[styles.headerCard, { backgroundColor: colors.primary }]}>
-        <Card.Content style={styles.headerContent}>
-          <View style={styles.headerIcon}>
-            <MaterialCommunityIcons
-              name="account-group"
-              size={40}
-              color={colors.textInverse}
-            />
-          </View>
-          <Text style={styles.accountName}>{account.name}</Text>
-          {account.description ? (
-            <Text style={styles.accountDesc}>{account.description}</Text>
-          ) : null}
-          <Text style={styles.balance}>{formatCurrency(account.balance)}</Text>
-          <Chip
-            textStyle={{ fontSize: 10, color: colors.textInverse }}
-            style={{
-              backgroundColor: "rgba(255,255,255,0.2)",
-              alignSelf: "center",
-            }}
-            compact
-          >
-            {isManager ? t("sharedAccount.manager") : t("sharedAccount.member")}{" "}
-            ·{" "}
-            {t("sharedAccount.membersCount", {
-              count: account.members?.length || 0,
-            })}
-          </Chip>
-        </Card.Content>
-      </Card>
-
-      {/* Quick Actions */}
-      <View style={styles.quickActions}>
-        <Button
-          mode="contained"
-          icon="plus"
-          onPress={() => {
-            if (linkedAccount) {
-              navigation.navigate("Add", {
-                screen: "AddTransaction",
-                params: { accountId: linkedAccount.id, type: "earning" },
-              });
-            }
-          }}
-          style={[styles.actionButton, { backgroundColor: colors.earning }]}
-        >
-          {t("common.income")}
-        </Button>
-        <Button
-          mode="contained"
-          icon="minus"
-          onPress={() => {
-            if (linkedAccount) {
-              navigation.navigate("Add", {
-                screen: "AddTransaction",
-                params: { accountId: linkedAccount.id, type: "expense" },
-              });
-            }
-          }}
-          style={[styles.actionButton, { backgroundColor: colors.expense }]}
-        >
-          {t("common.expense")}
-        </Button>
-      </View>
-
-      {/* Pending Approvals Banner (managers only) */}
-      {isManager && pendingCount > 0 && (
-        <View
-          style={[styles.pendingBanner, { backgroundColor: "#F59E0B" + "15" }]}
-        >
-          <MaterialCommunityIcons
-            name="clock-alert-outline"
-            size={20}
-            color="#F59E0B"
-          />
-          <Text style={[styles.pendingText, { color: "#F59E0B" }]}>
-            {t("sharedAccount.pendingApproval", { count: pendingCount })}
-          </Text>
-        </View>
-      )}
-
-      {/* Budget Campaigns (collapsible) */}
-      <TouchableOpacity
-        onPress={() => setShowCampaigns(!showCampaigns)}
-        activeOpacity={0.7}
+    <>
+      <ScrollView
+        style={[styles.container, { backgroundColor: themeColors.background }]}
+        contentContainerStyle={styles.content}
+        refreshControl={
+          <RefreshControl refreshing={isLoading} onRefresh={fetchData} />
+        }
       >
+        {/* Header Card */}
+        <Card style={[styles.headerCard, { backgroundColor: colors.primary }]}>
+          <Card.Content style={styles.headerContent}>
+            <View style={styles.headerIcon}>
+              <MaterialCommunityIcons
+                name="account-group"
+                size={40}
+                color={colors.textInverse}
+              />
+            </View>
+            <View style={styles.nameRow}>
+              <Text style={styles.accountName}>{account.name}</Text>
+              {isManager && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setNewName(account.name);
+                    setRenameVisible(true);
+                  }}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <MaterialCommunityIcons
+                    name="pencil-outline"
+                    size={18}
+                    color={colors.textInverse}
+                    style={{ opacity: 0.8 }}
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
+            {account.description ? (
+              <Text style={styles.accountDesc}>{account.description}</Text>
+            ) : null}
+            <Text style={styles.balance}>
+              {formatCurrency(account.balance)}
+            </Text>
+            <Chip
+              textStyle={{ fontSize: 10, color: colors.textInverse }}
+              style={{
+                backgroundColor: "rgba(255,255,255,0.2)",
+                alignSelf: "center",
+              }}
+              compact
+            >
+              {isManager
+                ? t("sharedAccount.manager")
+                : t("sharedAccount.member")}{" "}
+              ·{" "}
+              {t("sharedAccount.membersCount", {
+                count: account.members?.length || 0,
+              })}
+            </Chip>
+          </Card.Content>
+        </Card>
+
+        {/* Quick Actions */}
+        <View style={styles.quickActions}>
+          <Button
+            mode="contained"
+            icon="plus"
+            onPress={() => {
+              if (linkedAccount) {
+                navigation.navigate("Add", {
+                  screen: "AddTransaction",
+                  params: { accountId: linkedAccount.id, type: "earning" },
+                });
+              }
+            }}
+            style={[styles.actionButton, { backgroundColor: colors.earning }]}
+          >
+            {t("common.income")}
+          </Button>
+          <Button
+            mode="contained"
+            icon="minus"
+            onPress={() => {
+              if (linkedAccount) {
+                navigation.navigate("Add", {
+                  screen: "AddTransaction",
+                  params: { accountId: linkedAccount.id, type: "expense" },
+                });
+              }
+            }}
+            style={[styles.actionButton, { backgroundColor: colors.expense }]}
+          >
+            {t("common.expense")}
+          </Button>
+        </View>
+
+        {/* Pending Approvals Banner (managers only) */}
+        {isManager && pendingCount > 0 && (
+          <View
+            style={[
+              styles.pendingBanner,
+              { backgroundColor: "#F59E0B" + "15" },
+            ]}
+          >
+            <MaterialCommunityIcons
+              name="clock-alert-outline"
+              size={20}
+              color="#F59E0B"
+            />
+            <Text style={[styles.pendingText, { color: "#F59E0B" }]}>
+              {t("sharedAccount.pendingApproval", { count: pendingCount })}
+            </Text>
+          </View>
+        )}
+
+        {/* Budget Campaigns */}
         <Card style={[styles.card, { backgroundColor: themeColors.surface }]}>
           <Card.Content>
             <View style={styles.collapsibleHeader}>
@@ -369,400 +427,432 @@ export default function SharedAccountDetailScreen({
                     color={colors.primary}
                   />
                 </TouchableOpacity>
-                <MaterialCommunityIcons
-                  name={showCampaigns ? "chevron-up" : "chevron-down"}
-                  size={22}
-                  color={themeColors.textSecondary}
-                />
               </View>
             </View>
 
-            {showCampaigns && (
-              <>
-                {campaigns.length === 0 ? (
-                  <Text
-                    style={[
-                      styles.emptyText,
-                      { color: themeColors.textSecondary },
-                    ]}
-                  >
-                    {t("sharedAccount.noCampaigns")}
-                  </Text>
-                ) : (
-                  campaigns.map((campaign) => (
-                    <TouchableOpacity
-                      key={campaign.id}
-                      onPress={() =>
-                        navigation.navigate("BudgetCampaignDetail", {
-                          sharedAccountId,
-                          campaignId: campaign.id,
-                        })
-                      }
-                    >
-                      <View
-                        style={[
-                          styles.campaignRow,
-                          { borderBottomColor: themeColors.border },
-                        ]}
-                      >
-                        <View style={styles.campaignLeft}>
-                          <Text
-                            style={[
-                              styles.campaignName,
-                              { color: themeColors.textPrimary },
-                            ]}
-                            numberOfLines={1}
-                          >
-                            {campaign.name}
-                          </Text>
-                          <Text
-                            style={[
-                              styles.campaignCreator,
-                              { color: themeColors.textSecondary },
-                            ]}
-                          >
-                            {t("sharedAccount.byCreator", {
-                              name:
-                                campaign.creator?.name ||
-                                t("sharedAccount.unknown"),
-                              count: campaign.items?.length || 0,
-                            })}
-                          </Text>
-                        </View>
-                        <View style={styles.campaignRight}>
-                          <Text
-                            style={[
-                              styles.campaignAmount,
-                              { color: themeColors.textPrimary },
-                            ]}
-                          >
-                            {formatCurrency(campaign.totalAmount)}
-                          </Text>
-                          <View style={styles.campaignTotalsRow}>
-                            <Text
-                              style={[
-                                styles.campaignApproved,
-                                { color: colors.earning },
-                              ]}
-                            >
-                              {formatCurrency(
-                                campaign.items
-                                  ?.filter((i) => i.status === "approved")
-                                  .reduce((s, i) => s + i.amount, 0) || 0,
-                              )}
-                            </Text>
-                            <Text
-                              style={[
-                                styles.campaignTotalSep,
-                                { color: themeColors.textSecondary },
-                              ]}
-                            >
-                              /
-                            </Text>
-                            <Text
-                              style={[
-                                styles.campaignUnapproved,
-                                { color: colors.expense },
-                              ]}
-                            >
-                              {formatCurrency(
-                                campaign.items
-                                  ?.filter((i) => i.status !== "approved")
-                                  .reduce((s, i) => s + i.amount, 0) || 0,
-                              )}
-                            </Text>
-                          </View>
-                          {campaign.status !== "applied" &&
-                            (campaign.createdBy === user?.id || isManager) && (
-                              <TouchableOpacity
-                                onPress={(e) => {
-                                  e.stopPropagation();
-                                  handleDeleteCampaign(campaign);
-                                }}
-                                hitSlop={{
-                                  top: 8,
-                                  bottom: 8,
-                                  left: 8,
-                                  right: 8,
-                                }}
-                              >
-                                <MaterialCommunityIcons
-                                  name="delete-outline"
-                                  size={18}
-                                  color={colors.expense}
-                                />
-                              </TouchableOpacity>
-                            )}
-                        </View>
-                      </View>
-                    </TouchableOpacity>
-                  ))
-                )}
-
-                <Button
-                  mode="contained"
-                  icon="plus"
-                  onPress={() =>
-                    navigation.navigate("CreateBudgetCampaign", {
-                      sharedAccountId,
-                    })
-                  }
-                  style={styles.addBudgetItemButton}
-                  contentStyle={styles.addBudgetItemButtonContent}
-                >
-                  {t("sharedAccount.addBudgetCampaign")}
-                </Button>
-              </>
-            )}
-          </Card.Content>
-        </Card>
-      </TouchableOpacity>
-
-      {/* Recent Transactions */}
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: themeColors.textPrimary }]}>
-          {t("sharedAccount.recentTransactions")}
-        </Text>
-
-        {transactions.length === 0 ? (
-          <Card style={[styles.card, { backgroundColor: themeColors.surface }]}>
-            <Card.Content>
+            {campaigns.length === 0 ? (
               <Text
                 style={[styles.emptyText, { color: themeColors.textSecondary }]}
               >
-                {t("sharedAccount.noTransactions")}
+                {t("sharedAccount.noCampaigns")}
               </Text>
-            </Card.Content>
-          </Card>
-        ) : (
-          transactions.map((tx) => {
-            const icon = getTxIcon(tx);
-            return (
-              <Card
-                key={tx.id}
-                style={[
-                  styles.txCard,
-                  { backgroundColor: themeColors.surface },
-                ]}
-              >
-                <Card.Content>
-                  <View style={styles.txRow}>
-                    <MaterialCommunityIcons
-                      name={icon.name}
-                      size={28}
-                      color={icon.color}
-                    />
-                    <View style={styles.txInfo}>
+            ) : (
+              campaigns.map((campaign) => (
+                <TouchableOpacity
+                  key={campaign.id}
+                  onPress={() =>
+                    navigation.navigate("BudgetCampaignDetail", {
+                      sharedAccountId,
+                      campaignId: campaign.id,
+                    })
+                  }
+                >
+                  <View
+                    style={[
+                      styles.campaignRow,
+                      { borderBottomColor: themeColors.border },
+                    ]}
+                  >
+                    <View style={styles.campaignLeft}>
                       <Text
                         style={[
-                          styles.txDesc,
+                          styles.campaignName,
                           { color: themeColors.textPrimary },
                         ]}
                         numberOfLines={1}
                       >
-                        {tx.description || tx.type}
+                        {campaign.name}
                       </Text>
-                      <View style={styles.txMeta}>
-                        <Text
-                          style={[
-                            styles.txCreator,
-                            { color: themeColors.textSecondary },
-                          ]}
-                        >
-                          {tx.creator?.name || t("sharedAccount.unknown")}
-                        </Text>
-                        {tx.budgetItem && (
-                          <Text
-                            style={[
-                              styles.txBudgetItem,
-                              { color: themeColors.textSecondary },
-                            ]}
-                          >
-                            · {tx.budgetItem.name}
-                          </Text>
-                        )}
-                      </View>
                       <Text
                         style={[
-                          styles.txDate,
+                          styles.campaignCreator,
                           { color: themeColors.textSecondary },
                         ]}
                       >
-                        {formatDate(tx.createdAt)}
+                        {t("sharedAccount.byCreator", {
+                          name:
+                            campaign.creator?.name ||
+                            t("sharedAccount.unknown"),
+                          count: campaign.items?.length || 0,
+                        })}
                       </Text>
                     </View>
-                    <View style={styles.txRight}>
+                    <View style={styles.campaignRight}>
                       <Text
                         style={[
-                          styles.txAmount,
-                          {
-                            color:
-                              tx.type === "income"
-                                ? colors.earning
-                                : colors.expense,
-                          },
-                        ]}
-                      >
-                        {tx.type === "income" ? "+" : "-"}
-                        {formatCurrency(tx.amount)}
-                      </Text>
-                      <Chip
-                        textStyle={{
-                          fontSize: 9,
-                          color: getStatusColor(tx.status),
-                          lineHeight: 14,
-                        }}
-                        style={{
-                          backgroundColor: getStatusColor(tx.status) + "15",
-                          paddingVertical: 0,
-                          paddingHorizontal: 2,
-                        }}
-                        compact
-                      >
-                        {getStatusLabel(tx.status)}
-                      </Chip>
-                    </View>
-                  </View>
-
-                  {/* Approve/Reject buttons for managers on pending tx */}
-                  {isManager && tx.status === "pending" && (
-                    <View style={styles.approvalRow}>
-                      <Button
-                        mode="contained"
-                        compact
-                        onPress={() => handleApprove(tx.id, "approved")}
-                        style={[
-                          styles.approveBtn,
-                          { backgroundColor: colors.earning },
-                        ]}
-                        labelStyle={styles.approvalBtnLabel}
-                      >
-                        {t("sharedAccount.approve")}
-                      </Button>
-                      <Button
-                        mode="outlined"
-                        compact
-                        onPress={() => handleApprove(tx.id, "rejected")}
-                        style={styles.rejectBtn}
-                        labelStyle={[
-                          styles.approvalBtnLabel,
-                          { color: colors.expense },
-                        ]}
-                      >
-                        {t("sharedAccount.reject")}
-                      </Button>
-                    </View>
-                  )}
-                </Card.Content>
-              </Card>
-            );
-          })
-        )}
-      </View>
-
-      {/* Members (collapsible) */}
-      <TouchableOpacity
-        onPress={() => setShowMembers(!showMembers)}
-        activeOpacity={0.7}
-      >
-        <Card style={[styles.card, { backgroundColor: themeColors.surface }]}>
-          <Card.Content>
-            <View style={styles.collapsibleHeader}>
-              <Text
-                style={[
-                  styles.sectionTitle,
-                  { color: themeColors.textPrimary },
-                ]}
-              >
-                {t("sharedAccount.members")} ({account.members?.length || 0})
-              </Text>
-              <View style={styles.collapsibleRight}>
-                {isManager && (
-                  <TouchableOpacity
-                    onPress={() =>
-                      navigation.navigate("AddSharedAccountMember", {
-                        sharedAccountId,
-                      })
-                    }
-                  >
-                    <MaterialCommunityIcons
-                      name="account-plus"
-                      size={22}
-                      color={colors.primary}
-                    />
-                  </TouchableOpacity>
-                )}
-                <MaterialCommunityIcons
-                  name={showMembers ? "chevron-up" : "chevron-down"}
-                  size={22}
-                  color={themeColors.textSecondary}
-                />
-              </View>
-            </View>
-
-            {showMembers &&
-              account.members?.map((member) => (
-                <View
-                  key={member.id}
-                  style={[
-                    styles.memberRow,
-                    { borderBottomColor: themeColors.border },
-                  ]}
-                >
-                  <View style={styles.memberLeft}>
-                    <MaterialCommunityIcons
-                      name="account-circle"
-                      size={28}
-                      color={themeColors.textSecondary}
-                    />
-                    <View style={styles.memberInfo}>
-                      <Text
-                        style={[
-                          styles.memberName,
+                          styles.campaignAmount,
                           { color: themeColors.textPrimary },
                         ]}
                       >
-                        {member.user?.name || t("sharedAccount.unknown")}
+                        {formatCurrency(campaign.totalAmount)}
                       </Text>
-                      <Text
-                        style={[
-                          styles.memberEmail,
-                          { color: themeColors.textSecondary },
-                        ]}
-                      >
-                        {member.user?.email || ""}
-                      </Text>
+                      <View style={styles.campaignTotalsRow}>
+                        <Text
+                          style={[
+                            styles.campaignApproved,
+                            { color: colors.earning },
+                          ]}
+                        >
+                          {formatCurrency(
+                            campaign.items
+                              ?.filter((i) => i.status === "approved")
+                              .reduce((s, i) => s + i.amount, 0) || 0,
+                          )}
+                        </Text>
+                        <Text
+                          style={[
+                            styles.campaignTotalSep,
+                            { color: themeColors.textSecondary },
+                          ]}
+                        >
+                          /
+                        </Text>
+                        <Text
+                          style={[
+                            styles.campaignUnapproved,
+                            { color: colors.expense },
+                          ]}
+                        >
+                          {formatCurrency(
+                            campaign.items
+                              ?.filter((i) => i.status !== "approved")
+                              .reduce((s, i) => s + i.amount, 0) || 0,
+                          )}
+                        </Text>
+                      </View>
+                      {campaign.status !== "applied" &&
+                        (campaign.createdBy === user?.id || isManager) && (
+                          <TouchableOpacity
+                            onPress={(e) => {
+                              e.stopPropagation();
+                              handleDeleteCampaign(campaign);
+                            }}
+                            hitSlop={{
+                              top: 8,
+                              bottom: 8,
+                              left: 8,
+                              right: 8,
+                            }}
+                          >
+                            <MaterialCommunityIcons
+                              name="delete-outline"
+                              size={18}
+                              color={colors.expense}
+                            />
+                          </TouchableOpacity>
+                        )}
                     </View>
                   </View>
-                  <Chip
-                    textStyle={{
-                      fontSize: 9,
-                      color:
-                        member.role === "manager"
-                          ? colors.primary
-                          : themeColors.textSecondary,
-                      lineHeight: 14,
-                    }}
-                    style={{
-                      backgroundColor:
-                        member.role === "manager"
-                          ? colors.primary + "15"
-                          : themeColors.border + "50",
-                      paddingVertical: 0,
-                      paddingHorizontal: 2,
-                    }}
-                    compact
-                  >
-                    {member.role === "manager"
-                      ? t("sharedAccount.manager")
-                      : t("sharedAccount.member")}
-                  </Chip>
-                </View>
-              ))}
+                </TouchableOpacity>
+              ))
+            )}
+
+            <Button
+              mode="contained"
+              icon="plus"
+              onPress={() =>
+                navigation.navigate("CreateBudgetCampaign", {
+                  sharedAccountId,
+                })
+              }
+              style={styles.addBudgetItemButton}
+              contentStyle={styles.addBudgetItemButtonContent}
+            >
+              {t("sharedAccount.addBudgetCampaign")}
+            </Button>
           </Card.Content>
         </Card>
-      </TouchableOpacity>
-    </ScrollView>
+
+        {/* Recent Transactions */}
+        <View style={styles.section}>
+          <Text
+            style={[styles.sectionTitle, { color: themeColors.textPrimary }]}
+          >
+            {t("sharedAccount.recentTransactions")}
+          </Text>
+
+          {transactions.length === 0 ? (
+            <Card
+              style={[styles.card, { backgroundColor: themeColors.surface }]}
+            >
+              <Card.Content>
+                <Text
+                  style={[
+                    styles.emptyText,
+                    { color: themeColors.textSecondary },
+                  ]}
+                >
+                  {t("sharedAccount.noTransactions")}
+                </Text>
+              </Card.Content>
+            </Card>
+          ) : (
+            transactions.map((tx) => {
+              const icon = getTxIcon(tx);
+              return (
+                <Card
+                  key={tx.id}
+                  style={[
+                    styles.txCard,
+                    { backgroundColor: themeColors.surface },
+                  ]}
+                >
+                  <Card.Content>
+                    <View style={styles.txRow}>
+                      <MaterialCommunityIcons
+                        name={icon.name}
+                        size={28}
+                        color={icon.color}
+                      />
+                      <View style={styles.txInfo}>
+                        <Text
+                          style={[
+                            styles.txDesc,
+                            { color: themeColors.textPrimary },
+                          ]}
+                          numberOfLines={1}
+                        >
+                          {tx.description || tx.type}
+                        </Text>
+                        <View style={styles.txMeta}>
+                          <Text
+                            style={[
+                              styles.txCreator,
+                              { color: themeColors.textSecondary },
+                            ]}
+                          >
+                            {tx.creator?.name || t("sharedAccount.unknown")}
+                          </Text>
+                          {tx.budgetItem && (
+                            <Text
+                              style={[
+                                styles.txBudgetItem,
+                                { color: themeColors.textSecondary },
+                              ]}
+                            >
+                              · {tx.budgetItem.name}
+                            </Text>
+                          )}
+                        </View>
+                        <Text
+                          style={[
+                            styles.txDate,
+                            { color: themeColors.textSecondary },
+                          ]}
+                        >
+                          {formatDate(tx.createdAt)}
+                        </Text>
+                      </View>
+                      <View style={styles.txRight}>
+                        <Text
+                          style={[
+                            styles.txAmount,
+                            {
+                              color:
+                                tx.type === "income"
+                                  ? colors.earning
+                                  : colors.expense,
+                            },
+                          ]}
+                        >
+                          {tx.type === "income" ? "+" : "-"}
+                          {formatCurrency(tx.amount)}
+                        </Text>
+                        <Chip
+                          textStyle={{
+                            fontSize: 9,
+                            color: getStatusColor(tx.status),
+                            lineHeight: 14,
+                          }}
+                          style={{
+                            backgroundColor: getStatusColor(tx.status) + "15",
+                            paddingVertical: 0,
+                            paddingHorizontal: 2,
+                          }}
+                          compact
+                        >
+                          {getStatusLabel(tx.status)}
+                        </Chip>
+                      </View>
+                    </View>
+
+                    {/* Approve/Reject buttons for managers on pending tx */}
+                    {isManager && tx.status === "pending" && (
+                      <View style={styles.approvalRow}>
+                        <Button
+                          mode="contained"
+                          compact
+                          onPress={() => handleApprove(tx.id, "approved")}
+                          style={[
+                            styles.approveBtn,
+                            { backgroundColor: colors.earning },
+                          ]}
+                          labelStyle={styles.approvalBtnLabel}
+                        >
+                          {t("sharedAccount.approve")}
+                        </Button>
+                        <Button
+                          mode="outlined"
+                          compact
+                          onPress={() => handleApprove(tx.id, "rejected")}
+                          style={styles.rejectBtn}
+                          labelStyle={[
+                            styles.approvalBtnLabel,
+                            { color: colors.expense },
+                          ]}
+                        >
+                          {t("sharedAccount.reject")}
+                        </Button>
+                      </View>
+                    )}
+                  </Card.Content>
+                </Card>
+              );
+            })
+          )}
+        </View>
+
+        {/* Members (collapsible) */}
+        <TouchableOpacity
+          onPress={() => setShowMembers(!showMembers)}
+          activeOpacity={0.7}
+        >
+          <Card style={[styles.card, { backgroundColor: themeColors.surface }]}>
+            <Card.Content>
+              <View style={styles.collapsibleHeader}>
+                <Text
+                  style={[
+                    styles.sectionTitle,
+                    { color: themeColors.textPrimary },
+                  ]}
+                >
+                  {t("sharedAccount.members")} ({account.members?.length || 0})
+                </Text>
+                <View style={styles.collapsibleRight}>
+                  {isManager && (
+                    <TouchableOpacity
+                      onPress={() =>
+                        navigation.navigate("AddSharedAccountMember", {
+                          sharedAccountId,
+                        })
+                      }
+                    >
+                      <MaterialCommunityIcons
+                        name="account-plus"
+                        size={22}
+                        color={colors.primary}
+                      />
+                    </TouchableOpacity>
+                  )}
+                  <MaterialCommunityIcons
+                    name={showMembers ? "chevron-up" : "chevron-down"}
+                    size={22}
+                    color={themeColors.textSecondary}
+                  />
+                </View>
+              </View>
+
+              {showMembers &&
+                account.members?.map((member) => (
+                  <View
+                    key={member.id}
+                    style={[
+                      styles.memberRow,
+                      { borderBottomColor: themeColors.border },
+                    ]}
+                  >
+                    <View style={styles.memberLeft}>
+                      <MaterialCommunityIcons
+                        name="account-circle"
+                        size={28}
+                        color={themeColors.textSecondary}
+                      />
+                      <View style={styles.memberInfo}>
+                        <Text
+                          style={[
+                            styles.memberName,
+                            { color: themeColors.textPrimary },
+                          ]}
+                        >
+                          {member.user?.name || t("sharedAccount.unknown")}
+                        </Text>
+                        <Text
+                          style={[
+                            styles.memberEmail,
+                            { color: themeColors.textSecondary },
+                          ]}
+                        >
+                          {member.user?.email || ""}
+                        </Text>
+                      </View>
+                    </View>
+                    <Chip
+                      textStyle={{
+                        fontSize: 9,
+                        color:
+                          member.role === "manager"
+                            ? colors.primary
+                            : themeColors.textSecondary,
+                        lineHeight: 14,
+                      }}
+                      style={{
+                        backgroundColor:
+                          member.role === "manager"
+                            ? colors.primary + "15"
+                            : themeColors.border + "50",
+                        paddingVertical: 0,
+                        paddingHorizontal: 2,
+                      }}
+                      compact
+                    >
+                      {member.role === "manager"
+                        ? t("sharedAccount.manager")
+                        : t("sharedAccount.member")}
+                    </Chip>
+                  </View>
+                ))}
+            </Card.Content>
+          </Card>
+        </TouchableOpacity>
+      </ScrollView>
+
+      {/* Rename Dialog */}
+      <Portal>
+        <Dialog
+          visible={renameVisible}
+          onDismiss={() => setRenameVisible(false)}
+        >
+          <Dialog.Title>{t("account.rename")}</Dialog.Title>
+          <Dialog.Content>
+            <TextInput
+              mode="outlined"
+              label={t("addAccount.accountName")}
+              value={newName}
+              onChangeText={setNewName}
+              autoFocus
+              style={{ backgroundColor: themeColors.surface }}
+              outlineColor={themeColors.border}
+              activeOutlineColor={themeColors.primary}
+              textColor={themeColors.textPrimary}
+            />
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setRenameVisible(false)}>
+              {t("common.cancel")}
+            </Button>
+            <Button
+              onPress={handleRename}
+              loading={isRenaming}
+              disabled={
+                isRenaming || !newName.trim() || newName.trim().length < 2
+              }
+            >
+              {t("common.save")}
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
+    </>
   );
 }
 
@@ -796,6 +886,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginBottom: spacing.sm,
+  },
+  nameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
   },
   accountName: {
     fontSize: 22,
