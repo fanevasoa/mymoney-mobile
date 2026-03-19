@@ -128,6 +128,20 @@ export default function SharedAccountDetailScreen({
 
   const isManager = account?.myRole === "manager";
 
+  const handleToggleFavorite = async () => {
+    try {
+      const response =
+        await sharedAccountService.toggleFavorite(sharedAccountId);
+      if (response.success && account) {
+        setAccount({ ...account, isFavorite: response.data.isFavorite });
+      }
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : t("account.failedUpdate");
+      showToast(message, "error");
+    }
+  };
+
   const handleRename = async () => {
     if (!newName.trim() || newName.trim().length < 2) return;
     try {
@@ -297,12 +311,27 @@ export default function SharedAccountDetailScreen({
         {/* Header Card */}
         <Card style={[styles.headerCard, { backgroundColor: colors.primary }]}>
           <Card.Content style={styles.headerContent}>
-            <View style={styles.headerIcon}>
-              <MaterialCommunityIcons
-                name="account-group"
-                size={40}
-                color={colors.textInverse}
-              />
+            <View style={styles.headerTopRow}>
+              <View style={styles.headerIcon}>
+                <MaterialCommunityIcons
+                  name="account-group"
+                  size={40}
+                  color={colors.textInverse}
+                />
+              </View>
+              <TouchableOpacity
+                onPress={handleToggleFavorite}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                style={styles.favoriteButton}
+              >
+                <MaterialCommunityIcons
+                  name={account.isFavorite ? "star" : "star-outline"}
+                  size={24}
+                  color={
+                    account.isFavorite ? colors.warning : colors.textInverse
+                  }
+                />
+              </TouchableOpacity>
             </View>
             <View style={styles.nameRow}>
               <Text style={styles.accountName}>{account.name}</Text>
@@ -878,6 +907,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: spacing.lg,
   },
+  headerTopRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    width: "100%",
+    marginBottom: spacing.sm,
+  },
   headerIcon: {
     width: 64,
     height: 64,
@@ -885,7 +921,9 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.2)",
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: spacing.sm,
+  },
+  favoriteButton: {
+    padding: spacing.xs,
   },
   nameRow: {
     flexDirection: "row",

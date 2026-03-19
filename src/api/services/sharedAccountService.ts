@@ -303,6 +303,17 @@ export const getApprovedBudgetItems = async (
   >(`/shared-accounts/${sharedAccountId}/approved-budget-items`);
 };
 
+/**
+ * Toggle shared account favorite status
+ */
+export const toggleFavorite = async (
+  id: string,
+): Promise<ApiResponse<{ isFavorite: boolean }>> => {
+  return apiClient.patch<ApiResponse<{ isFavorite: boolean }>>(
+    `/shared-accounts/${id}/favorite`,
+  );
+};
+
 const sharedAccountService = {
   getSharedAccounts,
   getSharedAccountById,
@@ -327,6 +338,7 @@ const sharedAccountService = {
   createSharedAccountTransaction,
   approveSharedAccountTransaction,
   getApprovedBudgetItems,
+  toggleFavorite,
 } as const;
 
 export default sharedAccountService;

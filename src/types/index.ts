@@ -217,6 +217,7 @@ export interface SharedAccountSummary {
   balance: number;
   myRole: string;
   membersCount: number;
+  isFavorite?: boolean;
 }
 
 export interface DashboardData {
@@ -533,6 +534,7 @@ export interface SharedAccountMember {
   sharedAccountId: string;
   userId: string;
   user?: Pick<User, "id" | "name" | "email">;
+  isFavorite?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -546,6 +548,7 @@ export interface SharedAccount {
   creator?: Pick<User, "id" | "name" | "email">;
   members?: SharedAccountMember[];
   myRole?: SharedAccountMemberRole;
+  isFavorite?: boolean;
   createdAt: string;
   updatedAt: string;
 }
