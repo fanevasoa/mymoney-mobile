@@ -24,9 +24,15 @@ import { useTheme } from "../../contexts/ThemeContext";
 import { useBalanceVisibility } from "../../contexts/BalanceVisibilityContext";
 import { useToast } from "../../contexts/ToastContext";
 import accountService from "../../api/services/accountService";
+import sharedAccountService from "../../api/services/sharedAccountService";
 import { colors, spacing, borderRadius } from "../../theme";
 import { formatCurrency } from "../../utils/helpers";
-import type { AccountsStackParamList, Account, AccountType } from "../../types";
+import type {
+  AccountsStackParamList,
+  Account,
+  AccountType,
+  ApiError,
+} from "../../types";
 
 type Props = NativeStackScreenProps<AccountsStackParamList, "AccountsMain">;
 
@@ -104,13 +110,33 @@ export default function AccountsScreen({
 
   const handleToggleFavorite = async (item: Account) => {
     try {
-      const response = await accountService.toggleFavorite(item.id);
-      if (response.success) {
-        updateAccount(response.data.account);
+      if (item.sharedAccountId) {
+        // Shared account - use shared account service
+        const response = await sharedAccountService.toggleFavorite(
+          item.sharedAccountId,
+        );
+        if (response.success) {
+          // Update the account in the list with new favorite status
+          const updatedAccount = {
+            ...item,
+            sharedAccount: {
+              ...item.sharedAccount,
+              isFavorite: response.data.isFavorite,
+            },
+          };
+          updateAccount(updatedAccount as Account);
+        }
+      } else {
+        // Regular account - use account service
+        const response = await accountService.toggleFavorite(item.id);
+        if (response.success) {
+          updateAccount(response.data.account);
+        }
       }
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to update favorite";
+    } catch (err: unknown) {
+      console.error("Toggle favorite failed:", err);
+      const apiError = err as ApiError;
+      const message = apiError?.message || "Failed to update favorite";
       showToast(message, "error");
     }
   };
@@ -224,10 +250,22 @@ export default function AccountsScreen({
                   style={styles.favoriteButton}
                 >
                   <MaterialCommunityIcons
-                    name={item.isFavorite ? "star" : "star-outline"}
+                    name={
+                      (
+                        item.sharedAccountId
+                          ? item.sharedAccount?.isFavorite
+                          : item.isFavorite
+                      )
+                        ? "star"
+                        : "star-outline"
+                    }
                     size={20}
                     color={
-                      item.isFavorite
+                      (
+                        item.sharedAccountId
+                          ? item.sharedAccount?.isFavorite
+                          : item.isFavorite
+                      )
                         ? colors.warning
                         : themeColors.textSecondary
                     }

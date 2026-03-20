@@ -71,6 +71,7 @@ export interface Account {
     | (Pick<SharedAccount, "id" | "name" | "balance"> & {
         description?: string | null;
         myRole?: "manager" | "member" | null;
+        isFavorite?: boolean;
         memberCount?: number;
       })
     | null;

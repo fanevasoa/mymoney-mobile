@@ -47,6 +47,7 @@ import type {
   SharedAccount,
   SharedAccountTransaction,
   BudgetCampaign,
+  ApiError,
 } from "../../types";
 
 type Props = CompositeScreenProps<
@@ -92,8 +93,8 @@ export default function SharedAccountDetailScreen({
       if (accountRes.success) {
         setAccount(accountRes.data.sharedAccount);
       }
-    } catch {
-      // account fetch failed
+    } catch (error) {
+      console.error("Failed to fetch shared account:", error);
     }
     try {
       const txRes = await sharedAccountService.getSharedAccountTransactions(
@@ -135,9 +136,10 @@ export default function SharedAccountDetailScreen({
       if (response.success && account) {
         setAccount({ ...account, isFavorite: response.data.isFavorite });
       }
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : t("account.failedUpdate");
+    } catch (error: unknown) {
+      console.error("Toggle favorite failed:", error);
+      const apiError = error as ApiError;
+      const message = apiError?.message || t("account.failedUpdate");
       showToast(message, "error");
     }
   };
@@ -321,14 +323,15 @@ export default function SharedAccountDetailScreen({
               </View>
               <TouchableOpacity
                 onPress={handleToggleFavorite}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                style={styles.favoriteButton}
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                style={[styles.favoriteButton, { marginTop: spacing.xs }]}
+                activeOpacity={0.7}
               >
                 <MaterialCommunityIcons
-                  name={account.isFavorite ? "star" : "star-outline"}
-                  size={24}
+                  name={!!account.isFavorite ? "star" : "star-outline"}
+                  size={28}
                   color={
-                    account.isFavorite ? colors.warning : colors.textInverse
+                    !!account.isFavorite ? colors.warning : colors.textInverse
                   }
                 />
               </TouchableOpacity>
