@@ -93,6 +93,9 @@ export default function AddTransactionScreen({
   );
   const [description, setDescription] = useState<string>("");
   const [category, setCategory] = useState<string>("");
+  const [transactionDate, setTransactionDate] = useState<string>(
+    new Date().toISOString().split("T")[0],
+  );
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
   const amountInputRef = useRef<any>(null);
@@ -112,6 +115,19 @@ export default function AddTransactionScreen({
     null,
   );
   const [resolutionAmount, setResolutionAmount] = useState<string>("");
+
+  // Lending states (for expense - I lent money to someone)
+  const [isLent, setIsLent] = useState<boolean>(false);
+
+  // Lending resolution states (for earning - someone paid me back)
+  const [isLendingResolution, setIsLendingResolution] =
+    useState<boolean>(false);
+  const [unresolvedLendings, setUnresolvedLendings] = useState<Borrowing[]>([]);
+  const [selectedLendingId, setSelectedLendingId] = useState<string | null>(
+    null,
+  );
+  const [lendingResolutionAmount, setLendingResolutionAmount] =
+    useState<string>("");
 
   // Shared account states
   const [sharedAccountData, setSharedAccountData] =
@@ -166,7 +182,7 @@ export default function AddTransactionScreen({
   useEffect(() => {
     if (type === "expense" && isBorrowingResolution) {
       borrowingService
-        .getUnresolvedBorrowings({ limit: 50 })
+        .getUnresolvedBorrowings({ limit: 50, direction: "borrowed" })
         .then((res) => {
           if (res.success) {
             setUnresolvedBorrowings(res.data.borrowings);
@@ -176,16 +192,34 @@ export default function AddTransactionScreen({
     }
   }, [type, isBorrowingResolution]);
 
-  // Reset borrowing fields when type changes
+  // Fetch unresolved lendings when switching to earning and toggle is on
+  useEffect(() => {
+    if (type === "earning" && isLendingResolution) {
+      borrowingService
+        .getUnresolvedBorrowings({ limit: 50, direction: "lent" })
+        .then((res) => {
+          if (res.success) {
+            setUnresolvedLendings(res.data.borrowings);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [type, isLendingResolution]);
+
+  // Reset borrowing/lending fields when type changes
   useEffect(() => {
     if (type === "earning") {
       setIsBorrowingResolution(false);
       setSelectedBorrowingId(null);
       setResolutionAmount("");
+      setIsLent(false);
     } else {
       setIsBorrowed(false);
       setBorrowerName("");
       setDueDate("");
+      setIsLendingResolution(false);
+      setSelectedLendingId(null);
+      setLendingResolutionAmount("");
     }
   }, [type]);
 
@@ -264,6 +298,7 @@ export default function AddTransactionScreen({
     setAmount("");
     setDescription("");
     setCategory("");
+    setTransactionDate(new Date().toISOString().split("T")[0]);
     setError("");
     setIsBorrowed(false);
     setBorrowerName("");
@@ -271,6 +306,10 @@ export default function AddTransactionScreen({
     setIsBorrowingResolution(false);
     setSelectedBorrowingId(null);
     setResolutionAmount("");
+    setIsLent(false);
+    setIsLendingResolution(false);
+    setSelectedLendingId(null);
+    setLendingResolutionAmount("");
     setSelectedBudgetItem(null);
     setTimeout(() => amountInputRef.current?.focus(), 300);
   };
@@ -317,11 +356,19 @@ export default function AddTransactionScreen({
           accountId: selectedAccountId!,
           description: description.trim() || null,
           category: category || null,
+          date: transactionDate || undefined,
         };
 
         // Add borrowing fields for earning
         if (type === "earning" && isBorrowed) {
           transactionData.isBorrowed = true;
+          transactionData.borrowerName = borrowerName.trim() || null;
+          transactionData.dueDate = dueDate.trim() || null;
+        }
+
+        // Add lending fields for expense
+        if (type === "expense" && isLent) {
+          transactionData.isLent = true;
           transactionData.borrowerName = borrowerName.trim() || null;
           transactionData.dueDate = dueDate.trim() || null;
         }
@@ -336,6 +383,15 @@ export default function AddTransactionScreen({
           transactionData.borrowingId = selectedBorrowingId;
           transactionData.resolutionAmount = resolutionAmount
             ? parseFloat(resolutionAmount)
+            : parseFloat(amount);
+        }
+
+        // Add lending resolution fields for earning
+        if (type === "earning" && isLendingResolution && selectedLendingId) {
+          transactionData.isLendingResolution = true;
+          transactionData.lendingId = selectedLendingId;
+          transactionData.lendingResolutionAmount = lendingResolutionAmount
+            ? parseFloat(lendingResolutionAmount)
             : parseFloat(amount);
         }
 
@@ -706,6 +762,23 @@ export default function AddTransactionScreen({
           </View>
         </View>
 
+        {/* Date */}
+        <Text style={[styles.sectionTitle, { color: themeColors.textPrimary }]}>
+          {t("editTransaction.date")}
+        </Text>
+        <TextInput
+          mode="outlined"
+          placeholder="YYYY-MM-DD"
+          value={transactionDate}
+          onChangeText={setTransactionDate}
+          style={[styles.dateInput, { backgroundColor: themeColors.surface }]}
+          outlineColor={themeColors.border}
+          activeOutlineColor={themeColors.primary}
+          placeholderTextColor={themeColors.textDisabled}
+          textColor={themeColors.textPrimary}
+          left={<TextInput.Icon icon="calendar" />}
+        />
+
         {!isSharedAccount && (
           <>
             <Text
@@ -827,8 +900,76 @@ export default function AddTransactionScreen({
           </View>
         )}
 
-        {/* Borrowing resolution toggle for expenses */}
+        {/* Lending toggle for expenses */}
         {type === "expense" && !isSharedAccount && (
+          <View
+            style={[
+              styles.toggleSection,
+              { backgroundColor: themeColors.surface },
+            ]}
+          >
+            <View style={styles.toggleRow}>
+              <View style={styles.toggleLabel}>
+                <MaterialCommunityIcons
+                  name="hand-coin-outline"
+                  size={20}
+                  color={colors.warning || "#F59E0B"}
+                />
+                <Text
+                  style={[
+                    styles.toggleText,
+                    { color: themeColors.textPrimary },
+                  ]}
+                >
+                  {t("lending.lentMoney")}
+                </Text>
+              </View>
+              <Switch
+                value={isLent}
+                onValueChange={(val) => {
+                  setIsLent(val);
+                  if (val) setIsBorrowingResolution(false);
+                }}
+                trackColor={{ true: colors.primary }}
+              />
+            </View>
+            {isLent && (
+              <View style={styles.borrowingFields}>
+                <TextInput
+                  mode="outlined"
+                  label={t("lending.borrowerName")}
+                  placeholder={t("lending.borrowerNamePlaceholder")}
+                  value={borrowerName}
+                  onChangeText={setBorrowerName}
+                  style={[
+                    styles.borrowingInput,
+                    { backgroundColor: themeColors.surface },
+                  ]}
+                  outlineColor={themeColors.border}
+                  activeOutlineColor={themeColors.primary}
+                  textColor={themeColors.textPrimary}
+                />
+                <TextInput
+                  mode="outlined"
+                  label={t("lending.dueDateOptional")}
+                  placeholder="YYYY-MM-DD"
+                  value={dueDate}
+                  onChangeText={setDueDate}
+                  style={[
+                    styles.borrowingInput,
+                    { backgroundColor: themeColors.surface },
+                  ]}
+                  outlineColor={themeColors.border}
+                  activeOutlineColor={themeColors.primary}
+                  textColor={themeColors.textPrimary}
+                />
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* Borrowing resolution toggle for expenses */}
+        {type === "expense" && !isSharedAccount && !isLent && (
           <View
             style={[
               styles.toggleSection,
@@ -848,7 +989,7 @@ export default function AddTransactionScreen({
                     { color: themeColors.textPrimary },
                   ]}
                 >
-                  Borrowing Resolution
+                  {t("lending.borrowingResolution")}
                 </Text>
               </View>
               <Switch
@@ -866,7 +1007,7 @@ export default function AddTransactionScreen({
                       { color: themeColors.textSecondary },
                     ]}
                   >
-                    No unresolved borrowings found
+                    {t("lending.noUnresolvedBorrowings")}
                   </Text>
                 ) : (
                   <>
@@ -876,7 +1017,7 @@ export default function AddTransactionScreen({
                         { color: themeColors.textPrimary },
                       ]}
                     >
-                      Select borrowing to resolve:
+                      {t("lending.selectBorrowingToResolve")}
                     </Text>
                     <ScrollView
                       horizontal
@@ -931,10 +1072,135 @@ export default function AddTransactionScreen({
                     {selectedBorrowingId && (
                       <TextInput
                         mode="outlined"
-                        label="Resolution Amount (optional, defaults to expense amount)"
+                        label={t("lending.resolutionAmountOptional")}
                         placeholder="0.00"
                         value={resolutionAmount}
                         onChangeText={setResolutionAmount}
+                        keyboardType="decimal-pad"
+                        style={[
+                          styles.borrowingInput,
+                          { backgroundColor: themeColors.surface },
+                        ]}
+                        outlineColor={themeColors.border}
+                        activeOutlineColor={themeColors.primary}
+                        textColor={themeColors.textPrimary}
+                      />
+                    )}
+                  </>
+                )}
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* Lending resolution toggle for earnings */}
+        {type === "earning" && !isSharedAccount && !isBorrowed && (
+          <View
+            style={[
+              styles.toggleSection,
+              { backgroundColor: themeColors.surface },
+            ]}
+          >
+            <View style={styles.toggleRow}>
+              <View style={styles.toggleLabel}>
+                <MaterialCommunityIcons
+                  name="cash-refund"
+                  size={20}
+                  color={colors.earning}
+                />
+                <Text
+                  style={[
+                    styles.toggleText,
+                    { color: themeColors.textPrimary },
+                  ]}
+                >
+                  {t("lending.lendingResolution")}
+                </Text>
+              </View>
+              <Switch
+                value={isLendingResolution}
+                onValueChange={setIsLendingResolution}
+                trackColor={{ true: colors.primary }}
+              />
+            </View>
+            {isLendingResolution && (
+              <View style={styles.borrowingFields}>
+                {unresolvedLendings.length === 0 ? (
+                  <Text
+                    style={[
+                      styles.noBorrowingsText,
+                      { color: themeColors.textSecondary },
+                    ]}
+                  >
+                    {t("lending.noUnresolvedLendings")}
+                  </Text>
+                ) : (
+                  <>
+                    <Text
+                      style={[
+                        styles.borrowingSelectLabel,
+                        { color: themeColors.textPrimary },
+                      ]}
+                    >
+                      {t("lending.selectLendingToResolve")}
+                    </Text>
+                    <ScrollView
+                      horizontal
+                      showsHorizontalScrollIndicator={false}
+                      style={styles.borrowingsScroll}
+                    >
+                      {unresolvedLendings.map((b) => (
+                        <TouchableOpacity
+                          key={b.id}
+                          onPress={() => setSelectedLendingId(b.id)}
+                        >
+                          <Card
+                            style={[
+                              styles.borrowingCard,
+                              selectedLendingId === b.id &&
+                                styles.borrowingCardSelected,
+                            ]}
+                          >
+                            <Card.Content style={styles.borrowingContent}>
+                              <Text
+                                style={[
+                                  styles.borrowingAmount,
+                                  { color: themeColors.textPrimary },
+                                ]}
+                              >
+                                {formatCurrency(b.remainingAmount)}
+                              </Text>
+                              <Text
+                                style={[
+                                  styles.borrowingDesc,
+                                  { color: themeColors.textSecondary },
+                                ]}
+                                numberOfLines={1}
+                              >
+                                {b.borrowerName || b.description || "Lent"}
+                              </Text>
+                              {b.dueDate && (
+                                <Text
+                                  style={[
+                                    styles.borrowingDue,
+                                    { color: themeColors.textSecondary },
+                                  ]}
+                                >
+                                  Due: {b.dueDate}
+                                </Text>
+                              )}
+                            </Card.Content>
+                          </Card>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                    {selectedLendingId && (
+                      <TextInput
+                        mode="outlined"
+                        label={t("lending.resolutionAmountOptional")}
+                        placeholder="0.00"
+                        value={lendingResolutionAmount}
+                        onChangeText={setLendingResolutionAmount}
                         keyboardType="decimal-pad"
                         style={[
                           styles.borrowingInput,
@@ -1153,6 +1419,9 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: colors.textPrimary,
     marginBottom: spacing.sm,
+  },
+  dateInput: {
+    marginBottom: spacing.lg,
   },
   accountsScroll: {
     marginBottom: spacing.lg,

@@ -82,6 +82,37 @@ export default {
     sharedAccounts: "Comptes partagés",
   },
 
+  // Account Types
+  accountType: {
+    title: "Nouveau type de compte",
+    byAccountType: "Par type de compte",
+    createAccountType: "+ Nouveau type",
+    name: "Nom",
+    namePlaceholder: "ex. Épargne, Investissement...",
+    nameRequired: "Le nom du type de compte est requis",
+    nameTooShort: "Le nom doit contenir au moins 2 caractères",
+    icon: "Icône",
+    color: "Couleur",
+    descriptionOptional: "Description (optionnel)",
+    descriptionPlaceholder: "Décrivez ce type de compte...",
+    creating: "Création...",
+    created: "Type de compte créé avec succès",
+    failedCreate: "Échec de la création du type de compte",
+    editTitle: "Modifier le type de compte",
+    saving: "Enregistrement...",
+    saveChanges: "Enregistrer",
+    updated: "Type de compte modifié avec succès",
+    failedUpdate: "Échec de la modification du type de compte",
+    deleteAccountType: "Supprimer le type de compte",
+    deleteTitle: "Supprimer le type de compte",
+    deleteConfirm:
+      "Êtes-vous sûr de vouloir supprimer ce type de compte ? Cette action est irréversible.",
+    deleting: "Suppression...",
+    deleted: "Type de compte supprimé avec succès",
+    failedDelete: "Échec de la suppression du type de compte",
+    notFound: "Type de compte introuvable",
+  },
+
   // Accounts
   account: {
     searchAccounts: "Rechercher des comptes...",
@@ -219,6 +250,8 @@ export default {
   reports: {
     title: "Rapports",
     monthly: "Mensuel",
+    weekly: "Hebdomadaire",
+    daily: "Journalier",
     categories: "Catégories",
     financialSummary: "Résumé financier",
     totalIncome: "Revenu total",
@@ -226,6 +259,7 @@ export default {
     netIncome: "Revenu net",
     incomeVsExpenses: "Revenus vs Dépenses",
     yearTotals: "Totaux de l'année {{year}}",
+    totalsLabel: "Totaux",
     expensesByCategory: "Dépenses par catégorie",
     categoryBreakdown: "Détail par catégorie",
     noDataPeriod: "Aucune donnée pour cette période",
@@ -409,5 +443,33 @@ export default {
     termsComingSoon: "Conditions d'utilisation bientôt disponibles.",
     administrator: "Administrateur",
     user: "Utilisateur",
+  },
+
+  // Prêts & Emprunts
+  lending: {
+    borrowed: "Emprunté",
+    lent: "Prêté",
+    active: "Actif",
+    partial: "Partiel",
+    resolved: "Résolu",
+    lentMoney: "Argent prêté",
+    borrowedMoney: "Argent emprunté",
+    noBorrowings: "Aucun emprunt trouvé",
+    noLendings: "Aucun prêt trouvé",
+    borrowerName: "Nom de l'emprunteur (optionnel)",
+    borrowerNamePlaceholder: "À qui avez-vous prêté ?",
+    dueDateOptional: "Date de retour (optionnel)",
+    borrowingResolution: "Rembourser un emprunt",
+    lendingResolution: "Recevoir un remboursement de prêt",
+    noUnresolvedBorrowings: "Aucun emprunt non résolu trouvé",
+    noUnresolvedLendings: "Aucun prêt non résolu trouvé",
+    selectBorrowingToResolve: "Sélectionner l'emprunt à rembourser :",
+    selectLendingToResolve: "Sélectionner le prêt à résoudre :",
+    resolutionAmountOptional:
+      "Montant de résolution (optionnel, par défaut le montant de la transaction)",
+    activeLending: "prêt actif",
+    activeLendings: "prêts actifs",
+    activeBorrowing: "emprunt actif",
+    activeBorrowings: "emprunts actifs",
   },
 };

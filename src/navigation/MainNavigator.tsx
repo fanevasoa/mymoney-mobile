@@ -35,6 +35,8 @@ import AddBudgetItemScreen from "../screens/main/AddBudgetItemScreen";
 import EditBudgetCampaignScreen from "../screens/main/EditBudgetCampaignScreen";
 import EditBudgetItemScreen from "../screens/main/EditBudgetItemScreen";
 import EditTransactionScreen from "../screens/main/EditTransactionScreen";
+import AddAccountTypeScreen from "../screens/main/AddAccountTypeScreen";
+import EditAccountTypeScreen from "../screens/main/EditAccountTypeScreen";
 
 import type {
   MainTabParamList,
@@ -118,6 +120,16 @@ function AccountsStackNavigator(): React.JSX.Element {
         options={{ title: t("addAccount.title") }}
       />
       <AccountsStack.Screen
+        name="AddAccountType"
+        component={AddAccountTypeScreen}
+        options={{ title: t("accountType.title") }}
+      />
+      <AccountsStack.Screen
+        name="EditAccountType"
+        component={EditAccountTypeScreen}
+        options={{ title: t("accountType.editTitle") }}
+      />
+      <AccountsStack.Screen
         name="SharedAccountDetail"
         component={SharedAccountDetailScreen}
         options={{ title: t("nav.sharedAccount") }}
@@ -161,6 +173,16 @@ function AccountsStackNavigator(): React.JSX.Element {
         name="EditTransaction"
         component={EditTransactionScreen}
         options={{ title: t("nav.editTransaction") }}
+      />
+      <AccountsStack.Screen
+        name="Borrowings"
+        component={BorrowingsScreen}
+        options={{ title: t("nav.borrowings") }}
+      />
+      <AccountsStack.Screen
+        name="BorrowingDetail"
+        component={BorrowingDetailScreen}
+        options={{ title: t("nav.borrowingDetail") }}
       />
     </AccountsStack.Navigator>
   );

@@ -28,7 +28,7 @@
         "backgroundColor": "#6366F1"
       },
       "package": "com.mymoney.app",
-      "versionCode": 12
+      "versionCode": 13
     },
     "web": {
       "favicon": "./assets/favicon.png"

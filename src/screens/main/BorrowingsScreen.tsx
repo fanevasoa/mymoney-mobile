@@ -13,7 +13,7 @@ import {
   TouchableOpacity,
   RefreshControl,
 } from "react-native";
-import { Text, Card, Chip, SegmentedButtons } from "react-native-paper";
+import { Text, Card, SegmentedButtons } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useFocusEffect } from "@react-navigation/native";
@@ -22,28 +22,44 @@ import { borrowingService } from "../../api";
 import { useTheme } from "../../contexts/ThemeContext";
 import { colors, spacing, borderRadius } from "../../theme";
 import { formatCurrency } from "../../utils/helpers";
-import type { AddStackParamList, Borrowing, BorrowingStatus } from "../../types";
+import type {
+  AddStackParamList,
+  AccountsStackParamList,
+  Borrowing,
+  BorrowingDirection,
+  BorrowingStatus,
+} from "../../types";
+import { useTranslation } from "react-i18next";
 
-type Props = NativeStackScreenProps<AddStackParamList, "Borrowings">;
+type Props = NativeStackScreenProps<
+  AddStackParamList | AccountsStackParamList,
+  "Borrowings"
+>;
 
 export default function BorrowingsScreen({
   navigation,
 }: Props): React.JSX.Element {
   const { colors: themeColors } = useTheme();
+  const { t } = useTranslation();
 
   const [borrowings, setBorrowings] = useState<Borrowing[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [filter, setFilter] = useState<string>("unresolved");
+  const [direction, setDirection] = useState<BorrowingDirection>("borrowed");
 
   const fetchBorrowings = useCallback(async () => {
     try {
       setIsLoading(true);
       let response;
       if (filter === "unresolved") {
-        response = await borrowingService.getUnresolvedBorrowings({ limit: 50 });
+        response = await borrowingService.getUnresolvedBorrowings({
+          limit: 50,
+          direction,
+        });
       } else {
         response = await borrowingService.getBorrowings({
           status: filter as BorrowingStatus,
+          direction,
           limit: 50,
         });
       }
@@ -55,7 +71,7 @@ export default function BorrowingsScreen({
     } finally {
       setIsLoading(false);
     }
-  }, [filter]);
+  }, [filter, direction]);
 
   useFocusEffect(
     useCallback(() => {
@@ -99,9 +115,7 @@ export default function BorrowingsScreen({
           navigation.navigate("BorrowingDetail", { borrowingId: item.id })
         }
       >
-        <Card
-          style={[styles.card, { backgroundColor: themeColors.surface }]}
-        >
+        <Card style={[styles.card, { backgroundColor: themeColors.surface }]}>
           <Card.Content>
             <View style={styles.cardHeader}>
               <View style={styles.cardLeft}>
@@ -118,7 +132,11 @@ export default function BorrowingsScreen({
                     ]}
                     numberOfLines={1}
                   >
-                    {item.borrowerName || item.description || "Borrowed Money"}
+                    {item.borrowerName ||
+                      item.description ||
+                      (direction === "lent"
+                        ? t("lending.lentMoney")
+                        : t("lending.borrowedMoney"))}
                   </Text>
                   {item.dueDate && (
                     <Text
@@ -132,18 +150,23 @@ export default function BorrowingsScreen({
                   )}
                 </View>
               </View>
-              <Chip
-                textStyle={{ fontSize: 10, color: getStatusColor(item.status) }}
+              <View
                 style={[
-                  styles.statusChip,
+                  styles.statusBadge,
                   {
-                    backgroundColor: getStatusColor(item.status) + "15",
+                    backgroundColor: getStatusColor(item.status) + "20",
                   },
                 ]}
-                compact
               >
-                {getStatusLabel(item.status)}
-              </Chip>
+                <Text
+                  style={[
+                    styles.statusBadgeText,
+                    { color: getStatusColor(item.status) },
+                  ]}
+                >
+                  {getStatusLabel(item.status)}
+                </Text>
+              </View>
             </View>
 
             <View style={styles.amountsRow}>
@@ -174,12 +197,7 @@ export default function BorrowingsScreen({
                 >
                   Remaining
                 </Text>
-                <Text
-                  style={[
-                    styles.amountValue,
-                    { color: colors.expense },
-                  ]}
-                >
+                <Text style={[styles.amountValue, { color: colors.expense }]}>
                   {formatCurrency(item.remainingAmount)}
                 </Text>
               </View>
@@ -192,12 +210,7 @@ export default function BorrowingsScreen({
                 >
                   Progress
                 </Text>
-                <Text
-                  style={[
-                    styles.amountValue,
-                    { color: colors.earning },
-                  ]}
-                >
+                <Text style={[styles.amountValue, { color: colors.earning }]}>
                   {progress}%
                 </Text>
               </View>
@@ -231,12 +244,22 @@ export default function BorrowingsScreen({
       style={[styles.container, { backgroundColor: themeColors.background }]}
     >
       <SegmentedButtons
+        value={direction}
+        onValueChange={(val) => setDirection(val as BorrowingDirection)}
+        buttons={[
+          { value: "borrowed", label: t("lending.borrowed") },
+          { value: "lent", label: t("lending.lent") },
+        ]}
+        style={styles.directionButtons}
+      />
+
+      <SegmentedButtons
         value={filter}
         onValueChange={setFilter}
         buttons={[
-          { value: "unresolved", label: "Active" },
-          { value: "partially_resolved", label: "Partial" },
-          { value: "resolved", label: "Resolved" },
+          { value: "unresolved", label: t("lending.active") },
+          { value: "partially_resolved", label: t("lending.partial") },
+          { value: "resolved", label: t("lending.resolved") },
         ]}
         style={styles.filterButtons}
       />
@@ -259,7 +282,9 @@ export default function BorrowingsScreen({
             <Text
               style={[styles.emptyText, { color: themeColors.textSecondary }]}
             >
-              No borrowings found
+              {direction === "lent"
+                ? t("lending.noLendings")
+                : t("lending.noBorrowings")}
             </Text>
           </View>
         }
@@ -271,6 +296,10 @@ export default function BorrowingsScreen({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  directionButtons: {
+    marginHorizontal: spacing.md,
+    marginTop: spacing.md,
   },
   filterButtons: {
     margin: spacing.md,
@@ -306,8 +335,14 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 2,
   },
-  statusChip: {
-    height: 24,
+  statusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 12,
+  },
+  statusBadgeText: {
+    fontSize: 10,
+    fontWeight: "700",
   },
   amountsRow: {
     flexDirection: "row",

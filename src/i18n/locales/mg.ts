@@ -82,6 +82,37 @@ export default {
     sharedAccounts: "Kaonty iraisan'olona",
   },
 
+  // Account Types
+  accountType: {
+    title: "Karazana kaonty vaovao",
+    byAccountType: "Araka ny karazana kaonty",
+    createAccountType: "+ Karazana vaovao",
+    name: "Anarana",
+    namePlaceholder: "oh. Tahiry, Fampiasam-bola...",
+    nameRequired: "Ilaina ny anaran'ny karazana kaonty",
+    nameTooShort: "Tsy maintsy misy litera 2 farafahakeliny ny anarana",
+    icon: "Kisary",
+    color: "Loko",
+    descriptionOptional: "Famaritana (tsy voatery)",
+    descriptionPlaceholder: "Farito ity karazana kaonty ity...",
+    creating: "Mamorona...",
+    created: "Voaforona soa aman-tsara ny karazana kaonty",
+    failedCreate: "Tsy nahomby ny famoronana ny karazana kaonty",
+    editTitle: "Hanova karazana kaonty",
+    saving: "Mitahiry...",
+    saveChanges: "Tehirizo ny fanovana",
+    updated: "Voaova soa aman-tsara ny karazana kaonty",
+    failedUpdate: "Tsy nahomby ny fanovana ny karazana kaonty",
+    deleteAccountType: "Hamafa karazana kaonty",
+    deleteTitle: "Hamafa karazana kaonty",
+    deleteConfirm:
+      "Tena te hamafa ity karazana kaonty ity ve ianao? Tsy azo averina io.",
+    deleting: "Mamafa...",
+    deleted: "Voafafa soa aman-tsara ny karazana kaonty",
+    failedDelete: "Tsy nahomby ny famafana ny karazana kaonty",
+    notFound: "Tsy hita ny karazana kaonty",
+  },
+
   // Accounts
   account: {
     searchAccounts: "Hitady kaonty...",
@@ -218,6 +249,8 @@ export default {
   reports: {
     title: "Tatitra",
     monthly: "Isam-bolana",
+    weekly: "Isan-kerinandro",
+    daily: "Isan'andro",
     categories: "Sokajy",
     financialSummary: "Famintinana ara-bola",
     totalIncome: "Vola miditra rehetra",
@@ -225,6 +258,7 @@ export default {
     netIncome: "Vola miditra tena izy",
     incomeVsExpenses: "Vola miditra vs Fandaniana",
     yearTotals: "Fitambarany {{year}}",
+    totalsLabel: "Fitambarany",
     expensesByCategory: "Fandaniana isaky ny sokajy",
     categoryBreakdown: "Antsipiriany isaky ny sokajy",
     noDataPeriod: "Tsy misy angona amin'ity vanim-potoana ity",
@@ -408,5 +442,33 @@ export default {
     termsComingSoon: "Ho avy tsy ho ela ny fepetra fampiasana.",
     administrator: "Mpitantana",
     user: "Mpampiasa",
+  },
+
+  // Findramam-bola & Fampisamborana
+  lending: {
+    borrowed: "Nindramina",
+    lent: "Nampisamborina",
+    active: "Mbola misy",
+    partial: "Ampahany",
+    resolved: "Voaloa",
+    lentMoney: "Vola nampisamborina",
+    borrowedMoney: "Vola nindramina",
+    noBorrowings: "Tsy misy findramam-bola hita",
+    noLendings: "Tsy misy fampisamborana hita",
+    borrowerName: "Anaran'ny mpindrana (tsy voatery)",
+    borrowerNamePlaceholder: "Iza no nampisamborinao?",
+    dueDateOptional: "Daty famerenana (tsy voatery)",
+    borrowingResolution: "Manefa findramam-bola",
+    lendingResolution: "Mandray famerenana fampisamborana",
+    noUnresolvedBorrowings: "Tsy misy findramam-bola tsy voaloa",
+    noUnresolvedLendings: "Tsy misy fampisamborana tsy voaloa",
+    selectBorrowingToResolve: "Safidio ny findramam-bola aloa:",
+    selectLendingToResolve: "Safidio ny fampisamborana vahana:",
+    resolutionAmountOptional:
+      "Vola aloa (tsy voatery, raha tsy fenoina dia ny vola rehetra)",
+    activeLending: "fampisamborana mbola misy",
+    activeLendings: "fampisamborana mbola misy",
+    activeBorrowing: "findramam-bola mbola misy",
+    activeBorrowings: "findramam-bola mbola misy",
   },
 };

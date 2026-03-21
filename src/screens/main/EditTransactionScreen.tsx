@@ -21,6 +21,7 @@ import {
   Card,
   SegmentedButtons,
   ActivityIndicator,
+  Switch,
 } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -37,6 +38,7 @@ import type {
   AddStackParamList,
   TransactionType,
   Transaction,
+  Borrowing,
 } from "../../types";
 
 type Props = NativeStackScreenProps<AddStackParamList, "EditTransaction">;
@@ -83,12 +85,24 @@ export default function EditTransactionScreen({
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
 
-  const categories = type === "earning" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+  // Lending/Borrowing states
+  const [isLent, setIsLent] = useState<boolean>(false);
+  const [isBorrowed, setIsBorrowed] = useState<boolean>(false);
+  const [borrowerName, setBorrowerName] = useState<string>("");
+  const [dueDate, setDueDate] = useState<string>("");
+  const [originalBorrowing, setOriginalBorrowing] = useState<Borrowing | null>(
+    null,
+  );
+  const [hasResolutions, setHasResolutions] = useState<boolean>(false);
+
+  const categories =
+    type === "earning" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
 
   const loadTransaction = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await transactionService.getTransactionById(transactionId);
+      const response =
+        await transactionService.getTransactionById(transactionId);
       if (response.success) {
         const tx = response.data.transaction;
         setTransaction(tx);
@@ -96,12 +110,23 @@ export default function EditTransactionScreen({
         setAmount(String(tx.amount));
         setDescription(tx.description || "");
         setCategory(tx.category || "");
-        // Format date as YYYY-MM-DD
-        const d = new Date(tx.createdAt);
-        const yyyy = d.getFullYear();
-        const mm = String(d.getMonth() + 1).padStart(2, "0");
-        const dd = String(d.getDate()).padStart(2, "0");
-        setDate(`${yyyy}-${mm}-${dd}`);
+        setDate(tx.date || "");
+
+        // Pre-fill lending/borrowing from existing data
+        if (tx.borrowing) {
+          setOriginalBorrowing(tx.borrowing);
+          setBorrowerName(tx.borrowing.borrowerName || "");
+          setDueDate(tx.borrowing.dueDate || "");
+          setHasResolutions(
+            (tx.borrowing.resolutions?.length ?? 0) > 0 ||
+              tx.borrowing.status !== "unresolved",
+          );
+          if (tx.borrowing.direction === "lent") {
+            setIsLent(true);
+          } else {
+            setIsBorrowed(true);
+          }
+        }
       }
     } catch (err) {
       setError(t("editTransaction.failedLoad"));
@@ -154,11 +179,28 @@ export default function EditTransactionScreen({
       if ((category || null) !== (transaction?.category || null)) {
         updateData.category = category || null;
       }
-      if (date) {
-        const origDate = new Date(transaction?.createdAt || "");
-        const origFormatted = `${origDate.getFullYear()}-${String(origDate.getMonth() + 1).padStart(2, "0")}-${String(origDate.getDate()).padStart(2, "0")}`;
-        if (date !== origFormatted) {
-          updateData.date = new Date(date).toISOString();
+      if (date && date !== transaction?.date) {
+        updateData.date = date;
+      }
+
+      // Include lending/borrowing fields
+      if (type === "expense") {
+        const wasLent = originalBorrowing?.direction === "lent";
+        if (isLent !== wasLent) {
+          updateData.isLent = isLent;
+        }
+        if (isLent) {
+          updateData.borrowerName = borrowerName.trim() || null;
+          updateData.dueDate = dueDate.trim() || null;
+        }
+      } else if (type === "earning") {
+        const wasBorrowed = originalBorrowing?.direction === "borrowed";
+        if (isBorrowed !== wasBorrowed) {
+          updateData.isBorrowed = isBorrowed;
+        }
+        if (isBorrowed) {
+          updateData.borrowerName = borrowerName.trim() || null;
+          updateData.dueDate = dueDate.trim() || null;
         }
       }
 
@@ -198,9 +240,8 @@ export default function EditTransactionScreen({
           onPress: async () => {
             try {
               setIsDeleting(true);
-              const response = await transactionService.deleteTransaction(
-                transactionId,
-              );
+              const response =
+                await transactionService.deleteTransaction(transactionId);
               if (response.success) {
                 showToast(t("editTransaction.deleteSuccess"));
                 await refreshData();
@@ -280,7 +321,10 @@ export default function EditTransactionScreen({
               color={themeColors.textSecondary}
             />
             <Text
-              style={[styles.accountInfoText, { color: themeColors.textPrimary }]}
+              style={[
+                styles.accountInfoText,
+                { color: themeColors.textPrimary },
+              ]}
             >
               {transaction.account.name}
             </Text>
@@ -361,10 +405,7 @@ export default function EditTransactionScreen({
           placeholder="YYYY-MM-DD"
           value={date}
           onChangeText={setDate}
-          style={[
-            styles.dateInput,
-            { backgroundColor: themeColors.surface },
-          ]}
+          style={[styles.dateInput, { backgroundColor: themeColors.surface }]}
           outlineColor={themeColors.border}
           activeOutlineColor={themeColors.primary}
           placeholderTextColor={themeColors.textDisabled}
@@ -424,6 +465,138 @@ export default function EditTransactionScreen({
           textColor={themeColors.textPrimary}
         />
 
+        {/* Lending toggle for expenses (not for transfers) */}
+        {type === "expense" && !transaction?.transferId && (
+          <View
+            style={[
+              styles.toggleSection,
+              { backgroundColor: themeColors.surface },
+            ]}
+          >
+            <View style={styles.toggleRow}>
+              <View style={styles.toggleLabel}>
+                <MaterialCommunityIcons
+                  name="hand-coin-outline"
+                  size={20}
+                  color={colors.warning || "#F59E0B"}
+                />
+                <Text
+                  style={[
+                    styles.toggleText,
+                    { color: themeColors.textPrimary },
+                  ]}
+                >
+                  {t("lending.lentMoney")}
+                </Text>
+              </View>
+              <Switch
+                value={isLent}
+                onValueChange={setIsLent}
+                trackColor={{ true: colors.primary }}
+                disabled={hasResolutions && isLent}
+              />
+            </View>
+            {isLent && (
+              <View style={styles.lendingFields}>
+                <TextInput
+                  mode="outlined"
+                  label={t("lending.borrowerName")}
+                  placeholder={t("lending.borrowerNamePlaceholder")}
+                  value={borrowerName}
+                  onChangeText={setBorrowerName}
+                  style={[
+                    styles.lendingInput,
+                    { backgroundColor: themeColors.surface },
+                  ]}
+                  outlineColor={themeColors.border}
+                  activeOutlineColor={themeColors.primary}
+                  textColor={themeColors.textPrimary}
+                />
+                <TextInput
+                  mode="outlined"
+                  label={t("lending.dueDateOptional")}
+                  placeholder="YYYY-MM-DD"
+                  value={dueDate}
+                  onChangeText={setDueDate}
+                  style={[
+                    styles.lendingInput,
+                    { backgroundColor: themeColors.surface },
+                  ]}
+                  outlineColor={themeColors.border}
+                  activeOutlineColor={themeColors.primary}
+                  textColor={themeColors.textPrimary}
+                />
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* Borrowing toggle for earnings (not for transfers) */}
+        {type === "earning" && !transaction?.transferId && (
+          <View
+            style={[
+              styles.toggleSection,
+              { backgroundColor: themeColors.surface },
+            ]}
+          >
+            <View style={styles.toggleRow}>
+              <View style={styles.toggleLabel}>
+                <MaterialCommunityIcons
+                  name="hand-coin-outline"
+                  size={20}
+                  color={colors.warning || "#F59E0B"}
+                />
+                <Text
+                  style={[
+                    styles.toggleText,
+                    { color: themeColors.textPrimary },
+                  ]}
+                >
+                  {t("lending.borrowedMoney")}
+                </Text>
+              </View>
+              <Switch
+                value={isBorrowed}
+                onValueChange={setIsBorrowed}
+                trackColor={{ true: colors.primary }}
+                disabled={hasResolutions && isBorrowed}
+              />
+            </View>
+            {isBorrowed && (
+              <View style={styles.lendingFields}>
+                <TextInput
+                  mode="outlined"
+                  label={t("lending.borrowerName")}
+                  placeholder={t("lending.borrowerNamePlaceholder")}
+                  value={borrowerName}
+                  onChangeText={setBorrowerName}
+                  style={[
+                    styles.lendingInput,
+                    { backgroundColor: themeColors.surface },
+                  ]}
+                  outlineColor={themeColors.border}
+                  activeOutlineColor={themeColors.primary}
+                  textColor={themeColors.textPrimary}
+                />
+                <TextInput
+                  mode="outlined"
+                  label={t("lending.dueDateOptional")}
+                  placeholder="YYYY-MM-DD"
+                  value={dueDate}
+                  onChangeText={setDueDate}
+                  style={[
+                    styles.lendingInput,
+                    { backgroundColor: themeColors.surface },
+                  ]}
+                  outlineColor={themeColors.border}
+                  activeOutlineColor={themeColors.primary}
+                  textColor={themeColors.textPrimary}
+                />
+              </View>
+            )}
+          </View>
+        )}
+
         {/* Save Button */}
         <Button
           mode="contained"
@@ -439,9 +612,7 @@ export default function EditTransactionScreen({
           ]}
           contentStyle={styles.buttonContent}
         >
-          {isSaving
-            ? t("editTransaction.saving")
-            : t("editTransaction.save")}
+          {isSaving ? t("editTransaction.saving") : t("editTransaction.save")}
         </Button>
 
         {/* Delete Button */}
@@ -583,5 +754,31 @@ const styles = StyleSheet.create({
   },
   buttonContent: {
     paddingVertical: spacing.xs,
+  },
+  toggleSection: {
+    borderRadius: borderRadius.md,
+    padding: spacing.md,
+    marginBottom: spacing.lg,
+  },
+  toggleRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  toggleLabel: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+  },
+  toggleText: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  lendingFields: {
+    marginTop: spacing.sm,
+    gap: spacing.sm,
+  },
+  lendingInput: {
+    marginBottom: 0,
   },
 });

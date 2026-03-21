@@ -40,6 +40,8 @@ export default function TransactionCard({
 }: TransactionCardProps): React.JSX.Element {
   const icon = getTransactionIcon(transaction.type);
   const isIncome = transaction.type === "earning";
+  const isTransfer =
+    transaction.type === "transfer_fee" || !!transaction.transferId;
 
   return (
     <TouchableOpacity onPress={onPress} disabled={!onPress}>
@@ -52,9 +54,16 @@ export default function TransactionCard({
               color={icon.color}
             />
             <View style={styles.info}>
-              <Text style={styles.description} numberOfLines={1}>
-                {transaction.description || transaction.type}
-              </Text>
+              <View style={styles.descriptionRow}>
+                <Text style={styles.description} numberOfLines={1}>
+                  {transaction.description || transaction.type}
+                </Text>
+                {isTransfer && (
+                  <View style={styles.transferBadge}>
+                    <Text style={styles.transferBadgeText}>Transfer</Text>
+                  </View>
+                )}
+              </View>
               <Text style={styles.meta}>
                 {showAccount && transaction.account?.name}
                 {showAccount && transaction.category && " • "}
@@ -73,7 +82,13 @@ export default function TransactionCard({
           <Text
             style={[
               styles.amount,
-              { color: isIncome ? colors.earning : colors.expense },
+              {
+                color: isTransfer
+                  ? colors.transfer
+                  : isIncome
+                    ? colors.earning
+                    : colors.expense,
+              },
             ]}
           >
             {isIncome ? "+" : "-"}
@@ -104,10 +119,27 @@ const styles = StyleSheet.create({
     marginLeft: spacing.sm,
     flex: 1,
   },
+  descriptionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
   description: {
     fontSize: 14,
     fontWeight: "500",
     color: colors.textPrimary,
+    flexShrink: 1,
+  },
+  transferBadge: {
+    backgroundColor: colors.transfer + "20",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  transferBadgeText: {
+    fontSize: 9,
+    fontWeight: "700",
+    color: colors.transfer,
   },
   meta: {
     fontSize: 12,

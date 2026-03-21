@@ -25,6 +25,7 @@ import { useBalanceVisibility } from "../../contexts/BalanceVisibilityContext";
 import { useToast } from "../../contexts/ToastContext";
 import accountService from "../../api/services/accountService";
 import sharedAccountService from "../../api/services/sharedAccountService";
+import { borrowingService } from "../../api";
 import { colors, spacing, borderRadius } from "../../theme";
 import { formatCurrency } from "../../utils/helpers";
 import type {
@@ -32,6 +33,7 @@ import type {
   Account,
   AccountType,
   ApiError,
+  Borrowing,
 } from "../../types";
 
 type Props = NativeStackScreenProps<AccountsStackParamList, "AccountsMain">;
@@ -46,6 +48,8 @@ export default function AccountsScreen({
     accountTypes,
     fetchAccounts,
     fetchAccountTypes,
+    fetchDashboard,
+    dashboardData,
     updateAccount,
     isLoadingAccounts,
   } = useApp();
@@ -57,6 +61,36 @@ export default function AccountsScreen({
   const [selectedTypeId, setSelectedTypeId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+  const [lentBorrowings, setLentBorrowings] = useState<Borrowing[]>([]);
+  const [borrowedBorrowings, setBorrowedBorrowings] = useState<Borrowing[]>([]);
+
+  const fetchLentBorrowings = useCallback(async () => {
+    try {
+      const response = await borrowingService.getUnresolvedBorrowings({
+        limit: 100,
+        direction: "lent",
+      });
+      if (response.success) {
+        setLentBorrowings(response.data.borrowings);
+      }
+    } catch {
+      // silently fail
+    }
+  }, []);
+
+  const fetchBorrowedBorrowings = useCallback(async () => {
+    try {
+      const response = await borrowingService.getUnresolvedBorrowings({
+        limit: 100,
+        direction: "borrowed",
+      });
+      if (response.success) {
+        setBorrowedBorrowings(response.data.borrowings);
+      }
+    } catch {
+      // silently fail
+    }
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -64,7 +98,25 @@ export default function AccountsScreen({
       setSearchQuery("");
       fetchAccountTypes();
       fetchAccounts();
-    }, [fetchAccountTypes, fetchAccounts]),
+      fetchDashboard();
+      fetchLentBorrowings();
+      fetchBorrowedBorrowings();
+    }, [
+      fetchAccountTypes,
+      fetchAccounts,
+      fetchDashboard,
+      fetchLentBorrowings,
+      fetchBorrowedBorrowings,
+    ]),
+  );
+
+  const totalLent = lentBorrowings.reduce(
+    (sum, b) => sum + parseFloat(String(b.remainingAmount)),
+    0,
+  );
+  const totalBorrowed = borrowedBorrowings.reduce(
+    (sum, b) => sum + parseFloat(String(b.remainingAmount)),
+    0,
   );
 
   const filteredAccounts = useMemo(() => {
@@ -315,6 +367,262 @@ export default function AccountsScreen({
     );
   };
 
+  const getAccountTypeIcon = (icon: string | undefined): IconName => {
+    switch (icon) {
+      case "bank":
+        return "bank";
+      case "phone":
+        return "cellphone";
+      case "cash":
+        return "cash";
+      default:
+        return "wallet";
+    }
+  };
+
+  const renderFooter = (): React.JSX.Element | null => {
+    if (!accountTypes || accountTypes.length === 0) return null;
+
+    const typeSummaryMap = new Map(
+      (dashboardData?.accountTypesSummary || []).map((s) => [s.id, s]),
+    );
+
+    const mergedTypes = accountTypes.map((at) => {
+      const summary = typeSummaryMap.get(at.id);
+      return {
+        id: at.id,
+        name: at.name,
+        icon: at.icon,
+        color: at.color,
+        balance: summary?.balance ?? 0,
+        accountCount: summary?.accountCount ?? 0,
+      };
+    });
+
+    return (
+      <View style={styles.footerSection}>
+        {/* Lent & Borrowed Money Summary */}
+        {(lentBorrowings.length > 0 || borrowedBorrowings.length > 0) && (
+          <View style={styles.lendingSection}>
+            {lentBorrowings.length > 0 && (
+              <TouchableOpacity
+                onPress={() => navigation.navigate("Borrowings")}
+                activeOpacity={0.7}
+              >
+                <Card
+                  style={[
+                    styles.lendingCard,
+                    { backgroundColor: themeColors.surface },
+                  ]}
+                >
+                  <Card.Content style={styles.lendingCardContent}>
+                    <View style={styles.lendingCardLeft}>
+                      <View
+                        style={[
+                          styles.lendingIcon,
+                          { backgroundColor: "#F59E0B" + "20" },
+                        ]}
+                      >
+                        <MaterialCommunityIcons
+                          name="hand-coin-outline"
+                          size={24}
+                          color="#F59E0B"
+                        />
+                      </View>
+                      <View>
+                        <Text
+                          style={[
+                            styles.lendingCardTitle,
+                            { color: themeColors.textPrimary },
+                          ]}
+                        >
+                          {t("lending.lentMoney")}
+                        </Text>
+                        <Text
+                          style={[
+                            styles.lendingCardCount,
+                            { color: themeColors.textSecondary },
+                          ]}
+                        >
+                          {lentBorrowings.length}{" "}
+                          {lentBorrowings.length === 1
+                            ? t("lending.activeLending")
+                            : t("lending.activeLendings")}
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={styles.lendingCardRight}>
+                      <Text
+                        style={[styles.lendingCardAmount, { color: "#F59E0B" }]}
+                      >
+                        {isVisible("accounts_total")
+                          ? formatCurrency(totalLent)
+                          : maskedBalance}
+                      </Text>
+                      <MaterialCommunityIcons
+                        name="chevron-right"
+                        size={20}
+                        color={themeColors.textSecondary}
+                      />
+                    </View>
+                  </Card.Content>
+                </Card>
+              </TouchableOpacity>
+            )}
+            {borrowedBorrowings.length > 0 && (
+              <TouchableOpacity
+                onPress={() => navigation.navigate("Borrowings")}
+                activeOpacity={0.7}
+              >
+                <Card
+                  style={[
+                    styles.lendingCard,
+                    { backgroundColor: themeColors.surface },
+                  ]}
+                >
+                  <Card.Content style={styles.lendingCardContent}>
+                    <View style={styles.lendingCardLeft}>
+                      <View
+                        style={[
+                          styles.lendingIcon,
+                          { backgroundColor: colors.expense + "20" },
+                        ]}
+                      >
+                        <MaterialCommunityIcons
+                          name="hand-coin-outline"
+                          size={24}
+                          color={colors.expense}
+                        />
+                      </View>
+                      <View>
+                        <Text
+                          style={[
+                            styles.lendingCardTitle,
+                            { color: themeColors.textPrimary },
+                          ]}
+                        >
+                          {t("lending.borrowedMoney")}
+                        </Text>
+                        <Text
+                          style={[
+                            styles.lendingCardCount,
+                            { color: themeColors.textSecondary },
+                          ]}
+                        >
+                          {borrowedBorrowings.length}{" "}
+                          {borrowedBorrowings.length === 1
+                            ? t("lending.activeBorrowing")
+                            : t("lending.activeBorrowings")}
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={styles.lendingCardRight}>
+                      <Text
+                        style={[
+                          styles.lendingCardAmount,
+                          { color: colors.expense },
+                        ]}
+                      >
+                        {isVisible("accounts_total")
+                          ? formatCurrency(totalBorrowed)
+                          : maskedBalance}
+                      </Text>
+                      <MaterialCommunityIcons
+                        name="chevron-right"
+                        size={20}
+                        color={themeColors.textSecondary}
+                      />
+                    </View>
+                  </Card.Content>
+                </Card>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
+
+        <View style={styles.footerHeader}>
+          <Text
+            style={[styles.footerTitle, { color: themeColors.textPrimary }]}
+          >
+            {t("accountType.byAccountType")}
+          </Text>
+          <TouchableOpacity
+            onPress={() => navigation.navigate("AddAccountType")}
+          >
+            <Text style={styles.createLink}>
+              {t("accountType.createAccountType")}
+            </Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.accountTypesGrid}>
+          {mergedTypes.map((type) => (
+            <TouchableOpacity
+              key={type.id}
+              activeOpacity={0.7}
+              onPress={() =>
+                navigation.navigate("EditAccountType", {
+                  accountTypeId: type.id,
+                })
+              }
+            >
+              <Card style={styles.accountTypeCard}>
+                <Card.Content style={styles.accountTypeContent}>
+                  <View style={styles.accountTypeHeader}>
+                    <View
+                      style={[
+                        styles.accountTypeIcon,
+                        { backgroundColor: type.color + "20" },
+                      ]}
+                    >
+                      <MaterialCommunityIcons
+                        name={getAccountTypeIcon(type.icon)}
+                        size={24}
+                        color={type.color}
+                      />
+                    </View>
+                    <MaterialCommunityIcons
+                      name="pencil-outline"
+                      size={16}
+                      color={themeColors.textSecondary}
+                    />
+                  </View>
+                  <Text
+                    style={[
+                      styles.accountTypeLabel,
+                      { color: themeColors.textSecondary },
+                    ]}
+                  >
+                    {type.name}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.accountTypeBalance,
+                      { color: themeColors.textPrimary },
+                    ]}
+                  >
+                    {isVisible("accounts_total")
+                      ? formatCurrency(type.balance)
+                      : maskedBalance}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.accountTypeCount,
+                      { color: themeColors.textSecondary },
+                    ]}
+                  >
+                    {t("dashboard.accountCount", {
+                      count: type.accountCount,
+                    })}
+                  </Text>
+                </Card.Content>
+              </Card>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+    );
+  };
+
   const renderEmpty = (): React.JSX.Element => (
     <View style={styles.emptyContainer}>
       <MaterialCommunityIcons
@@ -408,6 +716,7 @@ export default function AccountsScreen({
         renderItem={renderAccount}
         ListHeaderComponent={renderHeader}
         ListEmptyComponent={renderEmpty}
+        ListFooterComponent={renderFooter}
         contentContainerStyle={styles.listContent}
         refreshControl={
           <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
@@ -589,5 +898,110 @@ const styles = StyleSheet.create({
     right: spacing.md,
     bottom: spacing.md,
     backgroundColor: colors.primary,
+  },
+  footerSection: {
+    marginTop: spacing.lg,
+  },
+  footerHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: spacing.sm,
+  },
+  footerTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: colors.textPrimary,
+  },
+  createLink: {
+    fontSize: 14,
+    color: colors.primary,
+    fontWeight: "500",
+  },
+  accountTypesGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.sm,
+  },
+  accountTypeCard: {
+    flex: 1,
+    minWidth: "30%",
+    borderRadius: borderRadius.md,
+  },
+  accountTypeContent: {
+    alignItems: "center",
+    padding: spacing.sm,
+  },
+  accountTypeHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    width: "100%",
+    marginBottom: spacing.xs,
+  },
+  accountTypeIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  accountTypeLabel: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginBottom: 2,
+  },
+  accountTypeBalance: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: colors.textPrimary,
+  },
+  accountTypeCount: {
+    fontSize: 10,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  lendingSection: {
+    marginBottom: spacing.lg,
+    gap: spacing.sm,
+  },
+  lendingCard: {
+    borderRadius: borderRadius.md,
+    elevation: 1,
+  },
+  lendingCardContent: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  lendingCardLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    flex: 1,
+  },
+  lendingIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  lendingCardTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  lendingCardCount: {
+    fontSize: 12,
+    marginTop: 2,
+  },
+  lendingCardRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
+  },
+  lendingCardAmount: {
+    fontSize: 16,
+    fontWeight: "700",
   },
 });

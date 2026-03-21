@@ -114,8 +114,11 @@ export interface Transaction {
   amount: number;
   description?: string | null;
   category?: string | null;
+  date: string;
   accountId: string;
   account?: Account;
+  borrowing?: Borrowing | null;
+  transferId?: string | null;
   userId: string;
   createdAt: string;
   updatedAt: string;
@@ -127,6 +130,7 @@ export interface CreateTransactionData {
   accountId: string;
   description?: string | null;
   category?: string | null;
+  date?: string;
   isBorrowed?: boolean;
   borrowerName?: string | null;
   dueDate?: string | null;
@@ -141,6 +145,10 @@ export interface UpdateTransactionData {
   amount?: number;
   type?: TransactionType;
   date?: string;
+  isLent?: boolean;
+  isBorrowed?: boolean;
+  borrowerName?: string | null;
+  dueDate?: string | null;
 }
 
 export interface TransactionsParams {
@@ -250,6 +258,41 @@ export interface MonthlyBreakdown {
   yearTotals: YearTotals;
 }
 
+export interface WeekData {
+  week: number;
+  label: string;
+  startDate: string;
+  endDate: string;
+  earnings: number;
+  expenses: number;
+  net: number;
+}
+
+export interface WeeklyBreakdown {
+  year: number;
+  month: number;
+  monthName: string;
+  weeks: WeekData[];
+  totals: YearTotals;
+}
+
+export interface DayData {
+  day: number;
+  date: string;
+  label: string;
+  earnings: number;
+  expenses: number;
+  net: number;
+}
+
+export interface DailyBreakdown {
+  year: number;
+  month: number;
+  monthName: string;
+  days: DayData[];
+  totals: YearTotals;
+}
+
 export interface CategoryData {
   category: string;
   total: number;
@@ -279,6 +322,7 @@ export interface ReportParams {
   endDate?: string;
   accountId?: string;
   year?: number;
+  month?: number;
   type?: TransactionType;
 }
 
@@ -370,7 +414,11 @@ export type AccountsStackParamList = {
   AccountsMain: undefined;
   AccountDetail: { accountId: string };
   AddAccount: undefined;
+  AddAccountType: undefined;
+  EditAccountType: { accountTypeId: string };
   EditTransaction: { transactionId: string };
+  Borrowings: undefined;
+  BorrowingDetail: { borrowingId: string };
 } & SharedAccountScreensParamList;
 
 export type AddStackParamList = {
@@ -495,6 +543,8 @@ export interface BorrowingResolution {
   updatedAt: string;
 }
 
+export type BorrowingDirection = "borrowed" | "lent";
+
 export interface Borrowing {
   id: string;
   amount: number;
@@ -503,6 +553,7 @@ export interface Borrowing {
   borrowerName?: string | null;
   dueDate?: string | null;
   status: BorrowingStatus;
+  direction: BorrowingDirection;
   transactionId: string;
   transaction?: Transaction;
   resolutions?: BorrowingResolution[];
@@ -521,6 +572,7 @@ export interface BorrowingsParams {
   page?: number;
   limit?: number;
   status?: BorrowingStatus;
+  direction?: BorrowingDirection;
 }
 
 // ============================================================================

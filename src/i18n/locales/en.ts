@@ -82,6 +82,37 @@ export default {
     sharedAccounts: "Shared Accounts",
   },
 
+  // Account Types
+  accountType: {
+    title: "New Account Type",
+    byAccountType: "By Account Type",
+    createAccountType: "+ New Type",
+    name: "Name",
+    namePlaceholder: "e.g. Savings, Investment...",
+    nameRequired: "Account type name is required",
+    nameTooShort: "Name must be at least 2 characters",
+    icon: "Icon",
+    color: "Color",
+    descriptionOptional: "Description (optional)",
+    descriptionPlaceholder: "Describe this account type...",
+    creating: "Creating...",
+    created: "Account type created successfully",
+    failedCreate: "Failed to create account type",
+    editTitle: "Edit Account Type",
+    saving: "Saving...",
+    saveChanges: "Save Changes",
+    updated: "Account type updated successfully",
+    failedUpdate: "Failed to update account type",
+    deleteAccountType: "Delete Account Type",
+    deleteTitle: "Delete Account Type",
+    deleteConfirm:
+      "Are you sure you want to delete this account type? This cannot be undone.",
+    deleting: "Deleting...",
+    deleted: "Account type deleted successfully",
+    failedDelete: "Failed to delete account type",
+    notFound: "Account type not found",
+  },
+
   // Accounts
   account: {
     searchAccounts: "Search accounts...",
@@ -218,6 +249,8 @@ export default {
   reports: {
     title: "Reports",
     monthly: "Monthly",
+    weekly: "Weekly",
+    daily: "Daily",
     categories: "Categories",
     financialSummary: "Financial Summary",
     totalIncome: "Total Income",
@@ -225,6 +258,7 @@ export default {
     netIncome: "Net Income",
     incomeVsExpenses: "Income vs Expenses",
     yearTotals: "Year {{year}} Totals",
+    totalsLabel: "Totals",
     expensesByCategory: "Expenses by Category",
     categoryBreakdown: "Category Breakdown",
     noDataPeriod: "No data for this period",
@@ -417,5 +451,33 @@ export default {
     termsComingSoon: "Terms of service coming soon.",
     administrator: "Administrator",
     user: "User",
+  },
+
+  // Lending & Borrowing
+  lending: {
+    borrowed: "Borrowed",
+    lent: "Lent",
+    active: "Active",
+    partial: "Partial",
+    resolved: "Resolved",
+    lentMoney: "Lent Money",
+    borrowedMoney: "Borrowed Money",
+    noBorrowings: "No borrowings found",
+    noLendings: "No lendings found",
+    borrowerName: "Borrower Name (optional)",
+    borrowerNamePlaceholder: "Who did you lend to?",
+    dueDateOptional: "Return Date (optional)",
+    borrowingResolution: "Repay a Borrowing",
+    lendingResolution: "Receive Lending Repayment",
+    noUnresolvedBorrowings: "No unresolved borrowings found",
+    noUnresolvedLendings: "No unresolved lendings found",
+    selectBorrowingToResolve: "Select borrowing to repay:",
+    selectLendingToResolve: "Select lending to resolve:",
+    resolutionAmountOptional:
+      "Resolution Amount (optional, defaults to transaction amount)",
+    activeLending: "active lending",
+    activeLendings: "active lendings",
+    activeBorrowing: "active borrowing",
+    activeBorrowings: "active borrowings",
   },
 };

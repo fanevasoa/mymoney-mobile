@@ -96,6 +96,10 @@ function parseDate(input: DateInput): Date {
   if (input instanceof Date) {
     return input;
   }
+  // Handle DATEONLY strings (YYYY-MM-DD) by forcing local time parsing
+  if (typeof input === "string" && /^\d{4}-\d{2}-\d{2}$/.test(input)) {
+    return new Date(input + "T00:00:00");
+  }
   return new Date(input);
 }
 

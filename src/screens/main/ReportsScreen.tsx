@@ -24,6 +24,8 @@ import { colors, spacing, borderRadius } from "../../theme";
 import { formatCurrency } from "../../utils/helpers";
 import type {
   MonthlyBreakdown,
+  WeeklyBreakdown,
+  DailyBreakdown,
   CategoryBreakdown,
   FinancialSummary,
   CategoryData,
@@ -80,7 +82,15 @@ export default function ReportsScreen(): React.JSX.Element {
     new Date().getFullYear(),
   );
 
+  const [chartGranularity, setChartGranularity] = useState<string>("monthly");
+  const [selectedMonth, setSelectedMonth] = useState<number>(
+    new Date().getMonth() + 1,
+  );
+  const [selectedWeekIndex, setSelectedWeekIndex] = useState<number>(0);
+
   const [monthlyData, setMonthlyData] = useState<MonthlyBreakdown | null>(null);
+  const [weeklyData, setWeeklyData] = useState<WeeklyBreakdown | null>(null);
+  const [dailyData, setDailyData] = useState<DailyBreakdown | null>(null);
   const [categoryData, setCategoryData] = useState<CategoryBreakdown | null>(
     null,
   );
@@ -90,14 +100,29 @@ export default function ReportsScreen(): React.JSX.Element {
     try {
       setIsLoading(true);
 
-      const [monthlyRes, categoryRes, summaryRes] = await Promise.all([
-        dashboardService.getMonthlyBreakdown({ year: selectedYear }),
-        dashboardService.getCategoryBreakdown({ type: "expense" }),
-        dashboardService.getFinancialSummary(),
-      ]);
+      const [monthlyRes, weeklyRes, dailyRes, categoryRes, summaryRes] =
+        await Promise.all([
+          dashboardService.getMonthlyBreakdown({ year: selectedYear }),
+          dashboardService.getWeeklyBreakdown({
+            year: selectedYear,
+            month: selectedMonth,
+          }),
+          dashboardService.getDailyBreakdown({
+            year: selectedYear,
+            month: selectedMonth,
+          }),
+          dashboardService.getCategoryBreakdown({ type: "expense" }),
+          dashboardService.getFinancialSummary(),
+        ]);
 
       if (monthlyRes.success) {
         setMonthlyData(monthlyRes.data);
+      }
+      if (weeklyRes.success) {
+        setWeeklyData(weeklyRes.data);
+      }
+      if (dailyRes.success) {
+        setDailyData(dailyRes.data);
       }
       if (categoryRes.success) {
         setCategoryData(categoryRes.data);
@@ -110,7 +135,7 @@ export default function ReportsScreen(): React.JSX.Element {
     } finally {
       setIsLoading(false);
     }
-  }, [selectedYear]);
+  }, [selectedYear, selectedMonth]);
 
   useEffect(() => {
     fetchReports();
@@ -123,8 +148,54 @@ export default function ReportsScreen(): React.JSX.Element {
   };
 
   const getLineChartData = () => {
-    if (!monthlyData?.months) return null;
+    if (chartGranularity === "daily") {
+      if (!dailyData?.days?.length) return null;
+      const week = weeklyData?.weeks?.[selectedWeekIndex];
+      const filteredDays = week
+        ? dailyData.days.filter(
+            (d) => d.date >= week.startDate && d.date <= week.endDate,
+          )
+        : dailyData.days;
+      if (!filteredDays.length) return null;
+      return {
+        labels: filteredDays.map((d) => d.label),
+        datasets: [
+          {
+            data: filteredDays.map((d) => d.earnings || 0),
+            color: () => colors.earning,
+            strokeWidth: 2,
+          },
+          {
+            data: filteredDays.map((d) => d.expenses || 0),
+            color: () => colors.expense,
+            strokeWidth: 2,
+          },
+        ],
+        legend: [t("common.income"), t("common.expense")],
+      };
+    }
 
+    if (chartGranularity === "weekly") {
+      if (!weeklyData?.weeks?.length) return null;
+      return {
+        labels: weeklyData.weeks.map((w) => w.label),
+        datasets: [
+          {
+            data: weeklyData.weeks.map((w) => w.earnings || 0),
+            color: () => colors.earning,
+            strokeWidth: 2,
+          },
+          {
+            data: weeklyData.weeks.map((w) => w.expenses || 0),
+            color: () => colors.expense,
+            strokeWidth: 2,
+          },
+        ],
+        legend: [t("common.income"), t("common.expense")],
+      };
+    }
+
+    if (!monthlyData?.months) return null;
     return {
       labels: monthlyData.months.map((m) => m.monthName),
       datasets: [
@@ -139,9 +210,13 @@ export default function ReportsScreen(): React.JSX.Element {
           strokeWidth: 2,
         },
       ],
-      legend: ["Income", "Expenses"],
+      legend: [t("common.income"), t("common.expense")],
     };
   };
+
+  const MONTH_NAMES = Array.from({ length: 12 }, (_, i) =>
+    new Date(2000, i).toLocaleString("default", { month: "short" }),
+  );
 
   const getPieChartData = (): PieChartData[] => {
     if (!categoryData?.categories) return [];
@@ -293,14 +368,103 @@ export default function ReportsScreen(): React.JSX.Element {
               >
                 {t("reports.incomeVsExpenses")}
               </Text>
+
+              {/* Granularity toggle */}
+              <SegmentedButtons
+                value={chartGranularity}
+                onValueChange={setChartGranularity}
+                buttons={[
+                  { value: "monthly", label: t("reports.monthly") },
+                  { value: "weekly", label: t("reports.weekly") },
+                  { value: "daily", label: t("reports.daily") },
+                ]}
+                style={styles.granularityToggle}
+              />
+
+              {/* Month selector for weekly/daily view */}
+              {(chartGranularity === "weekly" ||
+                chartGranularity === "daily") && (
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  style={styles.monthSelector}
+                >
+                  {MONTH_NAMES.map((name, i) => (
+                    <Chip
+                      key={i}
+                      selected={selectedMonth === i + 1}
+                      onPress={() => {
+                        setSelectedMonth(i + 1);
+                        setSelectedWeekIndex(0);
+                      }}
+                      style={[
+                        styles.monthChip,
+                        {
+                          backgroundColor:
+                            selectedMonth === i + 1
+                              ? themeColors.primary
+                              : themeColors.surface,
+                        },
+                      ]}
+                      textStyle={
+                        selectedMonth === i + 1
+                          ? styles.yearChipTextSelected
+                          : undefined
+                      }
+                    >
+                      {name}
+                    </Chip>
+                  ))}
+                </ScrollView>
+              )}
+
+              {/* Week selector for daily view */}
+              {chartGranularity === "daily" && weeklyData?.weeks?.length ? (
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  style={styles.monthSelector}
+                >
+                  {weeklyData.weeks.map((week, i) => (
+                    <Chip
+                      key={i}
+                      selected={selectedWeekIndex === i}
+                      onPress={() => setSelectedWeekIndex(i)}
+                      style={[
+                        styles.weekChip,
+                        {
+                          backgroundColor:
+                            selectedWeekIndex === i
+                              ? themeColors.primary
+                              : themeColors.surface,
+                        },
+                      ]}
+                      textStyle={
+                        selectedWeekIndex === i
+                          ? styles.yearChipTextSelected
+                          : undefined
+                      }
+                    >
+                      {week.label}
+                    </Chip>
+                  ))}
+                </ScrollView>
+              ) : null}
+
               <Text
                 style={[
                   styles.chartSubtitle,
                   { color: themeColors.textSecondary },
                 ]}
               >
-                {selectedYear}
+                {chartGranularity === "monthly"
+                  ? `${selectedYear}`
+                  : chartGranularity === "daily" &&
+                      weeklyData?.weeks?.[selectedWeekIndex]
+                    ? `${weeklyData.weeks[selectedWeekIndex].label} — ${selectedYear}`
+                    : `${weeklyData?.monthName || dailyData?.monthName || MONTH_NAMES[selectedMonth - 1]} ${selectedYear}`}
               </Text>
+
               {lineChartData &&
               lineChartData.datasets[0].data.some((d) => d > 0) ? (
                 <LineChart
@@ -329,75 +493,87 @@ export default function ReportsScreen(): React.JSX.Element {
             </Card.Content>
           </Card>
 
-          {monthlyData?.yearTotals && (
-            <Card style={styles.totalsCard}>
-              <Card.Content>
-                <Text
-                  style={[
-                    styles.sectionTitle,
-                    { color: themeColors.textPrimary },
-                  ]}
-                >
-                  {t("reports.yearTotals", { year: selectedYear })}
-                </Text>
-                <View style={styles.totalsRow}>
-                  <View style={styles.totalItem}>
-                    <Text
-                      style={[
-                        styles.totalLabel,
-                        { color: themeColors.textSecondary },
-                      ]}
-                    >
-                      {t("common.income")}
-                    </Text>
-                    <Text
-                      style={[styles.totalValue, { color: colors.earning }]}
-                    >
-                      {formatCurrency(monthlyData.yearTotals.earnings)}
-                    </Text>
+          {/* Totals card */}
+          {(() => {
+            const totals =
+              chartGranularity === "weekly"
+                ? weeklyData?.totals
+                : chartGranularity === "daily"
+                  ? dailyData?.totals
+                  : monthlyData?.yearTotals;
+            const title =
+              chartGranularity === "monthly"
+                ? t("reports.yearTotals", { year: selectedYear })
+                : `${weeklyData?.monthName || dailyData?.monthName || MONTH_NAMES[selectedMonth - 1]} ${selectedYear} ${t("reports.totalsLabel")}`;
+            if (!totals) return null;
+            return (
+              <Card style={styles.totalsCard}>
+                <Card.Content>
+                  <Text
+                    style={[
+                      styles.sectionTitle,
+                      { color: themeColors.textPrimary },
+                    ]}
+                  >
+                    {title}
+                  </Text>
+                  <View style={styles.totalsRow}>
+                    <View style={styles.totalItem}>
+                      <Text
+                        style={[
+                          styles.totalLabel,
+                          { color: themeColors.textSecondary },
+                        ]}
+                      >
+                        {t("common.income")}
+                      </Text>
+                      <Text
+                        style={[styles.totalValue, { color: colors.earning }]}
+                      >
+                        {formatCurrency(totals.earnings)}
+                      </Text>
+                    </View>
+                    <View style={styles.totalItem}>
+                      <Text
+                        style={[
+                          styles.totalLabel,
+                          { color: themeColors.textSecondary },
+                        ]}
+                      >
+                        {t("common.expense")}
+                      </Text>
+                      <Text
+                        style={[styles.totalValue, { color: colors.expense }]}
+                      >
+                        {formatCurrency(totals.expenses)}
+                      </Text>
+                    </View>
+                    <View style={styles.totalItem}>
+                      <Text
+                        style={[
+                          styles.totalLabel,
+                          { color: themeColors.textSecondary },
+                        ]}
+                      >
+                        {t("common.net")}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.totalValue,
+                          {
+                            color:
+                              totals.net >= 0 ? colors.earning : colors.expense,
+                          },
+                        ]}
+                      >
+                        {formatCurrency(totals.net)}
+                      </Text>
+                    </View>
                   </View>
-                  <View style={styles.totalItem}>
-                    <Text
-                      style={[
-                        styles.totalLabel,
-                        { color: themeColors.textSecondary },
-                      ]}
-                    >
-                      {t("common.expense")}
-                    </Text>
-                    <Text
-                      style={[styles.totalValue, { color: colors.expense }]}
-                    >
-                      {formatCurrency(monthlyData.yearTotals.expenses)}
-                    </Text>
-                  </View>
-                  <View style={styles.totalItem}>
-                    <Text
-                      style={[
-                        styles.totalLabel,
-                        { color: themeColors.textSecondary },
-                      ]}
-                    >
-                      {t("common.net")}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.totalValue,
-                        {
-                          color:
-                            monthlyData.yearTotals.net >= 0
-                              ? colors.earning
-                              : colors.expense,
-                        },
-                      ]}
-                    >
-                      {formatCurrency(monthlyData.yearTotals.net)}
-                    </Text>
-                  </View>
-                </View>
-              </Card.Content>
-            </Card>
-          )}
+                </Card.Content>
+              </Card>
+            );
+          })()}
         </>
       ) : (
         <>
@@ -578,6 +754,18 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     marginTop: 2,
+  },
+  granularityToggle: {
+    marginBottom: spacing.sm,
+  },
+  monthSelector: {
+    marginBottom: spacing.sm,
+  },
+  monthChip: {
+    marginRight: spacing.xs,
+  },
+  weekChip: {
+    marginRight: spacing.xs,
   },
   chartCard: {
     marginBottom: spacing.md,

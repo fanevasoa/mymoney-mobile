@@ -101,6 +101,45 @@ export const getAccountTypes = async (): Promise<
   return apiClient.get<ApiResponse<AccountTypesResponse>>("/account-types");
 };
 
+/**
+ * Create a new account type
+ */
+export const createAccountType = async (data: {
+  name: string;
+  icon: string;
+  color: string;
+  description?: string;
+}): Promise<ApiResponse<{ accountType: AccountType }>> => {
+  return apiClient.post<ApiResponse<{ accountType: AccountType }>>(
+    "/account-types",
+    data,
+  );
+};
+
+/**
+ * Update an account type
+ */
+export const updateAccountType = async (
+  id: string,
+  data: { name?: string; icon?: string; color?: string; description?: string },
+): Promise<ApiResponse<{ accountType: AccountType }>> => {
+  return apiClient.put<ApiResponse<{ accountType: AccountType }>>(
+    `/account-types/${id}`,
+    data,
+  );
+};
+
+/**
+ * Delete an account type
+ */
+export const deleteAccountType = async (
+  id: string,
+): Promise<ApiResponse<{ message: string }>> => {
+  return apiClient.delete<ApiResponse<{ message: string }>>(
+    `/account-types/${id}`,
+  );
+};
+
 const accountService = {
   getAccounts,
   getAccountById,
@@ -109,6 +148,9 @@ const accountService = {
   toggleFavorite,
   deleteAccount,
   getAccountTypes,
+  createAccountType,
+  updateAccountType,
+  deleteAccountType,
 } as const;
 
 export default accountService;

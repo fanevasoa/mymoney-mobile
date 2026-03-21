@@ -5,12 +5,7 @@
  */
 
 import React, { useState, useCallback } from "react";
-import {
-  View,
-  StyleSheet,
-  ScrollView,
-  RefreshControl,
-} from "react-native";
+import { View, StyleSheet, ScrollView, RefreshControl } from "react-native";
 import { Text, Card, Chip } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -20,9 +15,16 @@ import { borrowingService } from "../../api";
 import { useTheme } from "../../contexts/ThemeContext";
 import { colors, spacing, borderRadius } from "../../theme";
 import { formatCurrency } from "../../utils/helpers";
-import type { AddStackParamList, Borrowing } from "../../types";
+import type {
+  AddStackParamList,
+  AccountsStackParamList,
+  Borrowing,
+} from "../../types";
 
-type Props = NativeStackScreenProps<AddStackParamList, "BorrowingDetail">;
+type Props = NativeStackScreenProps<
+  AddStackParamList | AccountsStackParamList,
+  "BorrowingDetail"
+>;
 
 export default function BorrowingDetailScreen({
   route,
@@ -58,7 +60,9 @@ export default function BorrowingDetailScreen({
       <View
         style={[styles.container, { backgroundColor: themeColors.background }]}
       >
-        <Text style={[styles.loadingText, { color: themeColors.textSecondary }]}>
+        <Text
+          style={[styles.loadingText, { color: themeColors.textSecondary }]}
+        >
           Loading...
         </Text>
       </View>
@@ -89,7 +93,9 @@ export default function BorrowingDetailScreen({
       }
     >
       {/* Header Card */}
-      <Card style={[styles.headerCard, { backgroundColor: themeColors.surface }]}>
+      <Card
+        style={[styles.headerCard, { backgroundColor: themeColors.surface }]}
+      >
         <Card.Content>
           <View style={styles.headerRow}>
             <MaterialCommunityIcons
@@ -106,15 +112,16 @@ export default function BorrowingDetailScreen({
             </Chip>
           </View>
 
-          <Text
-            style={[styles.mainAmount, { color: themeColors.textPrimary }]}
-          >
+          <Text style={[styles.mainAmount, { color: themeColors.textPrimary }]}>
             {formatCurrency(borrowing.amount)}
           </Text>
 
           {borrowing.borrowerName && (
             <Text
-              style={[styles.borrowerText, { color: themeColors.textSecondary }]}
+              style={[
+                styles.borrowerText,
+                { color: themeColors.textSecondary },
+              ]}
             >
               {borrowing.borrowerName}
             </Text>
@@ -122,7 +129,10 @@ export default function BorrowingDetailScreen({
 
           {borrowing.description && (
             <Text
-              style={[styles.descriptionText, { color: themeColors.textSecondary }]}
+              style={[
+                styles.descriptionText,
+                { color: themeColors.textSecondary },
+              ]}
             >
               {borrowing.description}
             </Text>
@@ -136,7 +146,10 @@ export default function BorrowingDetailScreen({
                 color={themeColors.textSecondary}
               />
               <Text
-                style={[styles.dueDateText, { color: themeColors.textSecondary }]}
+                style={[
+                  styles.dueDateText,
+                  { color: themeColors.textSecondary },
+                ]}
               >
                 Due: {borrowing.dueDate}
               </Text>
@@ -190,7 +203,10 @@ export default function BorrowingDetailScreen({
           </View>
 
           <View
-            style={[styles.progressBar, { backgroundColor: themeColors.border }]}
+            style={[
+              styles.progressBar,
+              { backgroundColor: themeColors.border },
+            ]}
           >
             <View
               style={[
@@ -211,7 +227,7 @@ export default function BorrowingDetailScreen({
             Resolution History
           </Text>
 
-          {(!borrowing.resolutions || borrowing.resolutions.length === 0) ? (
+          {!borrowing.resolutions || borrowing.resolutions.length === 0 ? (
             <Text
               style={[styles.emptyText, { color: themeColors.textSecondary }]}
             >

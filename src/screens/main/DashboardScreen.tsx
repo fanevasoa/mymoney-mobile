@@ -305,81 +305,6 @@ export default function DashboardScreen({
           </TouchableOpacity>
         </View>
 
-        {/* Account Types Summary */}
-        {dashboardData?.accountTypesSummary &&
-          dashboardData.accountTypesSummary.length > 0 && (
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <Text
-                  style={[
-                    styles.sectionTitle,
-                    { color: themeColors.textPrimary },
-                  ]}
-                >
-                  {t("dashboard.byAccountType")}
-                </Text>
-                <TouchableOpacity
-                  onPress={() => toggle("dashboard_accounts")}
-                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                >
-                  <MaterialCommunityIcons
-                    name={isVisible("dashboard_accounts") ? "eye" : "eye-off"}
-                    size={18}
-                    color={themeColors.textSecondary}
-                  />
-                </TouchableOpacity>
-              </View>
-              <View style={styles.accountTypesGrid}>
-                {dashboardData.accountTypesSummary.map((type) => (
-                  <Card key={type.id} style={styles.accountTypeCard}>
-                    <Card.Content style={styles.accountTypeContent}>
-                      <View
-                        style={[
-                          styles.accountTypeIcon,
-                          { backgroundColor: type.color + "20" },
-                        ]}
-                      >
-                        <MaterialCommunityIcons
-                          name={getAccountIcon(type.icon)}
-                          size={24}
-                          color={type.color}
-                        />
-                      </View>
-                      <Text
-                        style={[
-                          styles.accountTypeName,
-                          { color: themeColors.textSecondary },
-                        ]}
-                      >
-                        {type.name}
-                      </Text>
-                      <Text
-                        style={[
-                          styles.accountTypeBalance,
-                          { color: themeColors.textPrimary },
-                        ]}
-                      >
-                        {isVisible("dashboard_accounts")
-                          ? formatCurrency(type.balance)
-                          : maskedBalance}
-                      </Text>
-                      <Text
-                        style={[
-                          styles.accountTypeCount,
-                          { color: themeColors.textSecondary },
-                        ]}
-                      >
-                        {t("dashboard.accountCount", {
-                          count: type.accountCount,
-                        })}
-                      </Text>
-                    </Card.Content>
-                  </Card>
-                ))}
-              </View>
-            </View>
-          )}
-
         {/* Accounts List */}
         {dashboardData?.accountsSummary &&
           dashboardData.accountsSummary.length > 0 && (
@@ -598,69 +523,90 @@ export default function DashboardScreen({
                 </TouchableOpacity>
               </View>
             </View>
-            {recentTransactions.map((transaction) => {
-              const icon = getTransactionIcon(transaction.type);
-              return (
-                <TouchableOpacity
-                  key={transaction.id}
-                  onPress={() =>
-                    navigation.navigate("EditTransaction", {
-                      transactionId: transaction.id,
-                    })
-                  }
+            {Object.entries(
+              recentTransactions.reduce<Record<string, Transaction[]>>(
+                (groups, tx) => {
+                  const day = formatDate(tx.date);
+                  if (!groups[day]) groups[day] = [];
+                  groups[day].push(tx);
+                  return groups;
+                },
+                {},
+              ),
+            ).map(([day, txs]) => (
+              <View key={day}>
+                <Text
+                  style={[
+                    styles.dayHeader,
+                    { color: themeColors.textSecondary },
+                  ]}
                 >
-                  <Card style={styles.transactionCard}>
-                    <Card.Content style={styles.transactionContent}>
-                      <View style={styles.transactionLeft}>
-                        <MaterialCommunityIcons
-                          name={icon.name}
-                          size={32}
-                          color={icon.color}
-                        />
-                        <View style={styles.transactionInfo}>
+                  {day}
+                </Text>
+                {txs.map((transaction) => {
+                  const icon = getTransactionIcon(transaction.type);
+                  return (
+                    <TouchableOpacity
+                      key={transaction.id}
+                      onPress={() =>
+                        navigation.navigate("EditTransaction", {
+                          transactionId: transaction.id,
+                        })
+                      }
+                    >
+                      <Card style={styles.transactionCard}>
+                        <Card.Content style={styles.transactionContent}>
+                          <View style={styles.transactionLeft}>
+                            <MaterialCommunityIcons
+                              name={icon.name}
+                              size={32}
+                              color={icon.color}
+                            />
+                            <View style={styles.transactionInfo}>
+                              <Text
+                                style={[
+                                  styles.transactionDescription,
+                                  { color: themeColors.textPrimary },
+                                ]}
+                                numberOfLines={1}
+                              >
+                                {transaction.description ||
+                                  (transaction.type === "earning"
+                                    ? t("common.income")
+                                    : t("common.expense"))}
+                              </Text>
+                              <Text
+                                style={[
+                                  styles.transactionMeta,
+                                  { color: themeColors.textSecondary },
+                                ]}
+                              >
+                                {transaction.account?.name}
+                              </Text>
+                            </View>
+                          </View>
                           <Text
                             style={[
-                              styles.transactionDescription,
-                              { color: themeColors.textPrimary },
-                            ]}
-                            numberOfLines={1}
-                          >
-                            {transaction.description ||
-                              (transaction.type === "earning"
-                                ? t("common.income")
-                                : t("common.expense"))}
-                          </Text>
-                          <Text
-                            style={[
-                              styles.transactionMeta,
-                              { color: themeColors.textSecondary },
+                              styles.transactionAmount,
+                              {
+                                color:
+                                  transaction.type === "earning"
+                                    ? colors.earning
+                                    : colors.expense,
+                              },
                             ]}
                           >
-                            {transaction.account?.name} •{" "}
-                            {formatDate(transaction.createdAt)}
+                            {isVisible("dashboard_transactions")
+                              ? `${transaction.type === "earning" ? "+" : "-"}${formatCurrency(transaction.amount)}`
+                              : maskedBalance}
                           </Text>
-                        </View>
-                      </View>
-                      <Text
-                        style={[
-                          styles.transactionAmount,
-                          {
-                            color:
-                              transaction.type === "earning"
-                                ? colors.earning
-                                : colors.expense,
-                          },
-                        ]}
-                      >
-                        {isVisible("dashboard_transactions")
-                          ? `${transaction.type === "earning" ? "+" : "-"}${formatCurrency(transaction.amount)}`
-                          : maskedBalance}
-                      </Text>
-                    </Card.Content>
-                  </Card>
-                </TouchableOpacity>
-              );
-            })}
+                        </Card.Content>
+                      </Card>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            ))}
           </View>
         )}
       </ScrollView>
@@ -780,43 +726,6 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontWeight: "500",
   },
-  accountTypesGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.sm,
-  },
-  accountTypeCard: {
-    flex: 1,
-    minWidth: "30%",
-    borderRadius: borderRadius.md,
-  },
-  accountTypeContent: {
-    alignItems: "center",
-    padding: spacing.sm,
-  },
-  accountTypeIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: spacing.xs,
-  },
-  accountTypeName: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    marginBottom: 2,
-  },
-  accountTypeBalance: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: colors.textPrimary,
-  },
-  accountTypeCount: {
-    fontSize: 10,
-    color: colors.textSecondary,
-    marginTop: 2,
-  },
   accountCard: {
     marginBottom: spacing.sm,
     borderRadius: borderRadius.md,
@@ -856,6 +765,12 @@ const styles = StyleSheet.create({
     flexShrink: 0,
     minWidth: 60,
     textAlign: "right",
+  },
+  dayHeader: {
+    fontSize: 13,
+    fontWeight: "600",
+    marginTop: spacing.sm,
+    marginBottom: spacing.xs,
   },
   transactionCard: {
     marginBottom: spacing.sm,

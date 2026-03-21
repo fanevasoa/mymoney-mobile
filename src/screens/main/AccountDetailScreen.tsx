@@ -411,68 +411,90 @@ export default function AccountDetailScreen({
               </Card.Content>
             </Card>
           ) : (
-            transactions.map((transaction) => {
-              const icon = getTransactionIcon(transaction.type);
-              return (
-                <TouchableOpacity
-                  key={transaction.id}
-                  onPress={() =>
-                    navigation.navigate("EditTransaction", {
-                      transactionId: transaction.id,
-                    })
-                  }
+            Object.entries(
+              transactions.reduce<Record<string, Transaction[]>>(
+                (groups, tx) => {
+                  const day = formatDate(tx.date);
+                  if (!groups[day]) groups[day] = [];
+                  groups[day].push(tx);
+                  return groups;
+                },
+                {},
+              ),
+            ).map(([day, txs]) => (
+              <View key={day}>
+                <Text
+                  style={[
+                    styles.dayHeader,
+                    { color: themeColors.textSecondary },
+                  ]}
                 >
-                  <Card style={styles.transactionCard}>
-                    <Card.Content style={styles.transactionContent}>
-                      <View style={styles.transactionLeft}>
-                        <MaterialCommunityIcons
-                          name={icon.name}
-                          size={32}
-                          color={icon.color}
-                        />
-                        <View style={styles.transactionInfo}>
+                  {day}
+                </Text>
+                {txs.map((transaction) => {
+                  const icon = getTransactionIcon(transaction.type);
+                  return (
+                    <TouchableOpacity
+                      key={transaction.id}
+                      onPress={() =>
+                        navigation.navigate("EditTransaction", {
+                          transactionId: transaction.id,
+                        })
+                      }
+                    >
+                      <Card style={styles.transactionCard}>
+                        <Card.Content style={styles.transactionContent}>
+                          <View style={styles.transactionLeft}>
+                            <MaterialCommunityIcons
+                              name={icon.name}
+                              size={32}
+                              color={icon.color}
+                            />
+                            <View style={styles.transactionInfo}>
+                              <Text
+                                style={[
+                                  styles.transactionDescription,
+                                  { color: themeColors.textPrimary },
+                                ]}
+                                numberOfLines={1}
+                              >
+                                {transaction.description ||
+                                  (transaction.type === "earning"
+                                    ? t("common.income")
+                                    : t("common.expense"))}
+                              </Text>
+                              <Text
+                                style={[
+                                  styles.transactionMeta,
+                                  { color: themeColors.textSecondary },
+                                ]}
+                              >
+                                {transaction.category || ""}
+                              </Text>
+                            </View>
+                          </View>
                           <Text
                             style={[
-                              styles.transactionDescription,
-                              { color: themeColors.textPrimary },
-                            ]}
-                            numberOfLines={1}
-                          >
-                            {transaction.description ||
-                              (transaction.type === "earning"
-                                ? t("common.income")
-                                : t("common.expense"))}
-                          </Text>
-                          <Text
-                            style={[
-                              styles.transactionMeta,
-                              { color: themeColors.textSecondary },
+                              styles.transactionAmount,
+                              {
+                                color:
+                                  transaction.type === "earning"
+                                    ? colors.earning
+                                    : colors.expense,
+                              },
                             ]}
                           >
-                            {formatDate(transaction.createdAt)}
+                            {isVisible("account_detail_transactions")
+                              ? `${transaction.type === "earning" ? "+" : "-"}${formatCurrency(transaction.amount)}`
+                              : maskedBalance}
                           </Text>
-                        </View>
-                      </View>
-                      <Text
-                        style={[
-                          styles.transactionAmount,
-                          {
-                            color:
-                              transaction.type === "earning"
-                                ? colors.earning
-                                : colors.expense,
-                          },
-                        ]}
-                      >
-                        {isVisible("account_detail_transactions")
-                          ? `${transaction.type === "earning" ? "+" : "-"}${formatCurrency(transaction.amount)}`
-                          : maskedBalance}
-                      </Text>
-                    </Card.Content>
-                  </Card>
-                </TouchableOpacity>
-              );
-            })
+                        </Card.Content>
+                      </Card>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            ))
           )}
         </View>
       </ScrollView>
@@ -617,6 +639,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
     color: colors.textPrimary,
+  },
+  dayHeader: {
+    fontSize: 13,
+    fontWeight: "600",
+    marginTop: spacing.sm,
+    marginBottom: spacing.xs,
   },
   transactionCard: {
     marginBottom: spacing.sm,

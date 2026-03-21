@@ -37,7 +37,7 @@ export const getBorrowings = async (
  * Get unresolved borrowings
  */
 export const getUnresolvedBorrowings = async (
-  params: { page?: number; limit?: number } = {},
+  params: { page?: number; limit?: number; direction?: string } = {},
 ): Promise<ApiResponse<BorrowingsResponse>> => {
   return apiClient.get<ApiResponse<BorrowingsResponse>>(
     "/borrowings/unresolved",

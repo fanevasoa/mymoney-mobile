@@ -127,7 +127,7 @@ export default function TransactionsScreen({
 
   const sections: TransactionSection[] = Object.entries(
     filteredTransactions.reduce<Record<string, Transaction[]>>((groups, t) => {
-      const date = formatDate(t.createdAt);
+      const date = formatDate(t.date);
       if (!groups[date]) groups[date] = [];
       groups[date].push(t);
       return groups;
@@ -151,6 +151,7 @@ export default function TransactionsScreen({
 
   const renderTransaction = (tx: Transaction) => {
     const icon = getIcon(tx.type);
+    const isTransfer = tx.type === "transfer_fee" || !!tx.transferId;
     return (
       <TouchableOpacity
         key={tx.id}
@@ -169,9 +170,16 @@ export default function TransactionsScreen({
                 color={icon.color}
               />
               <View style={styles.info}>
-                <Text style={styles.desc} numberOfLines={1}>
-                  {tx.description || tx.type}
-                </Text>
+                <View style={styles.descRow}>
+                  <Text style={styles.desc} numberOfLines={1}>
+                    {tx.description || tx.type}
+                  </Text>
+                  {isTransfer && (
+                    <View style={styles.transferBadge}>
+                      <Text style={styles.transferBadgeText}>Transfer</Text>
+                    </View>
+                  )}
+                </View>
                 <Text style={styles.meta}>
                   {tx.account?.name}
                   {tx.category ? ` - ${tx.category}` : ""}
@@ -183,8 +191,11 @@ export default function TransactionsScreen({
               style={[
                 styles.amount,
                 {
-                  color:
-                    tx.type === "earning" ? colors.earning : colors.expense,
+                  color: isTransfer
+                    ? colors.transfer
+                    : tx.type === "earning"
+                      ? colors.earning
+                      : colors.expense,
                 },
               ]}
             >
@@ -334,7 +345,24 @@ const styles = StyleSheet.create({
   },
   left: { flexDirection: "row", alignItems: "center", flex: 1 },
   info: { marginLeft: spacing.sm, flex: 1 },
-  desc: { fontSize: 14, fontWeight: "500", color: colors.textPrimary },
+  descRow: { flexDirection: "row", alignItems: "center", gap: 6 },
+  desc: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: colors.textPrimary,
+    flexShrink: 1,
+  },
+  transferBadge: {
+    backgroundColor: colors.transfer + "20",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  transferBadgeText: {
+    fontSize: 9,
+    fontWeight: "700",
+    color: colors.transfer,
+  },
   meta: { fontSize: 12, color: colors.textSecondary, marginTop: 2 },
   time: { fontSize: 11, color: colors.textDisabled, marginTop: 2 },
   amount: { fontSize: 16, fontWeight: "600" },
